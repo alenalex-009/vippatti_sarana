@@ -255,6 +255,18 @@ data class VippattiUiState(
   val recommendedAction: RecommendedAction? = null,
   val relocationPlan: RelocationPlan? = null,
 
+  // --- EMERGENCY SHELTER GUIDANCE (SIH 26191) ---
+  /**
+   * "Disaster happens -> show where to go": derived from risk level + the
+   * evaluated shelters + the current destination on every recompute.
+   */
+  val emergencyGuidance: com.example.data.shelters.EmergencyGuidance =
+    com.example.data.shelters.EmergencyGuidance.None,
+  /** Nearest terrain-rated-safe haven from an explicit user search (never automatic). */
+  val terrainHaven: com.example.data.shelters.SafeHaven? = null,
+  /** True while the haven rings are being probed. */
+  val isSearchingHaven: Boolean = false,
+
   // --- Carrying capacity (SIH milestone) ---
   /** How many people need relocation here; null = no population figure. */
   val capacityDemand: com.example.data.capacity.RelocationDemand? = null,

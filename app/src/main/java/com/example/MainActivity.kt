@@ -146,6 +146,8 @@ class MainActivity : ComponentActivity() {
       // Production ViewModel: file-backed GNews cache AND file-backed disaster
       // provider shards survive app restarts; the osmdroid tile-cache dir feeds
       // the REAL offline map-cache size shown on the Profile screen.
+      val coastGridRef = remember { mutableStateOf<com.example.data.suitability.CoastDistanceGrid?>(null) }
+      val coastGridTried = remember { mutableStateOf(false) }
       val viewModel: VippattiViewModel = viewModel(
         factory = object : ViewModelProvider.Factory {
           @Suppress("UNCHECKED_CAST")
@@ -157,6 +159,22 @@ class MainActivity : ComponentActivity() {
               // Dynamic-data rule: district/state names for news scoping are
               // resolved from the device's own coordinates at runtime.
               placeResolver = AndroidGeocoderPlaceResolver(applicationContext),
+              // TERRAIN HABITABILITY: the offline coast-distance grid (built
+              // from public-domain Natural Earth data) loads once, lazily, and
+              // returns null honestly if the asset is missing/corrupt.
+              coastGridProvider = {
+                if (coastGridRef.value == null && !coastGridTried.value) {
+                  coastGridTried.value = true
+                  coastGridRef.value = try {
+                    applicationContext.assets
+                      .open(com.example.data.suitability.CoastDistanceGrid.ASSET)
+                      .use { com.example.data.suitability.CoastDistanceGrid.load(it) }
+                  } catch (_: Exception) {
+                    null
+                  }
+                }
+                coastGridRef.value
+              },
               // HISTORICAL DISASTER INTELLIGENCE (EM-DAT). The prepared archive
               // ships as an app asset - no network call, and never reported as
               // a live feed. A missing asset yields an honest UNAVAILABLE state.
@@ -504,7 +522,12 @@ fun VippattiAppRoot(
             onToggleMockData = { viewModel.toggleMockData() },
             onRequestFallbackRoute = { viewModel.requestOfflineFallbackRoute() },
             // PHASE 3: retry the live Open-Meteo reading without touching the rest.
-            onRetryWeather = { viewModel.refreshWeather(force = true) }
+            onRetryWeather = { viewModel.refreshWeather(force = true) },
+            // EMERGENCY GUIDANCE: nearest safe zone + terrain haven actions.
+            onGuidanceGo = { viewModel.acceptEmergencyGuidance() },
+            onGuidanceDismiss = { viewModel.dismissEmergencyGuidance() },
+            onSearchTerrainHaven = { viewModel.searchTerrainHaven() },
+            onRouteToTerrainHaven = { viewModel.routeToTerrainHaven() }
           )
 
           ScreenTab.INSTRUCTIONS -> InstructionsScreen(

@@ -170,6 +170,14 @@ class VippattiViewModel(
    */
   private val placeResolver: PlaceResolver = UnresolvedPlaceResolver,
   /**
+   * EMERGENCY GUIDANCE wiring (SIH 26191): live terrain probe + offline coast
+   * grid for the terrain-derived safe-haven finder. Production MainActivity
+   * injects the asset-backed grid; tests inject a fake finder. Null finder =
+   * haven search stays honest-off (reported as unavailable).
+   */
+  private val coastGridProvider: () -> com.example.data.suitability.CoastDistanceGrid? = { null },
+  private val havenFinderOverride: com.example.data.shelters.SafeHavenFinder? = null,
+  /**
    * Population source boundary (SIH 26191). No census/relief-registry API is
    * connected in this build, so the default returns nothing and the demand
    * resolution honestly reports INSUFFICIENT_DATA until a real source is wired.
@@ -576,10 +584,23 @@ class VippattiViewModel(
 
     _uiState.update {
       val selectedStillVisible = it.selectedSafeZone?.let { sel ->
-        zonesInScope.any { z -> z.id == sel.id }
+        // A terrain haven is a derived destination, not part of the shelter
+        // network: it stays valid until the user clears it or searches again.
+        sel.id.startsWith("haven-") || zonesInScope.any { z -> z.id == sel.id }
       } ?: true
       // Hiding demo data invalidates any simulated destination + its corridor —
       // the map must never keep routing to a zone that just disappeared.
+      //
+      // EMERGENCY GUIDANCE: derived from THIS recompute's risk + evaluations.
+      // The destination check uses the post-visibility state, so a hidden
+      // route correctly re-opens the guidance instead of deferring to a dead
+      // destination.
+      val hasActiveDestination = selectedStillVisible && it.selectedSafeZone != null
+      val guidance = com.example.data.shelters.EmergencyGuidance.forSituation(
+        riskLevel = risk.level,
+        evaluations = evaluated,
+        hasActiveDestination = hasActiveDestination
+      )
       it.copy(
         personalRisk = risk,
         hazardZones = hazards,
@@ -587,6 +608,7 @@ class VippattiViewModel(
         rankedShelters = ranked,
         recommendedAction = action,
         relocationPlan = plan,
+        emergencyGuidance = guidance,
         capacityDemand = demand,
         capacityAssessments = capacityAssessments,
         populationRecords = state.populationRecords,
@@ -848,6 +870,88 @@ class VippattiViewModel(
       )
     }
     if (autoRoute) calculateRouteToSelectedZone()
+  }
+
+  // ==================================================== EMERGENCY GUIDANCE ==
+
+  /** User tapped the guidance card's GO: select + route to the suggested zone. */
+  fun acceptEmergencyGuidance() {
+    val suggestion = (_uiState.value.emergencyGuidance
+      as? com.example.data.shelters.EmergencyGuidance.SuggestShelter) ?: return
+    selectSafeZone(suggestion.evaluation.zone, autoRoute = true)
+  }
+
+  /** Explicit dismissal of the guidance card until the next recompute. */
+  fun dismissEmergencyGuidance() {
+    _uiState.update { it.copy(emergencyGuidance = com.example.data.shelters.EmergencyGuidance.None) }
+  }
+
+  /**
+   * Last-resort terrain search: probe outward from the user for the nearest
+   * location the habitability engine rates SAFE, then offer it as a labelled
+   * DERIVED destination (never presented as a shelter). Runs only on an
+   * explicit tap; the honest unavailable state stays visible when the probe
+   * cannot reach the elevation service.
+   */
+  private var havenJob: Job? = null
+
+  fun searchTerrainHaven() {
+    if (_uiState.value.isSearchingHaven) return
+    val origin = _uiState.value.userLocation
+    val finder = havenFinderOverride
+      ?: com.example.data.shelters.SafeHavenFinder.live(
+        com.example.data.suitability.TerrainProbeService()
+      )
+    havenJob?.cancel()
+    havenJob = viewModelScope.launch {
+      _uiState.update { it.copy(isSearchingHaven = true) }
+      val haven = try {
+        finder.find(origin, coastGrid = coastGridProvider(), maxCandidates = 24)
+      } catch (cancelled: kotlinx.coroutines.CancellationException) {
+        throw cancelled
+      } catch (_: Exception) {
+        null
+      }
+      _uiState.update {
+        it.copy(
+          isSearchingHaven = false,
+          terrainHaven = haven,
+          snackbarMessage = haven?.let { h ->
+            "Terrain-safe point found about ${com.example.data.model.GeoMath.formatKm(h.distanceMeters)} away — " +
+              "open terrain, not a registered shelter."
+          } ?: "No terrain-safe point could be verified nearby (elevation service unavailable or no safe candidate found)."
+        )
+      }
+    }
+  }
+
+  /** Routes to the found terrain haven as an explicit DERIVED destination. */
+  fun routeToTerrainHaven() {
+    val haven = _uiState.value.terrainHaven ?: return
+    val pseudo = SafeZone(
+      id = "haven-${haven.point.lat}-${haven.point.lon}",
+      name = "Terrain-safe open point",
+      lat = haven.point.lat,
+      lon = haven.point.lon,
+      locationNote = "DERIVED from SRTM slope + rainfall + coast analysis — open terrain, not a registered shelter.",
+      capacityTotal = 0,
+      capacityCurrent = 0,
+      waterAvailable = false,
+      foodAvailable = false,
+      electricityAvailable = false,
+      sanitationAvailable = false,
+      medicalSupport = false,
+      accessibility = "Open terrain — no road guarantee",
+      womenChildrenSuitability = false,
+      operatingStatus = "OPEN",
+      verificationStatus = "DERIVED (unverified facility status)",
+      elevationNote = "",
+      provenance = haven.verdict.provenance(System.currentTimeMillis())
+    )
+    // selectSafeZone finds no ranked evaluation for the haven (evaluation =
+    // null), which every consumer handles; the route is computed to the zone
+    // itself. The haven is labelled DERIVED everywhere it renders.
+    selectSafeZone(pseudo, autoRoute = true)
   }
 
   /**
