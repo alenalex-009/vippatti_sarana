@@ -17,3 +17,12 @@ local.properties
 .env
 debug.keystore
 .freebuff/
+
+# Raw EM-DAT export stays local (see EMDAT_ATTRIBUTION.md); never ship or track it.
+*.xlsx
+# AI-Studio scaffold debris removed from tracking
+/metadata.json
+/models.json
+# local build-verification logs
+verify_*.log
+gradle_*.txt
