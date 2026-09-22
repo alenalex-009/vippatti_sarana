@@ -602,6 +602,8 @@ fun ProfileScreen(
   onOpenAddContact: () -> Unit,
   onOpenEditProfile: () -> Unit,
   onOpenSituationReport: () -> Unit,
+  /** Opens the AUTHORITY CONSOLE (field registry + relocation prioritization). */
+  onOpenAuthorityConsole: () -> Unit = {},
   modifier: Modifier = Modifier
 ) {
   val context = LocalContext.current
@@ -1288,5 +1290,35 @@ fun ProfileScreen(
     }
     // 7. Offline Resilience Pack
     item { OfflineResiliencePack(uiState = uiState) }
+
+    // 8. AUTHORITY CONSOLE (SIH 26191) — field registry + relocation
+    //    prioritization for survey operators / district officials.
+    item {
+      Column(
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(horizontal = 14.dp, vertical = 8.dp)
+          .clip(RoundedCornerShape(14.dp))
+          .background(ObsidianContainerLow)
+          .border(1.dp, TacticalCyan.copy(alpha = 0.45f), RoundedCornerShape(14.dp))
+          .clickable(onClick = onOpenAuthorityConsole)
+          .padding(14.dp)
+      ) {
+        Text(
+          "AUTHORITY CONSOLE",
+          fontSize = 12.sp, fontWeight = FontWeight.Black, color = TacticalCyan,
+          letterSpacing = 0.6.sp
+        )
+        Text(
+          "Enter field shelter & habitation records and rank habitations for " +
+            "IMMEDIATE / SHORT-TERM / MEDIUM-TERM relocation against the live " +
+            "hazard picture. Records stay on this device; demo rows stay labelled SIMULATED.",
+          fontSize = 9.sp,
+          color = TacticalOnSurfaceVariant,
+          lineHeight = 12.sp,
+          modifier = Modifier.padding(top = 4.dp)
+        )
+      }
+    }
   }
 }

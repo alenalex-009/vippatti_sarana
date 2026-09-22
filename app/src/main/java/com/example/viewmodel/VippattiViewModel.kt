@@ -184,6 +184,16 @@ class VippattiViewModel(
    */
   private val terrainProbeOverride: com.example.data.suitability.TerrainProbeService? = null,
   /**
+   * AUTHORITY FIELD REGISTRY (SIH 26191): operator-entered shelter +
+   * habitation records. Field shelters are REAL records and stay in scope
+   * even with the simulated demo network hidden. Tests inject an in-memory
+   * store via [fieldRegistryStoreOverride]; production uses the file-backed
+   * store below the app's private cache dir.
+   */
+  private val fieldRegistryStoreOverride: com.example.data.habitations.FieldRegistryStore? = null,
+  /** Directory for the file-backed registry (production; null in plain-JVM tests). */
+  private val registryDirProvider: () -> java.io.File? = { null },
+  /**
    * Population source boundary (SIH 26191). No census/relief-registry API is
    * connected in this build, so the default returns nothing and the demand
    * resolution honestly reports INSUFFICIENT_DATA until a real source is wired.
@@ -256,10 +266,23 @@ class VippattiViewModel(
   /** Live road routes by destination/mode/origin-grid/hazards — instant exact roads on repeat views. */
   private val liveRouteCache = LiveRouteCache()
 
+  /**
+   * Injected test store, or the production file-backed store, or an in-memory
+   * fallback. EAGER and declared before `init` (the cold-start registry load
+   * needs it; a `by lazy` declared later would still have a null delegate).
+   */
+  private val fieldRegistryStore: com.example.data.habitations.FieldRegistryStore =
+    fieldRegistryStoreOverride
+      ?: registryDirProvider()?.let { dir ->
+        com.example.data.habitations.FileFieldRegistryStore(dir)
+      }
+      ?: com.example.data.habitations.InMemoryFieldRegistryStore()
+
   init {
     // Cold start: run the intelligence pipeline once on the India-centre view
     // so risk is assessed (GREEN without GPS — no fake hazards), then pull
     // the REAL India-wide disaster feeds (cache-first when offline).
+    reloadFieldRegistry(silent = true)
     recomputeIntelligence(selectInitialShelter = false)
     disasterJob = viewModelScope.launch {
       val cached = disasterRepository.loadCachedOnly()
@@ -511,15 +534,16 @@ class VippattiViewModel(
     }
     val hazards = (liveZones + reportZones + mockZones).distinctBy { it.id }
 
-    // The shelter network is entirely SIMULATED today (there is no shelter
-    // registry backend), so it is offered only while the demo switch is on.
-    // There is no live shelter source to fall back to, and inventing one would
-    // be fabrication.
-    val zonesInScope = if (state.isMockDataVisible) {
+    // The shelter network today: SIMULATED demo zones (only while the demo
+    // switch is on) PLUS any REAL operator-entered field registry records,
+    // which stay in scope in every mode — they are field data, not demo data.
+    val demoZones = if (state.isMockDataVisible) {
       state.safeZones.filter { IndiaGeo.contains(it.point) }
     } else {
       emptyList()
     }
+    val zonesInScope = (state.fieldShelters.filter { IndiaGeo.contains(it.point) } + demoZones)
+      .distinctBy { it.id }
 
     val risk = RiskAssessmentEngine.assess(
       location = location,
@@ -934,6 +958,127 @@ class VippattiViewModel(
     terrainAssessJob?.cancel()
     _uiState.update {
       it.copy(terrainSelfAssessment = null, isAssessingTerrain = false)
+    }
+  }
+
+  // ============================================== AUTHORITY FIELD REGISTRY ==
+
+  /**
+   * Reloads operator-entered registry records from the store. Field shelters
+   * join the live evaluated set; rejected entries surface verbatim. Called on
+   * cold start and after every save.
+   */
+  fun reloadFieldRegistry(silent: Boolean = false) {
+    val shelters = fieldRegistryStore.loadShelters()
+    val habitations = fieldRegistryStore.loadHabitations()
+    val rejections = (fieldRegistryStore as? com.example.data.habitations.FileFieldRegistryStore)
+      ?.lastRejections() ?: emptyList()
+    _uiState.update {
+      it.copy(
+        fieldShelters = shelters,
+        fieldHabitations = habitations,
+        registryRejections = rejections,
+        snackbarMessage = if (silent) it.snackbarMessage else
+          "Field registry reloaded: ${shelters.size} shelter record(s), ${habitations.size} habitation record(s)."
+      )
+    }
+    recomputeIntelligence()
+  }
+
+  /** Saves one field-entered shelter (replace-by-id semantics). */
+  fun saveFieldShelter(zone: SafeZone) {
+    if (!com.example.data.disaster.IndiaGeo.contains(zone.point)) {
+      _uiState.update {
+        it.copy(snackbarMessage = "Shelter not saved: coordinates ${zone.lat},${zone.lon} are outside India.")
+      }
+      return
+    }
+    val current = fieldRegistryStore.loadShelters()
+    val next = current.filterNot { it.id == zone.id } + zone
+    fieldRegistryStore.saveShelters(next)
+    reloadFieldRegistry()
+  }
+
+  /** Saves one field-entered habitation (replace-by-id semantics). */
+  fun saveFieldHabitation(habitation: com.example.data.habitations.Habitation) {
+    if (!com.example.data.disaster.IndiaGeo.contains(habitation.point)) {
+      _uiState.update {
+        it.copy(snackbarMessage = "Habitation not saved: coordinates are outside India.")
+      }
+      return
+    }
+    val current = fieldRegistryStore.loadHabitations()
+    val next = current.filterNot { it.id == habitation.id } + habitation
+    fieldRegistryStore.saveHabitations(next)
+    reloadFieldRegistry()
+  }
+
+  fun deleteFieldShelter(id: String) {
+    fieldRegistryStore.saveShelters(fieldRegistryStore.loadShelters().filterNot { it.id == id })
+    reloadFieldRegistry()
+  }
+
+  fun deleteFieldHabitation(id: String) {
+    fieldRegistryStore.saveHabitations(fieldRegistryStore.loadHabitations().filterNot { it.id == id })
+    reloadFieldRegistry()
+  }
+
+  private var priorityJob: Job? = null
+
+  /**
+   * Opens the RELOCATION PRIORITIZATION DASHBOARD: ranks the dashboard input
+   * set (real registry records + the labelled demo network) against the live
+   * hazard picture and the shelter network. [liveTerrainScan] additionally
+   * probes each habitation's terrain via the keyless elevation service —
+   * OFF by default so opening the dashboard never fires a request storm.
+   */
+  fun openAuthorityDashboard(liveTerrainScan: Boolean = false) {
+    _uiState.update { it.copy(showAuthorityDashboard = true) }
+    runRanking(liveTerrainScan)
+  }
+
+  fun closeAuthorityDashboard() {
+    priorityJob?.cancel()
+    _uiState.update {
+      it.copy(showAuthorityDashboard = false, isRankingPriorities = false)
+    }
+  }
+
+  fun rerunAuthorityRanking(liveTerrainScan: Boolean) {
+    runRanking(liveTerrainScan)
+  }
+
+  private fun runRanking(liveTerrainScan: Boolean) {
+    priorityJob?.cancel()
+    priorityJob = viewModelScope.launch {
+      _uiState.update { it.copy(isRankingPriorities = true) }
+      val state = _uiState.value
+      val hazards = state.hazardZones
+      val shelters = (state.fieldShelters + state.safeZones).distinctBy { it.id }
+      var inputs = com.example.data.habitations.DemoHabitations.forDashboard(
+        fieldRecords = state.fieldHabitations,
+        includeDemo = state.isMockDataVisible
+      )
+      if (liveTerrainScan) {
+        val probe = terrainProbe
+        val grid = coastGridProvider()
+        inputs = inputs.map { hab ->
+          val result = try {
+            probe.probe(hab.point, grid)
+          } catch (cancelled: kotlinx.coroutines.CancellationException) {
+            throw cancelled
+          } catch (_: Exception) {
+            null
+          }
+          if (result is com.example.data.suitability.TerrainProbeResult.Success) {
+            hab.copy(terrainVerdict = result.verdict)
+          } else hab
+        }
+      }
+      val ranked = com.example.data.habitations.HabitationPriorityEngine.rank(inputs, hazards, shelters)
+      _uiState.update {
+        it.copy(relocationPriorities = ranked, isRankingPriorities = false)
+      }
     }
   }
 

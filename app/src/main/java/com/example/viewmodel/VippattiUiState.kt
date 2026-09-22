@@ -272,6 +272,18 @@ data class VippattiUiState(
   val terrainSelfAssessment: TerrainSelfAssessment? = null,
   val isAssessingTerrain: Boolean = false,
 
+  // --- AUTHORITY FIELD REGISTRY + PRIORITIZATION DASHBOARD (SIH 26191) ---
+  /** Operator-entered shelter records — real data, live in every mode. */
+  val fieldShelters: List<SafeZone> = emptyList(),
+  /** Operator-entered habitation records with their honest classifications. */
+  val fieldHabitations: List<com.example.data.habitations.Habitation> = emptyList(),
+  /** Rejection notes from the last registry decode, surfaced verbatim. */
+  val registryRejections: List<String> = emptyList(),
+  /** Ranked relocation output for the dashboard (empty until opened). */
+  val relocationPriorities: List<com.example.data.habitations.HabitationPriority> = emptyList(),
+  val isRankingPriorities: Boolean = false,
+  val showAuthorityDashboard: Boolean = false,
+
   // --- Carrying capacity (SIH milestone) ---
   /** How many people need relocation here; null = no population figure. */
   val capacityDemand: com.example.data.capacity.RelocationDemand? = null,

@@ -76,6 +76,7 @@ import com.example.ui.components.SosConfirmDialog
 import com.example.ui.components.VippattiBottomNavBar
 import com.example.data.auth.AuthRepository
 import com.example.data.auth.SharedPrefsAuthStorage
+import com.example.ui.screens.AuthorityConsoleScreen
 import com.example.ui.screens.DispatchesScreen
 import com.example.ui.screens.InstructionsScreen
 import com.example.ui.screens.LoginScreen
@@ -155,6 +156,7 @@ class MainActivity : ComponentActivity() {
             VippattiViewModel(
               newsCache = NewsFileCache(File(cacheDir, "news_cache")),
               disasterCache = DisasterFileCache(File(cacheDir, "disaster_cache")),
+              registryDirProvider = { File(cacheDir, "field_registry") },
               tileCacheDirProvider = { File(cacheDir, "osmdroid/tiles") },
               // Dynamic-data rule: district/state names for news scoping are
               // resolved from the device's own coordinates at runtime.
@@ -245,6 +247,23 @@ fun VippattiAppRoot(
   val uiState by viewModel.uiState.collectAsStateWithLifecycle()
   val snackbarHostState = remember { SnackbarHostState() }
   val context = LocalContext.current
+
+  // AUTHORITY CONSOLE (SIH 26191): full-screen operator surface — field
+  // registry entry + relocation prioritization dashboard. The citizen tabs
+  // and device-tool effects pause while it is open (nothing is transmitted
+  // from it; records stay on this device).
+  if (uiState.showAuthorityDashboard) {
+    AuthorityConsoleScreen(
+      uiState = uiState,
+      onBack = { viewModel.closeAuthorityDashboard() },
+      onSaveShelter = { viewModel.saveFieldShelter(it) },
+      onDeleteShelter = { viewModel.deleteFieldShelter(it) },
+      onSaveHabitation = { viewModel.saveFieldHabitation(it) },
+      onDeleteHabitation = { viewModel.deleteFieldHabitation(it) },
+      onRerank = { viewModel.rerunAuthorityRanking(it) }
+    )
+    return
+  }
 
   // REAL device battery level.
   // Sticky ACTION_BATTERY_CHANGED broadcast gives an immediate reading.
@@ -549,7 +568,8 @@ fun VippattiAppRoot(
             onBroadcastSos = { viewModel.triggerSosBroadcast() },
             onOpenAddContact = { viewModel.openAddContactDialog() },
             onOpenEditProfile = { viewModel.openEditProfileDialog() },
-            onOpenSituationReport = { viewModel.openSituationReportDialog() }
+            onOpenSituationReport = { viewModel.openSituationReportDialog() },
+            onOpenAuthorityConsole = { viewModel.openAuthorityDashboard(liveTerrainScan = false) }
           )
         }
        }
