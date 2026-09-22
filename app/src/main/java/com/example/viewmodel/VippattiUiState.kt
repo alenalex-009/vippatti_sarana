@@ -267,6 +267,11 @@ data class VippattiUiState(
   /** True while the haven rings are being probed. */
   val isSearchingHaven: Boolean = false,
 
+  // --- TERRAIN SELF-ASSESSMENT ("is MY spot a red zone?") ---
+  /** Explicit-action result of probing the user's own location. Null = never asked. */
+  val terrainSelfAssessment: TerrainSelfAssessment? = null,
+  val isAssessingTerrain: Boolean = false,
+
   // --- Carrying capacity (SIH milestone) ---
   /** How many people need relocation here; null = no population figure. */
   val capacityDemand: com.example.data.capacity.RelocationDemand? = null,
@@ -550,4 +555,19 @@ data class VippattiUiState(
       DataStatus.ERROR -> "ERROR • NEWS FEED UNREACHABLE"
       else -> "NOT SYNCED"
     }
+}
+
+/**
+ * Outcome of the explicit "assess MY location for terrain risk" action:
+ * Result carries the real habitability verdict; Unavailable says exactly why
+ * nothing could be assessed. Never a silent default.
+ */
+sealed class TerrainSelfAssessment {
+  data class Result(
+    val verdict: com.example.data.suitability.TerrainVerdict,
+    /** True when the coast factor came from the offline grid (not unknown). */
+    val coastKnown: Boolean
+  ) : TerrainSelfAssessment()
+
+  data class Unavailable(val detail: String) : TerrainSelfAssessment()
 }

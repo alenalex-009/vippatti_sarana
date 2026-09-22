@@ -178,6 +178,12 @@ class VippattiViewModel(
   private val coastGridProvider: () -> com.example.data.suitability.CoastDistanceGrid? = { null },
   private val havenFinderOverride: com.example.data.shelters.SafeHavenFinder? = null,
   /**
+   * Live terrain probe for self-assessment + haven search (keyless Open-Meteo
+   * elevation + rainfall). Tests inject a fake transport; production uses the
+   * real service. Exposed so both features share ONE transport boundary.
+   */
+  private val terrainProbeOverride: com.example.data.suitability.TerrainProbeService? = null,
+  /**
    * Population source boundary (SIH 26191). No census/relief-registry API is
    * connected in this build, so the default returns nothing and the demand
    * resolution honestly reports INSUFFICIENT_DATA until a real source is wired.
@@ -886,6 +892,51 @@ class VippattiViewModel(
     _uiState.update { it.copy(emergencyGuidance = com.example.data.shelters.EmergencyGuidance.None) }
   }
 
+  /** The one shared terrain-probe transport for self-assessment + haven search. */
+  private val terrainProbe: com.example.data.suitability.TerrainProbeService
+    get() = terrainProbeOverride ?: com.example.data.suitability.TerrainProbeService()
+
+  private var terrainAssessJob: Job? = null
+
+  /**
+   * "Is MY spot a red zone?" — explicit user action only. Probes the live
+   * SRTM stencil + rainfall at the CURRENT location; a failure yields an
+   * honest Unavailable, never an invented verdict.
+   */
+  fun assessTerrainHere() {
+    if (_uiState.value.isAssessingTerrain) return
+    val origin = _uiState.value.userLocation
+    terrainAssessJob?.cancel()
+    terrainAssessJob = viewModelScope.launch {
+      _uiState.update { it.copy(isAssessingTerrain = true) }
+      val result = try {
+        terrainProbe.probe(origin, coastGrid = coastGridProvider())
+      } catch (cancelled: kotlinx.coroutines.CancellationException) {
+        throw cancelled
+      } catch (error: Exception) {
+        com.example.data.suitability.TerrainProbeResult.ElevationUnavailable(
+          error::class.java.simpleName
+        )
+      }
+      val assessment = when (result) {
+        is com.example.data.suitability.TerrainProbeResult.Success ->
+          TerrainSelfAssessment.Result(result.verdict, result.coastKnown)
+        is com.example.data.suitability.TerrainProbeResult.ElevationUnavailable ->
+          TerrainSelfAssessment.Unavailable(result.detail)
+      }
+      _uiState.update {
+        it.copy(isAssessingTerrain = false, terrainSelfAssessment = assessment)
+      }
+    }
+  }
+
+  fun dismissTerrainAssessment() {
+    terrainAssessJob?.cancel()
+    _uiState.update {
+      it.copy(terrainSelfAssessment = null, isAssessingTerrain = false)
+    }
+  }
+
   /**
    * Last-resort terrain search: probe outward from the user for the nearest
    * location the habitability engine rates SAFE, then offer it as a labelled
@@ -899,9 +950,7 @@ class VippattiViewModel(
     if (_uiState.value.isSearchingHaven) return
     val origin = _uiState.value.userLocation
     val finder = havenFinderOverride
-      ?: com.example.data.shelters.SafeHavenFinder.live(
-        com.example.data.suitability.TerrainProbeService()
-      )
+      ?: com.example.data.shelters.SafeHavenFinder.live(terrainProbe)
     havenJob?.cancel()
     havenJob = viewModelScope.launch {
       _uiState.update { it.copy(isSearchingHaven = true) }
