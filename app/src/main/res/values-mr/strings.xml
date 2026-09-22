@@ -117,4 +117,35 @@
         <item>à¤¸à¥à¤µà¤¯à¤‚à¤¸à¥‡à¤µà¤•</item>
         <item>à¤‡à¤¤à¤°</item>
     </string-array>
+    <!-- ONBOARDING — first-launch carousel (5 cards) -->
+    <string name="onboarding_skip">वगळा</string>
+    <string name="onboarding_back_cd">मागे जा</string>
+    <string name="onboarding_step_format">पायरी %1$d / %2$d</string>
+    <string name="onboarding_continue">पुढे जा</string>
+    <string name="onboarding_get_started">सुरू करा</string>
+    <string name="onboarding_continue_sign_up">साइन अपसाठी पुढे जा</string>
+    <string name="onboarding_log_in">लॉग इन करा</string>
+    <string name="onboarding_brand_label">विपत्ती सारणा</string>
+    <string name="onboarding_emblem_cd">विपत्ती सारणा चिन्ह</string>
+    <string name="onboarding_welcome_title">तयारी आपत्कालापूर्वीच सुरू होते.</string>
+    <string name="onboarding_welcome_body">विपत्ती सारणा आवश्यक आपत्ती माहिती, सुरक्षा मार्गदर्शन आणि आपत्कालीन साधने एका ठिकाणी आणते.</string>
+    <string name="onboarding_map_title">तुमच्या आजुबाजूचा धोका पहा.</string>
+    <string name="onboarding_map_body">रडार नकाशावर तुमच्या ठिकाणाभोवती आपत्ती सूचना, धोके, सुरक्षित भाग आणि महत्त्वाची स्थिती पहा.</string>
+    <string name="onboarding_map_illustration_cd">धोके व सुरक्षित भागाच्या खुणांसह रडार नकाशाचे चित्र</string>
+    <string name="onboarding_news_title">माहितीत राहा. तयार राहा.</string>
+    <string name="onboarding_news_body">आपत्तीसंबंधी अपडेट्स आणि संबंधित बातम्या मिळवा, काय घडत आहे ते समजून घ्या आणि महत्त्वाच्या अधिकृत सूचनांचे पालन करा.</string>
+    <string name="onboarding_news_illustration_cd">आपत्ती बातम्या दाखवणाऱ्या फोनचे चित्र</string>
+    <string name="onboarding_guide_title">गरजेच्या क्षणी, काय करायचे ते जाणून घ्या.</string>
+    <string name="onboarding_guide_body">पूर, भूकंप, दरडकोसळणी आणि आगीसाठी आधी, दरम्यान आणि नंतरचे स्पष्ट मार्गदर्शन मिळवा.</string>
+    <string name="onboarding_phase_before">आधी</string>
+    <string name="onboarding_phase_during">दरम्यान</string>
+    <string name="onboarding_phase_after">नंतर</string>
+    <string name="onboarding_hazard_flood">पूर</string>
+    <string name="onboarding_hazard_quake">भूकंप</string>
+    <string name="onboarding_hazard_landslide">दरडकोसळणी</string>
+    <string name="onboarding_hazard_fire">आग</string>
+    <string name="onboarding_tools_title">तुमची सुरक्षा साधने. एकाच ठिकाणी.</string>
+    <string name="onboarding_tools_body">गरजेनुसार आपत्कालीन साधने, SOS मदत, तक्रार नोंद, स्थानांतरण मार्गदर्शन आणि इतर तयारी सुविधा वापरा.</string>
+    <string name="onboarding_tools_illustration_cd">फोनभोवती आपत्कालीन साधनांचे चित्र</string>
+    <string name="onboarding_ready_status">तुम्ही विपत्ती सारणा वापरण्यासाठी तयार आहात.</string>
 </resources>

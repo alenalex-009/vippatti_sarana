@@ -117,4 +117,35 @@
         <item>à¦¸à§à¦¬à§‡à¦šà§à¦›à¦¾à¦¸à§‡à¦¬à¦•</item>
         <item>à¦…à¦¨à§à¦¯à¦¾à¦¨à§à¦¯</item>
     </string-array>
+    <!-- ONBOARDING — first-launch carousel (5 cards) -->
+    <string name="onboarding_skip">এড়িয়ে যান</string>
+    <string name="onboarding_back_cd">ফিরে যান</string>
+    <string name="onboarding_step_format">ধাপ %1$d / %2$d</string>
+    <string name="onboarding_continue">চালিয়ে যান</string>
+    <string name="onboarding_get_started">শুরু করুন</string>
+    <string name="onboarding_continue_sign_up">সাইন আপ করতে এগিয়ে যান</string>
+    <string name="onboarding_log_in">লগ ইন</string>
+    <string name="onboarding_brand_label">বিপত্তি সরণা</string>
+    <string name="onboarding_emblem_cd">বিপত্তি সরণা প্রতীক</string>
+    <string name="onboarding_welcome_title">প্রস্তুতি শুরু হয় জরুরি পরিস্থিতির আগেই।</string>
+    <string name="onboarding_welcome_body">বিপত্তি সরণা প্রয়োজনীয় দুর্যোগের তথ্য, সুরক্ষা নির্দেশিকা এবং জরুরি সরঞ্জাম এক জায়গায় নিয়ে আসে।</string>
+    <string name="onboarding_map_title">আপনার আশেপাশের ঝুঁকি দেখুন।</string>
+    <string name="onboarding_map_body">রাডার ম্যাপ ব্যবহার করে আপনার অবস্থানের আশেপাশে দুর্যোগ সতর্কতা, বিপদ, নিরাপদ এলাকা এবং গুরুত্বপূর্ণ অবস্থা জানুন।</string>
+    <string name="onboarding_map_illustration_cd">বিপদ ও নিরাপদ এলাকার চিহ্নসহ রাডার ম্যাপের চিত্র</string>
+    <string name="onboarding_news_title">অবগত থাকুন। প্রস্তুত থাকুন।</string>
+    <string name="onboarding_news_body">দুর্যোগ-সম্পর্কিত আপডেট ও প্রাসঙ্গিক খবর পান, যাতে কী ঘটছে তা বুঝতে পারেন এবং গুরুত্বপূর্ণ সরকারি নির্দেশনা অনুসরণ করতে পারেন।</string>
+    <string name="onboarding_news_illustration_cd">দুর্যোগের খবর দেখাচ্ছে এমন ফোনের চিত্র</string>
+    <string name="onboarding_guide_title">প্রয়োজনের মুহূর্তে, কী করবেন জানুন।</string>
+    <string name="onboarding_guide_body">বন্যা, ভূমিকম্প, ভূমিধস ও আগুনের জন্য আগে, সময় ও পরের স্পষ্ট নির্দেশিকা খুঁজুন।</string>
+    <string name="onboarding_phase_before">আগে</string>
+    <string name="onboarding_phase_during">সময়</string>
+    <string name="onboarding_phase_after">পরে</string>
+    <string name="onboarding_hazard_flood">বন্যা</string>
+    <string name="onboarding_hazard_quake">ভূমিকম্প</string>
+    <string name="onboarding_hazard_landslide">ভূমিধস</string>
+    <string name="onboarding_hazard_fire">আগুন</string>
+    <string name="onboarding_tools_title">আপনার সুরক্ষা সরঞ্জাম। এক জায়গায়।</string>
+    <string name="onboarding_tools_body">প্রয়োজনে জরুরি সরঞ্জাম, SOS সহায়তা, রিপোর্টিং, সরিয়ে নেওয়ার নির্দেশিকা ও অন্যান্য প্রস্তুতি সুবিধা ব্যবহার করুন।</string>
+    <string name="onboarding_tools_illustration_cd">ফোনের চারপাশে জরুরি সরঞ্জামের চিত্র</string>
+    <string name="onboarding_ready_status">আপনি বিপত্তি সরণা ব্যবহার করতে প্রস্তুত।</string>
 </resources>

@@ -117,4 +117,35 @@
         <item>à°µà°¾à°²à°‚à°Ÿà±€à°°à±</item>
         <item>à°‡à°¤à°°</item>
     </string-array>
+    <!-- ONBOARDING — first-launch carousel (5 cards) -->
+    <string name="onboarding_skip">దాటవేయండి</string>
+    <string name="onboarding_back_cd">వెనుకకు వెళ్లండి</string>
+    <string name="onboarding_step_format">దశ %1$d / %2$d</string>
+    <string name="onboarding_continue">కొనసాగండి</string>
+    <string name="onboarding_get_started">ప్రారంభించండి</string>
+    <string name="onboarding_continue_sign_up">సైన్ అప్ కొనసాగించండి</string>
+    <string name="onboarding_log_in">లాగ్ ఇన్</string>
+    <string name="onboarding_brand_label">విపత్తి సరణా</string>
+    <string name="onboarding_emblem_cd">విపత్తి సరణా చిహ్నం</string>
+    <string name="onboarding_welcome_title">సిద్ధత అత్యవసరానికి ముందే మొదలవుతుంది.</string>
+    <string name="onboarding_welcome_body">విపత్తి సరణా అవసరమైన విపత్తు సమాచారం, భద్రతా మార్గదర్శకత్వం, అత్యవసర సాధనాలను ఒకే చోటికి తెస్తుంది.</string>
+    <string name="onboarding_map_title">మీ చుట్టూ ఉన్న ప్రమాదాన్ని చూడండి.</string>
+    <string name="onboarding_map_body">రాడార్ మ్యాప్‌తో మీ ప్రాంతం చుట్టూ ఉన్న విపత్తు హెచ్చరికలు, ప్రమాదాలు, సురక్షిత ప్రాంతాలు, ముఖ్యమైన పరిస్థితులను తెలుసుకోండి.</string>
+    <string name="onboarding_map_illustration_cd">ప్రమాద మరియు సురక్షిత ప్రాంత గుర్తులతో రాడార్ మ్యాప్ చిత్రం</string>
+    <string name="onboarding_news_title">సమాచారంతో ఉండండి. సిద్ధంగా ఉండండి.</string>
+    <string name="onboarding_news_body">విపత్తులకు సంబంధించిన నవీకరణలు, సంబంధిత వార్తలు పొందండి; ఏమి జరుగుతుందో అర్థం చేసుకుని అధికారిక మార్గదర్శకాలను అనుసరించండి.</string>
+    <string name="onboarding_news_illustration_cd">విపత్తు వార్తలు చూపిస్తున్న ఫోన్ చిత్రం</string>
+    <string name="onboarding_guide_title">అవసరమైనప్పుడు, ఏమి చేయాలో తెలుసుకోండి.</string>
+    <string name="onboarding_guide_body">వరదలు, భూకంపాలు, కొండచరియలు, అగ్ని ప్రమాదాల కోసం ముందు, సమయంలో, తర్వాత స్పష్టమైన మార్గదర్శకత్వం పొందండి.</string>
+    <string name="onboarding_phase_before">ముందు</string>
+    <string name="onboarding_phase_during">సమయంలో</string>
+    <string name="onboarding_phase_after">తర్వాత</string>
+    <string name="onboarding_hazard_flood">వరద</string>
+    <string name="onboarding_hazard_quake">భూకంపం</string>
+    <string name="onboarding_hazard_landslide">కొండచరియ</string>
+    <string name="onboarding_hazard_fire">అగ్నిప్రమాదం</string>
+    <string name="onboarding_tools_title">మీ భద్రతా సాధనాలు. ఒకే చోట.</string>
+    <string name="onboarding_tools_body">అవసరమైనప్పుడు అత్యవసర సాధనాలు, SOS మద్దతు, నివేదికలు, స్థానభ్రంశ మార్గదర్శకత్వం, ఇతర సిద్ధతా సదుపాయాలను ఉపయోగించండి.</string>
+    <string name="onboarding_tools_illustration_cd">ఫోన్ చుట్టూ అత్యవసర సాధనాల చిత్రం</string>
+    <string name="onboarding_ready_status">మీరు విపత్తి సరణాను అన్వేషించడానికి సిద్ధంగా ఉన్నారు.</string>
 </resources>

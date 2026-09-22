@@ -15,10 +15,10 @@ import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
 /**
- * Navigation contracts for the five-page onboarding flow: initial page,
- * forward/back movement, live pagination, and finish semantics. The finish
- * callback must fire exactly for skip / sign-in / final-page completion —
- * never merely for changing pages.
+ * Navigation contracts for the five-card swipeable onboarding carousel:
+ * initial page, forward/back movement, live pagination, and finish
+ * semantics. The finish callback must fire exactly for skip / log-in /
+ * final-page completion — never merely for changing pages.
  */
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
@@ -38,7 +38,7 @@ class OnboardingFlowTest {
     }
   }
 
-  /** Advances from page 1 through [clicks] primary actions. */
+  /** Advances from card 1 through [clicks] primary actions. */
   private fun advance(clicks: Int) {
     composeTestRule.onNodeWithTag("onboarding_get_started").performClick()
     repeat(clicks - 1) {
@@ -46,47 +46,51 @@ class OnboardingFlowTest {
     }
   }
 
-  @Test
-  fun `page 1 is displayed initially as Step 1 of 5`() {
-    render()
-
-    composeTestRule.onNodeWithText("SAFER PEOPLE. STRONGER COMMUNITIES.").assertExists()
-    composeTestRule.onNodeWithContentDescription("Step 1 of 5").assertExists()
-    assertEquals(0, finished)
-  }
-
-  @Test
-  fun `page 1 advances to page 2`() {
-    render()
-
-    composeTestRule.onNodeWithTag("onboarding_get_started").performClick()
-
-    composeTestRule.onNodeWithText("Understand risk in your area").assertExists()
-    composeTestRule.onNodeWithText("Step 2 of 5").assertExists()
-    assertEquals(0, finished)
-  }
-
-  @Test
-  fun `every page can be reached in order`() {
-    render()
-
-    advance(1)
-    composeTestRule.onNodeWithText("Understand risk in your area").assertExists()
-    advanceToNext()
-    composeTestRule.onNodeWithText("Prepare and respond with confidence").assertExists()
-    advanceToNext()
-    composeTestRule.onNodeWithText("Stay alert when seconds count").assertExists()
-    advanceToNext()
-    composeTestRule.onNodeWithText("You're ready to explore.").assertExists()
-    assertEquals(0, finished)
-  }
-
   private fun advanceToNext() {
     composeTestRule.onNodeWithTag("onboarding_primary").performClick()
   }
 
   @Test
-  fun `the pagination indicator reflects the current page`() {
+  fun `card 1 is displayed initially as Step 1 of 5`() {
+    render()
+
+    composeTestRule.onNodeWithText("VIPPATTI SARANA").assertExists()
+    composeTestRule.onNodeWithText("Preparedness Starts Before the Emergency.")
+      .assertExists()
+    composeTestRule.onNodeWithContentDescription("Step 1 of 5").assertExists()
+    assertEquals(0, finished)
+  }
+
+  @Test
+  fun `card 1 advances to card 2`() {
+    render()
+
+    composeTestRule.onNodeWithTag("onboarding_get_started").performClick()
+
+    composeTestRule.onNodeWithText("See Risk Around You.").assertExists()
+    composeTestRule.onNodeWithText("Step 2 of 5").assertExists()
+    assertEquals(0, finished)
+  }
+
+  @Test
+  fun `every card can be reached in order`() {
+    render()
+
+    advance(1)
+    composeTestRule.onNodeWithText("See Risk Around You.").assertExists()
+    advanceToNext()
+    composeTestRule.onNodeWithText("Stay Informed. Stay Ready.").assertExists()
+    advanceToNext()
+    composeTestRule.onNodeWithText("When It Matters, Know What To Do.")
+      .assertExists()
+    advanceToNext()
+    composeTestRule.onNodeWithText("Your Safety Tools. One Place.").assertExists()
+    composeTestRule.onNodeWithTag("onboarding_ready_status").assertExists()
+    assertEquals(0, finished)
+  }
+
+  @Test
+  fun `the pagination indicator reflects the current card`() {
     render()
 
     composeTestRule.onNodeWithContentDescription("Step 1 of 5").assertExists()
@@ -102,26 +106,28 @@ class OnboardingFlowTest {
   }
 
   @Test
-  fun `back navigation returns to the previous page`() {
+  fun `back navigation returns to the previous card`() {
     render()
     advance(1)
-    composeTestRule.onNodeWithText("Understand risk in your area").assertExists()
+    composeTestRule.onNodeWithText("See Risk Around You.").assertExists()
 
     composeTestRule.onNodeWithTag("onboarding_back").performClick()
-    composeTestRule.onNodeWithText("SAFER PEOPLE. STRONGER COMMUNITIES.").assertExists()
+    composeTestRule.onNodeWithText("Preparedness Starts Before the Emergency.")
+      .assertExists()
 
-    // Deeper: page 4 back lands on page 3.
+    // Deeper: card 4 back lands on card 3.
     advance(1)
     advanceToNext()
     advanceToNext()
-    composeTestRule.onNodeWithText("Stay alert when seconds count").assertExists()
+    composeTestRule.onNodeWithText("When It Matters, Know What To Do.")
+      .assertExists()
     composeTestRule.onNodeWithTag("onboarding_back").performClick()
-    composeTestRule.onNodeWithText("Prepare and respond with confidence").assertExists()
+    composeTestRule.onNodeWithText("Stay Informed. Stay Ready.").assertExists()
     assertEquals(0, finished)
   }
 
   @Test
-  fun `skip opens login without visiting every page`() {
+  fun `skip finishes onboarding without visiting every card`() {
     render()
     advance(1)
     advanceToNext()
@@ -132,24 +138,38 @@ class OnboardingFlowTest {
   }
 
   @Test
-  fun `sign in opens login from page 1`() {
+  fun `skip also works from the first card`() {
     render()
 
-    composeTestRule.onNodeWithTag("onboarding_sign_in").performClick()
+    composeTestRule.onNodeWithTag("onboarding_skip").performClick()
 
     assertEquals(1, finished)
   }
 
   @Test
-  fun `completing page 5 opens login`() {
+  fun `completing card 5 finishes onboarding`() {
     render()
     advance(1)
     advanceToNext()
     advanceToNext()
     advanceToNext()
-    composeTestRule.onNodeWithText("You're ready to explore.").assertExists()
+    composeTestRule.onNodeWithText("Your Safety Tools. One Place.").assertExists()
+    composeTestRule.onNodeWithText("Continue to Sign Up").assertExists()
 
     composeTestRule.onNodeWithTag("onboarding_primary").performClick()
+
+    assertEquals(1, finished)
+  }
+
+  @Test
+  fun `log in on card 5 finishes onboarding into the auth flow`() {
+    render()
+    advance(1)
+    advanceToNext()
+    advanceToNext()
+    advanceToNext()
+
+    composeTestRule.onNodeWithTag("onboarding_log_in").performClick()
 
     assertEquals(1, finished)
   }

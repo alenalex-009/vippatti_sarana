@@ -101,7 +101,14 @@ testOptions {
 
         // Robolectric NATIVE-graphics Compose rendering of full screens needs a
         // roomy heap — prevents Java heap space OOM in the responsive layout tests.
-        all { it.maxHeapSize = "3g" }
+        all {
+            it.maxHeapSize = "3g"
+            // Cap Gradle's default fork-every-class parallelism: resource-heavy
+            // Robolectric compose tests are faster and stabler when they run in
+            // a single forked JVM (they share the sandbox classloaders).
+            it.maxParallelForks = 1
+            it.forkEvery = 0
+        }
     }
 }
 
