@@ -1,0 +1,34 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.3.1/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+Reusing configuration cache.
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:processDebugGoogleServices UP-TO-DATE
+> Task :app:generateDebugResources UP-TO-DATE
+> Task :app:generateDebugBuildConfig UP-TO-DATE
+> Task :app:kspDebugKotlin SKIPPED
+> Task :app:packageDebugResources UP-TO-DATE
+> Task :app:processDebugNavigationResources UP-TO-DATE
+> Task :app:parseDebugLocalResources UP-TO-DATE
+> Task :app:generateDebugRFile UP-TO-DATE
+> Task :app:compileDebugKotlin
+w: file:///D:/Documents/Coding/vippatti_sarana/app/src/main/java/com/example/ui/components/BottomNavBar.kt:80:32 'val Icons.Filled.MenuBook: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.MenuBook.
+w: file:///D:/Documents/Coding/vippatti_sarana/app/src/main/java/com/example/ui/components/BottomNavBar.kt:81:36 'val Icons.Outlined.MenuBook: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Outlined.MenuBook.
+w: file:///D:/Documents/Coding/vippatti_sarana/app/src/main/java/com/example/ui/components/SituationReportDialog.kt:314:30 'val Icons.Filled.Send: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.Send.
+w: file:///D:/Documents/Coding/vippatti_sarana/app/src/main/java/com/example/ui/screens/DispatchesScreen.kt:367:102 'val Icons.Filled.VolumeUp: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.VolumeUp.
+w: file:///D:/Documents/Coding/vippatti_sarana/app/src/main/java/com/example/ui/screens/InstructionsDetailScreens.kt:175:28 'val Icons.Filled.DirectionsWalk: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.DirectionsWalk.
+w: file:///D:/Documents/Coding/vippatti_sarana/app/src/main/java/com/example/ui/screens/InstructionsGroups.kt:47:33 'val Icons.Filled.DirectionsWalk: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.DirectionsWalk.
+w: file:///D:/Documents/Coding/vippatti_sarana/app/src/main/java/com/example/ui/screens/InstructionsGroups.kt:51:25 'val Icons.Filled.MenuBook: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.MenuBook.
+w: file:///D:/Documents/Coding/vippatti_sarana/app/src/main/java/com/example/ui/screens/InstructionsHome.kt:497:25 'val Icons.Filled.MenuBook: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.MenuBook.
+w: file:///D:/Documents/Coding/vippatti_sarana/app/src/main/java/com/example/ui/screens/InstructionsScreen.kt:361:39 'val Icons.Filled.VolumeUp: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.VolumeUp.
+w: file:///D:/Documents/Coding/vippatti_sarana/app/src/main/java/com/example/ui/screens/ProfileScreen.kt:593:31 'val Icons.Filled.AccessibleForward: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.AccessibleForward.
+w: file:///D:/Documents/Coding/vippatti_sarana/app/src/main/java/com/example/ui/screens/ProfileScreen.kt:799:40 'val Icons.Filled.Send: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.Send.
+w: file:///D:/Documents/Coding/vippatti_sarana/app/src/main/java/com/example/ui/screens/ProfileScreen.kt:1052:36 'val Icons.Filled.Logout: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.Logout.
+w: file:///D:/Documents/Coding/vippatti_sarana/app/src/main/java/com/example/ui/screens/RoutePanels.kt:437:28 'val Icons.Filled.AltRoute: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.AltRoute.
+w: file:///D:/Documents/Coding/vippatti_sarana/app/src/main/java/com/example/ui/screens/WeatherAndLegend.kt:133:39 'val Icons.Filled.TrendingUp: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.TrendingUp.
+w: file:///D:/Documents/Coding/vippatti_sarana/app/src/main/java/com/example/ui/screens/WeatherAndLegend.kt:134:40 'val Icons.Filled.TrendingDown: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.TrendingDown.
+w: file:///D:/Documents/Coding/vippatti_sarana/app/src/main/java/com/example/ui/screens/WeatherAndLegend.kt:135:35 'val Icons.Filled.TrendingUp: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.TrendingUp.
+
+BUILD SUCCESSFUL in 2m 53s
+8 actionable tasks: 1 executed, 7 up-to-date
+Configuration cache entry reused.

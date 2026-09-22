@@ -117,4 +117,35 @@
         <item>à®¤à¯Šà®£à¯à®Ÿà®°à¯</item>
         <item>à®®à®±à¯à®±à®µà®°à¯</item>
     </string-array>
+    <!-- ONBOARDING — first-launch carousel (5 cards) -->
+    <string name="onboarding_skip">தவிர்க்க</string>
+    <string name="onboarding_back_cd">பின் செல்ல</string>
+    <string name="onboarding_step_format">படி %1$d / %2$d</string>
+    <string name="onboarding_continue">தொடரவும்</string>
+    <string name="onboarding_get_started">தொடங்கவும்</string>
+    <string name="onboarding_continue_sign_up">பதிவு செய்யத் தொடரவும்</string>
+    <string name="onboarding_log_in">உள்நுழைக</string>
+    <string name="onboarding_brand_label">விபத்தி சரணா</string>
+    <string name="onboarding_emblem_cd">விபத்தி சரணா சின்னம்</string>
+    <string name="onboarding_welcome_title">அவசரத்திற்கு முன்பே தயார்நிலை தொடங்குகிறது.</string>
+    <string name="onboarding_welcome_body">விபத்தி சரணா அத்தியாவசிய பேரிடர் தகவல், பாதுகாப்பு வழிகாட்டுதல் மற்றும் அவசர கருவிகளை ஒரே இடத்தில் தருகிறது.</string>
+    <string name="onboarding_map_title">உங்களைச் சுற்றியுள்ள அபாயத்தைப் பாருங்கள்.</string>
+    <string name="onboarding_map_body">ரேடார் வரைபடத்தில் உங்கள் இருப்பிடத்தைச் சுற்றியுள்ள பேரிடர் எச்சரிக்கைகள், அபாயங்கள், பாதுகாப்பான பகுதிகள் மற்றும் முக்கிய நிலைமைகளை அறியவும்.</string>
+    <string name="onboarding_map_illustration_cd">அபாய மற்றும் பாதுகாப்பான பகுதி குறிகளுடன் ரேடார் வரைபட விளக்கப்படம்</string>
+    <string name="onboarding_news_title">தகவலுடன் இருங்கள். தயாராக இருங்கள்.</string>
+    <string name="onboarding_news_body">பேரிடர் தொடர்பான புதுப்பிப்புகள் மற்றும் தொடர்புடைய செய்திகளைப் பெற்று, என்ன நடக்கிறது என்பதை அறிந்து அதிகாரப்பூர்வ வழிகாட்டுதலைப் பின்பற்றுங்கள்.</string>
+    <string name="onboarding_news_illustration_cd">பேரிடர் செய்திகளைக் காட்டும் தொலைபேசி விளக்கப்படம்</string>
+    <string name="onboarding_guide_title">முக்கிய தருணத்தில், என்ன செய்ய வேண்டும் என்பதை அறியவும்.</string>
+    <string name="onboarding_guide_body">வெள்ளம், நிலநடுக்கம், நிலச்சரிவு மற்றும் தீ ஆகியவற்றுக்கான முன், போது, பின் வழிகாட்டுதலைப் பெறுங்கள்.</string>
+    <string name="onboarding_phase_before">முன்</string>
+    <string name="onboarding_phase_during">போது</string>
+    <string name="onboarding_phase_after">பின்</string>
+    <string name="onboarding_hazard_flood">வெள்ளம்</string>
+    <string name="onboarding_hazard_quake">நிலநடுக்கம்</string>
+    <string name="onboarding_hazard_landslide">நிலச்சரிவு</string>
+    <string name="onboarding_hazard_fire">தீ</string>
+    <string name="onboarding_tools_title">உங்கள் பாதுகாப்பு கருவிகள். ஒரே இடத்தில்.</string>
+    <string name="onboarding_tools_body">தேவைப்படும்போது அவசர கருவிகள், SOS ஆதரவு, புகாரளிப்பு, வெளியேற்ற வழிகாட்டுதல் மற்றும் பிற தயார்நிலை அம்சங்களைப் பயன்படுத்தவும்.</string>
+    <string name="onboarding_tools_illustration_cd">தொலைபேசியைச் சுற்றி அவசர கருவிகளின் விளக்கப்படம்</string>
+    <string name="onboarding_ready_status">விபத்தி சரணாவை ஆராய நீங்கள் தயார்.</string>
 </resources>

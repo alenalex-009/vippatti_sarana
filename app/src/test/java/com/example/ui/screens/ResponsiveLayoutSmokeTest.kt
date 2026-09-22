@@ -169,7 +169,11 @@ class ResponsiveLayoutSmokeTest {
     composeTestRule.onNodeWithTag("broadcast_sos_hero_button").assertExists()
     composeTestRule.onNodeWithTag("report_situation_hero_button").assertExists()
     composeTestRule.onNodeWithTag("profile_edit_button").assertExists()
-    composeTestRule.onNodeWithTag("profile_theme_toggle_button").assertExists()
+    // The theme toggle lives in the lazily-composed Preferences section far
+    // below the fold: scroll it into view before asserting.
+    composeTestRule.onNodeWithTag("profile_theme_toggle_button")
+      .performScrollTo()
+      .assertExists()
   }
 
   @Test

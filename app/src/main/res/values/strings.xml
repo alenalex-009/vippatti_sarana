@@ -171,4 +171,40 @@
         <item>Volunteer</item>
         <item>Other</item>
     </string-array>
+
+    <!-- =====================================================================
+         ONBOARDING — first-launch carousel (5 cards).
+         All onboarding copy lives here so the six supported languages
+         (values-hi / -te / -ta / -bn / -mr) resolve automatically.
+         ===================================================================== -->
+    <string name="onboarding_skip">Skip</string>
+    <string name="onboarding_back_cd">Go back</string>
+    <string name="onboarding_step_format">Step %1$d of %2$d</string>
+    <string name="onboarding_continue">Continue</string>
+    <string name="onboarding_get_started">Get Started</string>
+    <string name="onboarding_continue_sign_up">Continue to Sign Up</string>
+    <string name="onboarding_log_in">Log In</string>
+    <string name="onboarding_brand_label">VIPPATTI SARANA</string>
+    <string name="onboarding_emblem_cd">Vippatti Sarana emblem</string>
+    <string name="onboarding_welcome_title">Preparedness Starts Before the Emergency.</string>
+    <string name="onboarding_welcome_body">Vippatti Sarana brings essential disaster information, safety guidance and emergency tools together in one place.</string>
+    <string name="onboarding_map_title">See Risk Around You.</string>
+    <string name="onboarding_map_body">Use the Radar Map to explore disaster alerts, hazards, safer areas and important conditions around your location.</string>
+    <string name="onboarding_map_illustration_cd">Illustration of the radar map with hazard and safe-area markers</string>
+    <string name="onboarding_news_title">Stay Informed. Stay Ready.</string>
+    <string name="onboarding_news_body">Get disaster-related updates and relevant news so you can understand what is happening and follow important official guidance.</string>
+    <string name="onboarding_news_illustration_cd">Illustration of a phone showing disaster news updates</string>
+    <string name="onboarding_guide_title">When It Matters, Know What To Do.</string>
+    <string name="onboarding_guide_body">Find clear Before, During and After guidance for floods, earthquakes, landslides and fires.</string>
+    <string name="onboarding_phase_before">Before</string>
+    <string name="onboarding_phase_during">During</string>
+    <string name="onboarding_phase_after">After</string>
+    <string name="onboarding_hazard_flood">Flood</string>
+    <string name="onboarding_hazard_quake">Earthquake</string>
+    <string name="onboarding_hazard_landslide">Landslide</string>
+    <string name="onboarding_hazard_fire">Fire</string>
+    <string name="onboarding_tools_title">Your Safety Tools. One Place.</string>
+    <string name="onboarding_tools_body">Access emergency tools, SOS support, reporting, evacuation guidance and other preparedness features when you need them.</string>
+    <string name="onboarding_tools_illustration_cd">Illustration of emergency tools around a phone</string>
+    <string name="onboarding_ready_status">You\'re ready to explore Vippatti Sarana.</string>
 </resources>
