@@ -166,7 +166,7 @@ data class VippattiUiState(
   val sirenState: SirenState = SirenState.IDLE,
   /** Seconds left before the siren auto-stops (drives the visible countdown). */
   val sirenSecondsLeft: Int = 0,
-  val contactsList: List<EmergencyContact> = MockDisasterRepository.emergencyContacts,
+  val contactsList: List<EmergencyContact> = emptyList(),
 
   // --- Editable citizen profile + REAL device battery (replaces hardcoded 84%) ---
   val userProfile: UserProfile = UserProfile(),

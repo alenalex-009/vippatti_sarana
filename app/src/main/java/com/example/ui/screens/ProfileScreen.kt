@@ -1004,6 +1004,18 @@ fun ProfileScreen(
       }
     }
 
+    if (uiState.contactsList.isEmpty()) {
+      item {
+        Text(
+          "No emergency contacts yet — add family or neighbours so your local SOS\n" +
+            "record and go-bag checklists can reference them. (Contacts are stored\n" +
+            "on this device only and nothing is transmitted from this build.)",
+          fontSize = 9.sp, color = TacticalOnSurfaceVariant, lineHeight = 12.sp,
+          modifier = Modifier.padding(horizontal = 14.dp, vertical = 4.dp)
+        )
+      }
+    }
+
     items(uiState.contactsList) { contact ->
       Box(
         modifier = Modifier
