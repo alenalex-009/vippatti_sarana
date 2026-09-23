@@ -201,7 +201,8 @@ fun RadarMapScreen(
     // and no live event markers reach the engine — only base tiles + GPS dot.
     OsmDroidRadarMapView(
       hazardZones = uiState.hazardZones,
-      safeZones = if (uiState.isMockDataVisible) uiState.safeZones else emptyList(),
+      safeZones = uiState.fieldShelters +
+        (if (uiState.isMockDataVisible) uiState.safeZones else emptyList()),
       selectedSafeZone = uiState.selectedSafeZone,
       activeRoute = uiState.activeRoute,
       travelMode = uiState.travelMode,
