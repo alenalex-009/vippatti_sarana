@@ -14,7 +14,7 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: '21'  # Robolectric SDK-36 (Android 16) sandboxes need JDK 21
 
       # CI builds against the committed .env.example placeholders; the app
       # then honestly reports GNews/FIRMS as "not configured" — no secrets
