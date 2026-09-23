@@ -76,6 +76,7 @@ import com.example.ui.components.SosConfirmDialog
 import com.example.ui.components.VippattiBottomNavBar
 import com.example.data.auth.AuthRepository
 import com.example.data.auth.SharedPrefsAuthStorage
+import com.example.ui.screens.AuthorityConsoleScreen
 import com.example.ui.screens.DispatchesScreen
 import com.example.ui.screens.InstructionsScreen
 import com.example.ui.screens.LoginScreen
@@ -146,6 +147,8 @@ class MainActivity : ComponentActivity() {
       // Production ViewModel: file-backed GNews cache AND file-backed disaster
       // provider shards survive app restarts; the osmdroid tile-cache dir feeds
       // the REAL offline map-cache size shown on the Profile screen.
+      val coastGridRef = remember { mutableStateOf<com.example.data.suitability.CoastDistanceGrid?>(null) }
+      val coastGridTried = remember { mutableStateOf(false) }
       val viewModel: VippattiViewModel = viewModel(
         factory = object : ViewModelProvider.Factory {
           @Suppress("UNCHECKED_CAST")
@@ -153,10 +156,27 @@ class MainActivity : ComponentActivity() {
             VippattiViewModel(
               newsCache = NewsFileCache(File(cacheDir, "news_cache")),
               disasterCache = DisasterFileCache(File(cacheDir, "disaster_cache")),
+              registryDirProvider = { File(cacheDir, "field_registry") },
               tileCacheDirProvider = { File(cacheDir, "osmdroid/tiles") },
               // Dynamic-data rule: district/state names for news scoping are
               // resolved from the device's own coordinates at runtime.
               placeResolver = AndroidGeocoderPlaceResolver(applicationContext),
+              // TERRAIN HABITABILITY: the offline coast-distance grid (built
+              // from public-domain Natural Earth data) loads once, lazily, and
+              // returns null honestly if the asset is missing/corrupt.
+              coastGridProvider = {
+                if (coastGridRef.value == null && !coastGridTried.value) {
+                  coastGridTried.value = true
+                  coastGridRef.value = try {
+                    applicationContext.assets
+                      .open(com.example.data.suitability.CoastDistanceGrid.ASSET)
+                      .use { com.example.data.suitability.CoastDistanceGrid.load(it) }
+                  } catch (_: Exception) {
+                    null
+                  }
+                }
+                coastGridRef.value
+              },
               // HISTORICAL DISASTER INTELLIGENCE (EM-DAT). The prepared archive
               // ships as an app asset - no network call, and never reported as
               // a live feed. A missing asset yields an honest UNAVAILABLE state.
@@ -227,6 +247,23 @@ fun VippattiAppRoot(
   val uiState by viewModel.uiState.collectAsStateWithLifecycle()
   val snackbarHostState = remember { SnackbarHostState() }
   val context = LocalContext.current
+
+  // AUTHORITY CONSOLE (SIH 26191): full-screen operator surface — field
+  // registry entry + relocation prioritization dashboard. The citizen tabs
+  // and device-tool effects pause while it is open (nothing is transmitted
+  // from it; records stay on this device).
+  if (uiState.showAuthorityDashboard) {
+    AuthorityConsoleScreen(
+      uiState = uiState,
+      onBack = { viewModel.closeAuthorityDashboard() },
+      onSaveShelter = { viewModel.saveFieldShelter(it) },
+      onDeleteShelter = { viewModel.deleteFieldShelter(it) },
+      onSaveHabitation = { viewModel.saveFieldHabitation(it) },
+      onDeleteHabitation = { viewModel.deleteFieldHabitation(it) },
+      onRerank = { viewModel.rerunAuthorityRanking(it) }
+    )
+    return
+  }
 
   // REAL device battery level.
   // Sticky ACTION_BATTERY_CHANGED broadcast gives an immediate reading.
@@ -504,7 +541,14 @@ fun VippattiAppRoot(
             onToggleMockData = { viewModel.toggleMockData() },
             onRequestFallbackRoute = { viewModel.requestOfflineFallbackRoute() },
             // PHASE 3: retry the live Open-Meteo reading without touching the rest.
-            onRetryWeather = { viewModel.refreshWeather(force = true) }
+            onRetryWeather = { viewModel.refreshWeather(force = true) },
+            // EMERGENCY GUIDANCE: nearest safe zone + terrain haven actions.
+            onGuidanceGo = { viewModel.acceptEmergencyGuidance() },
+            onGuidanceDismiss = { viewModel.dismissEmergencyGuidance() },
+            onSearchTerrainHaven = { viewModel.searchTerrainHaven() },
+            onRouteToTerrainHaven = { viewModel.routeToTerrainHaven() },
+            onAssessTerrain = { viewModel.assessTerrainHere() },
+            onDismissTerrainAssessment = { viewModel.dismissTerrainAssessment() }
           )
 
           ScreenTab.INSTRUCTIONS -> InstructionsScreen(
@@ -526,7 +570,8 @@ fun VippattiAppRoot(
             onBroadcastSos = { viewModel.triggerSosBroadcast() },
             onOpenAddContact = { viewModel.openAddContactDialog() },
             onOpenEditProfile = { viewModel.openEditProfileDialog() },
-            onOpenSituationReport = { viewModel.openSituationReportDialog() }
+            onOpenSituationReport = { viewModel.openSituationReportDialog() },
+            onOpenAuthorityConsole = { viewModel.openAuthorityDashboard(liveTerrainScan = false) }
           )
         }
        }

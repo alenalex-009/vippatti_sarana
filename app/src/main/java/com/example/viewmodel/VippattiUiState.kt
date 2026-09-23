@@ -166,7 +166,7 @@ data class VippattiUiState(
   val sirenState: SirenState = SirenState.IDLE,
   /** Seconds left before the siren auto-stops (drives the visible countdown). */
   val sirenSecondsLeft: Int = 0,
-  val contactsList: List<EmergencyContact> = MockDisasterRepository.emergencyContacts,
+  val contactsList: List<EmergencyContact> = emptyList(),
 
   // --- Editable citizen profile + REAL device battery (replaces hardcoded 84%) ---
   val userProfile: UserProfile = UserProfile(),
@@ -254,6 +254,35 @@ data class VippattiUiState(
   val personalRisk: PersonalRiskAssessment? = null,
   val recommendedAction: RecommendedAction? = null,
   val relocationPlan: RelocationPlan? = null,
+
+  // --- EMERGENCY SHELTER GUIDANCE (SIH 26191) ---
+  /**
+   * "Disaster happens -> show where to go": derived from risk level + the
+   * evaluated shelters + the current destination on every recompute.
+   */
+  val emergencyGuidance: com.example.data.shelters.EmergencyGuidance =
+    com.example.data.shelters.EmergencyGuidance.None,
+  /** Nearest terrain-rated-safe haven from an explicit user search (never automatic). */
+  val terrainHaven: com.example.data.shelters.SafeHaven? = null,
+  /** True while the haven rings are being probed. */
+  val isSearchingHaven: Boolean = false,
+
+  // --- TERRAIN SELF-ASSESSMENT ("is MY spot a red zone?") ---
+  /** Explicit-action result of probing the user's own location. Null = never asked. */
+  val terrainSelfAssessment: TerrainSelfAssessment? = null,
+  val isAssessingTerrain: Boolean = false,
+
+  // --- AUTHORITY FIELD REGISTRY + PRIORITIZATION DASHBOARD (SIH 26191) ---
+  /** Operator-entered shelter records — real data, live in every mode. */
+  val fieldShelters: List<SafeZone> = emptyList(),
+  /** Operator-entered habitation records with their honest classifications. */
+  val fieldHabitations: List<com.example.data.habitations.Habitation> = emptyList(),
+  /** Rejection notes from the last registry decode, surfaced verbatim. */
+  val registryRejections: List<String> = emptyList(),
+  /** Ranked relocation output for the dashboard (empty until opened). */
+  val relocationPriorities: List<com.example.data.habitations.HabitationPriority> = emptyList(),
+  val isRankingPriorities: Boolean = false,
+  val showAuthorityDashboard: Boolean = false,
 
   // --- Carrying capacity (SIH milestone) ---
   /** How many people need relocation here; null = no population figure. */
@@ -538,4 +567,19 @@ data class VippattiUiState(
       DataStatus.ERROR -> "ERROR • NEWS FEED UNREACHABLE"
       else -> "NOT SYNCED"
     }
+}
+
+/**
+ * Outcome of the explicit "assess MY location for terrain risk" action:
+ * Result carries the real habitability verdict; Unavailable says exactly why
+ * nothing could be assessed. Never a silent default.
+ */
+sealed class TerrainSelfAssessment {
+  data class Result(
+    val verdict: com.example.data.suitability.TerrainVerdict,
+    /** True when the coast factor came from the offline grid (not unknown). */
+    val coastKnown: Boolean
+  ) : TerrainSelfAssessment()
+
+  data class Unavailable(val detail: String) : TerrainSelfAssessment()
 }

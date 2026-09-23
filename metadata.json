@@ -1,8 +1,0 @@
-{
-  "name": "Vippatti Sarana",
-  "description": "Disaster \u0026 Weather Intelligence, Emergency Relief \u0026 Survival Manual, Tactical Geo-Evac Ops, and Distress Signal Network.",
-  "requestFramePermissions": [],
-  "majorCapabilities": [
-    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
-  ]
-}

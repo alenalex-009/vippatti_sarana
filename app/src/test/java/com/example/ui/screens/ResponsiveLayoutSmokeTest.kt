@@ -3,9 +3,13 @@ package com.example.ui.screens
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.swipeUp
 import androidx.compose.ui.unit.Density
 import com.example.ui.components.InteractiveBagDialog
 import com.example.ui.components.SosConfirmDialog
@@ -170,10 +174,19 @@ class ResponsiveLayoutSmokeTest {
     composeTestRule.onNodeWithTag("report_situation_hero_button").assertExists()
     composeTestRule.onNodeWithTag("profile_edit_button").assertExists()
     // The theme toggle lives in the lazily-composed Preferences section far
-    // below the fold: scroll it into view before asserting.
-    composeTestRule.onNodeWithTag("profile_theme_toggle_button")
-      .performScrollTo()
-      .assertExists()
+    // below the fold. With a LazyColumn the node does not EXIST until it is
+    // composed, so performScrollTo() (which needs the node first) cannot work
+    // — swipe until the section enters the composition, then assert.
+    var swipes = 0
+    while (
+      composeTestRule
+        .onAllNodesWithTag("profile_theme_toggle_button")
+        .fetchSemanticsNodes().isEmpty() && swipes < 15
+    ) {
+      composeTestRule.onRoot().performTouchInput { swipeUp() }
+      swipes++
+    }
+    composeTestRule.onNodeWithTag("profile_theme_toggle_button").assertExists()
   }
 
   @Test

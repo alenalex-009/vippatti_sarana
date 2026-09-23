@@ -940,3 +940,85 @@ feed (demand is user-declared only); shelter records remain SIMULATED demo data,
 so live verdicts read SIMULATED; no shelter-registry backend consumes
 `CapacityAssessmentJson` yet; no on-device check of the new sheet and panel
 rendering.
+---
+
+## 19. SIH 26191 platform phase (Sep 2026): red zones, guidance, authority console
+
+Three new packages answer the problem statement directly. Everything below is
+unit-tested JVM logic — **none of it is device-verified yet.**
+
+### Dynamic red zones (`data/suitability`) — COMPLETE (JVM-verified)
+- `TerrainSuitabilityEngine` — pure scoring over SRTM stencil slope × live 24 h
+  rainfall × coast proximity. Hard rule: slope ≥ 35 % ⇒ RED ZONE. Escalation:
+  extreme rain (≥150 mm/24 h) on ≥10 % slopes can push CAUTION ⇒ RED ZONE.
+  Coastal <5 m sites can never claim SAFE. Missing factor ⇒ excluded + said so
+  (`INSUFFICIENT_DATA` with no elevation — never a guessed score).
+- `TerrainProbeService` — one stencil URL (5 points) + one rainfall URL to the
+  keyless Open-Meteo endpoints (schemas live-verified 2026-09-22); injectable
+  transport, typed `ElevationUnavailable`.
+- `CoastDistanceGrid` + `tools/coast_distance_prepare.py` — 0.25° nearest-coast
+  distance grid (km, byte-encoded) over the India bbox from **public-domain
+  Natural Earth land polygons**; asset `app/src/main/assets/geo/
+  coast_distance_india.bin` (~16 KB); spot-checks in tests (Chennai/Kochi ≤12
+  km, Madurai >40 km, Delhi ≥200 km, Bay of Bengal = 0).
+- Tests: `TerrainSuitabilityEngineTest` (17), `CoastDistanceGridTest` (6),
+  `TerrainProbeServiceTest` (5).
+
+### Emergency guidance (`data/shelters`, radar UI) — COMPLETE (JVM-verified)
+- `EmergencyGuidance.forSituation()` — RED/ORANGE ⇒ nearest **feasible** zone
+  card with GO (distance-first selection; ineligible shelters surface their
+  real rejection reasons); no shelters in state ⇒ honest NoShelterKnown + 112;
+  YELLOW/GREEN never nag; an active destination suppresses the card.
+- `SafeHavenFinder` — ring search (1/2.5/5 km, 8 bearings, probe budget) for
+  the nearest terrain-SAFE point; routed as a `haven-*` DERIVED destination
+  (`routeToTerrainHaven`) with provenance `classification = DERIVED`; never
+  survives demo-hide (id-prefixed exemptions in the visibility guard).
+- UI: `EmergencyGuidanceCard` + `TerrainSelfAssessmentChip` ("is MY spot a red
+  zone?", explicit tap only) rendered above the radar map; wired via
+  `VippattiViewModel` (`emergencyGuidance`, `terrainHaven`,
+  `terrainSelfAssessment` state; `assessTerrainHere` etc.).
+- Tests: `EmergencyGuidanceTest` (8), `SafeHavenFinderTest` (5),
+  `EmergencyGuidanceStateTest` (6), `TerrainSelfAssessmentTest` (5),
+  `EmergencySurfacesRenderTest` (6 Robolectric render contracts).
+
+### Authority console (`data/habitations`, ui/screens) — COMPLETE (JVM-verified)
+- `HabitationPriorityEngine` — transparent multi-criteria rank: hazard exposure
+  0.35 / terrain 0.30 / vulnerability 0.20 / EM-DAT history 0.15 (history
+  escalates at most ONE band and is always labelled historical). Tier rules:
+  live-hazard coverage ⇒ IMMEDIATE; RED/HIGH_RISK terrain ⇒ SHORT_TERM;
+  unassessed terrain can exceed MEDIUM only with a live hazard; per-row
+  reasons + action guide; deterministic tie-break by id.
+- Field registry: `FieldRegistryJson` (lossless round-trip, out-of-India
+  records REJECTED with reasons, corrupt ⇒ empty + reason),
+  `FileFieldRegistryStore` (atomic tmp+rename, private cache dir),
+  `DemoHabitations` (labelled SIMULATED ring derived from PilotRegionData,
+  shown until real records exist).
+- VM: field shelters join `zonesInScope` **even with the demo switch off**
+  (they are real records); map draws them in every mode; `openAuthority-
+  Dashboard(liveTerrainScan)` + `runRanking` (opt-in per-site SRTM probes,
+  capped, cancellation-safe) + save/delete actions. Entry: Profile →
+  AUTHORITY CONSOLE; console = 3 tabs (ranking with tier chips + expandable
+  reasons, shelter form, habitation form).
+- Tests: `HabitationPriorityEngineTest` (10), `FieldRegistryStoreTest` (5),
+  `AuthorityDashboardTest` (4, incl. the demo-hidden field-shelter-live
+  contract).
+
+### Other repo state after this phase
+- OkHttp 4.10.0 → **4.12.0** (CVE-2023-3635); CI workflow
+  `.github/workflows/android-ci.yml`; debug signing falls back to AGP's
+  generated keystore when `debug.keystore` is absent; seeded FAKE emergency
+  contacts removed (contacts list starts EMPTY with guidance text);
+  raw EM-DAT XLSX, AI-Studio debris and stale build logs untracked.
+- **Verification:** `:app:testDebugUnitTest` → 447 tests / 0 failures / 0
+  errors / 0 skipped (53 suites); `:app:assembleDebug` BUILD SUCCESSFUL.
+- **Not verified:** everything on-device (guidance card in landscape, haven
+  probing a real hill town, Natural Earth grid on tablet densities, live
+  Open-Meteo probe calls from the APK).
+
+### Remaining honest gaps
+- No shelter-registry backend: registry lives only on the operator device
+  (`FieldRegistryJson` is the export/import wire format for a future server).
+- No population API: dashboard demand is field-entered or SIMULATED demo —
+  never a census claim.
+- Coast grid is coarse (~27 km cells): terrain-level coast signal, not a
+  parcel claim; storm-surge modelling is NOT implemented.

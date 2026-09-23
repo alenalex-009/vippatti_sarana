@@ -91,33 +91,6 @@ object MockDisasterRepository {
     GoBagItem("item-8", "Non-perishable Rations", "High protein bars (3 days)", true, "restaurant")
   )
 
-  val emergencyContacts = listOf(
-    EmergencyContact(
-      id = "c-1",
-      name = "Sunitha K.",
-      role = "Spouse",
-      phone = "+91 98450 11234",
-      locationNote = "Within 3km",
-      initials = "SK",
-      colorHex = 0xFF4338CA
-    ),
-    EmergencyContact(
-      id = "c-2",
-      name = "Raghav V.",
-      role = "Brother",
-      phone = "+91 94480 88901",
-      locationNote = "Ward 14",
-      initials = "RV",
-      colorHex = 0xFF0D9488
-    ),
-    EmergencyContact(
-      id = "c-3",
-      name = "Ramesh B.",
-      role = "Block Lead / Neighbor",
-      phone = "+91 97312 45450",
-      locationNote = "Ward 12",
-      initials = "NL",
-      colorHex = 0xFFD97706
-    )
-  )
+  // Kin contacts start EMPTY — seeded fake people with invented numbers
+  // were removed: contacts must come from the user via Add Contact.
 }

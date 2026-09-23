@@ -151,6 +151,14 @@ fun RadarMapScreen(
   onRequestFallbackRoute: () -> Unit = {},
   /** Retry the live Open-Meteo weather reading after a stale/failed attempt. */
   onRetryWeather: () -> Unit = {},
+  // --- EMERGENCY GUIDANCE (nearest safe zone + terrain haven) ---
+  onGuidanceGo: () -> Unit = {},
+  onGuidanceDismiss: () -> Unit = {},
+  onSearchTerrainHaven: () -> Unit = {},
+  onRouteToTerrainHaven: () -> Unit = {},
+  /** "Is MY spot a red zone?" explicit terrain check. */
+  onAssessTerrain: () -> Unit = {},
+  onDismissTerrainAssessment: () -> Unit = {},
   modifier: Modifier = Modifier
 ) {
   var isSheetExpanded by remember { mutableStateOf(true) }
@@ -193,7 +201,8 @@ fun RadarMapScreen(
     // and no live event markers reach the engine — only base tiles + GPS dot.
     OsmDroidRadarMapView(
       hazardZones = uiState.hazardZones,
-      safeZones = if (uiState.isMockDataVisible) uiState.safeZones else emptyList(),
+      safeZones = uiState.fieldShelters +
+        (if (uiState.isMockDataVisible) uiState.safeZones else emptyList()),
       selectedSafeZone = uiState.selectedSafeZone,
       activeRoute = uiState.activeRoute,
       travelMode = uiState.travelMode,
@@ -265,6 +274,29 @@ fun RadarMapScreen(
       // 2c. DISASTER-COLOR LEGEND — keys each zone color to its disaster
       //     type. Auto-hides with the empty map (no zones -> no legend).
       DisasterTypeLegend(types = uiState.hazardZones.map { it.type }.distinct())
+
+      // 2d. EMERGENCY GUIDANCE — "disaster near you: where do I go?" card.
+      //     Derived purely from risk + evaluated shelters; terrain haven
+      //     results render inside the same card with a DERIVED label.
+      EmergencyGuidanceCard(
+        guidance = uiState.emergencyGuidance,
+        haven = uiState.terrainHaven,
+        isSearchingHaven = uiState.isSearchingHaven,
+        onGo = onGuidanceGo,
+        onSearchHaven = onSearchTerrainHaven,
+        onRouteToHaven = onRouteToTerrainHaven,
+        onDismiss = onGuidanceDismiss,
+        modifier = Modifier.padding(top = 6.dp)
+      )
+
+      // 2e. TERRAIN SELF-ASSESSMENT — "is MY spot a red zone?" explicit tap.
+      TerrainSelfAssessmentChip(
+        assessment = uiState.terrainSelfAssessment,
+        isAssessing = uiState.isAssessingTerrain,
+        onAssess = onAssessTerrain,
+        onDismiss = onDismissTerrainAssessment,
+        modifier = Modifier.padding(top = 4.dp)
+      )
 
 
       // 3. Live turn-by-turn HUD — directly under the risk strip while

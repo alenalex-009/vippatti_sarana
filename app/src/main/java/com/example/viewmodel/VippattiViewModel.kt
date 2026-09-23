@@ -170,6 +170,30 @@ class VippattiViewModel(
    */
   private val placeResolver: PlaceResolver = UnresolvedPlaceResolver,
   /**
+   * EMERGENCY GUIDANCE wiring (SIH 26191): live terrain probe + offline coast
+   * grid for the terrain-derived safe-haven finder. Production MainActivity
+   * injects the asset-backed grid; tests inject a fake finder. Null finder =
+   * haven search stays honest-off (reported as unavailable).
+   */
+  private val coastGridProvider: () -> com.example.data.suitability.CoastDistanceGrid? = { null },
+  private val havenFinderOverride: com.example.data.shelters.SafeHavenFinder? = null,
+  /**
+   * Live terrain probe for self-assessment + haven search (keyless Open-Meteo
+   * elevation + rainfall). Tests inject a fake transport; production uses the
+   * real service. Exposed so both features share ONE transport boundary.
+   */
+  private val terrainProbeOverride: com.example.data.suitability.TerrainProbeService? = null,
+  /**
+   * AUTHORITY FIELD REGISTRY (SIH 26191): operator-entered shelter +
+   * habitation records. Field shelters are REAL records and stay in scope
+   * even with the simulated demo network hidden. Tests inject an in-memory
+   * store via [fieldRegistryStoreOverride]; production uses the file-backed
+   * store below the app's private cache dir.
+   */
+  private val fieldRegistryStoreOverride: com.example.data.habitations.FieldRegistryStore? = null,
+  /** Directory for the file-backed registry (production; null in plain-JVM tests). */
+  private val registryDirProvider: () -> java.io.File? = { null },
+  /**
    * Population source boundary (SIH 26191). No census/relief-registry API is
    * connected in this build, so the default returns nothing and the demand
    * resolution honestly reports INSUFFICIENT_DATA until a real source is wired.
@@ -242,10 +266,23 @@ class VippattiViewModel(
   /** Live road routes by destination/mode/origin-grid/hazards — instant exact roads on repeat views. */
   private val liveRouteCache = LiveRouteCache()
 
+  /**
+   * Injected test store, or the production file-backed store, or an in-memory
+   * fallback. EAGER and declared before `init` (the cold-start registry load
+   * needs it; a `by lazy` declared later would still have a null delegate).
+   */
+  private val fieldRegistryStore: com.example.data.habitations.FieldRegistryStore =
+    fieldRegistryStoreOverride
+      ?: registryDirProvider()?.let { dir ->
+        com.example.data.habitations.FileFieldRegistryStore(dir)
+      }
+      ?: com.example.data.habitations.InMemoryFieldRegistryStore()
+
   init {
     // Cold start: run the intelligence pipeline once on the India-centre view
     // so risk is assessed (GREEN without GPS — no fake hazards), then pull
     // the REAL India-wide disaster feeds (cache-first when offline).
+    reloadFieldRegistry(silent = true)
     recomputeIntelligence(selectInitialShelter = false)
     disasterJob = viewModelScope.launch {
       val cached = disasterRepository.loadCachedOnly()
@@ -497,15 +534,16 @@ class VippattiViewModel(
     }
     val hazards = (liveZones + reportZones + mockZones).distinctBy { it.id }
 
-    // The shelter network is entirely SIMULATED today (there is no shelter
-    // registry backend), so it is offered only while the demo switch is on.
-    // There is no live shelter source to fall back to, and inventing one would
-    // be fabrication.
-    val zonesInScope = if (state.isMockDataVisible) {
+    // The shelter network today: SIMULATED demo zones (only while the demo
+    // switch is on) PLUS any REAL operator-entered field registry records,
+    // which stay in scope in every mode — they are field data, not demo data.
+    val demoZones = if (state.isMockDataVisible) {
       state.safeZones.filter { IndiaGeo.contains(it.point) }
     } else {
       emptyList()
     }
+    val zonesInScope = (state.fieldShelters.filter { IndiaGeo.contains(it.point) } + demoZones)
+      .distinctBy { it.id }
 
     val risk = RiskAssessmentEngine.assess(
       location = location,
@@ -576,10 +614,23 @@ class VippattiViewModel(
 
     _uiState.update {
       val selectedStillVisible = it.selectedSafeZone?.let { sel ->
-        zonesInScope.any { z -> z.id == sel.id }
+        // A terrain haven is a derived destination, not part of the shelter
+        // network: it stays valid until the user clears it or searches again.
+        sel.id.startsWith("haven-") || zonesInScope.any { z -> z.id == sel.id }
       } ?: true
       // Hiding demo data invalidates any simulated destination + its corridor —
       // the map must never keep routing to a zone that just disappeared.
+      //
+      // EMERGENCY GUIDANCE: derived from THIS recompute's risk + evaluations.
+      // The destination check uses the post-visibility state, so a hidden
+      // route correctly re-opens the guidance instead of deferring to a dead
+      // destination.
+      val hasActiveDestination = selectedStillVisible && it.selectedSafeZone != null
+      val guidance = com.example.data.shelters.EmergencyGuidance.forSituation(
+        riskLevel = risk.level,
+        evaluations = evaluated,
+        hasActiveDestination = hasActiveDestination
+      )
       it.copy(
         personalRisk = risk,
         hazardZones = hazards,
@@ -587,6 +638,7 @@ class VippattiViewModel(
         rankedShelters = ranked,
         recommendedAction = action,
         relocationPlan = plan,
+        emergencyGuidance = guidance,
         capacityDemand = demand,
         capacityAssessments = capacityAssessments,
         populationRecords = state.populationRecords,
@@ -848,6 +900,252 @@ class VippattiViewModel(
       )
     }
     if (autoRoute) calculateRouteToSelectedZone()
+  }
+
+  // ==================================================== EMERGENCY GUIDANCE ==
+
+  /** User tapped the guidance card's GO: select + route to the suggested zone. */
+  fun acceptEmergencyGuidance() {
+    val suggestion = (_uiState.value.emergencyGuidance
+      as? com.example.data.shelters.EmergencyGuidance.SuggestShelter) ?: return
+    selectSafeZone(suggestion.evaluation.zone, autoRoute = true)
+  }
+
+  /** Explicit dismissal of the guidance card until the next recompute. */
+  fun dismissEmergencyGuidance() {
+    _uiState.update { it.copy(emergencyGuidance = com.example.data.shelters.EmergencyGuidance.None) }
+  }
+
+  /** The one shared terrain-probe transport for self-assessment + haven search. */
+  private val terrainProbe: com.example.data.suitability.TerrainProbeService
+    get() = terrainProbeOverride ?: com.example.data.suitability.TerrainProbeService()
+
+  private var terrainAssessJob: Job? = null
+
+  /**
+   * "Is MY spot a red zone?" — explicit user action only. Probes the live
+   * SRTM stencil + rainfall at the CURRENT location; a failure yields an
+   * honest Unavailable, never an invented verdict.
+   */
+  fun assessTerrainHere() {
+    if (_uiState.value.isAssessingTerrain) return
+    val origin = _uiState.value.userLocation
+    terrainAssessJob?.cancel()
+    terrainAssessJob = viewModelScope.launch {
+      _uiState.update { it.copy(isAssessingTerrain = true) }
+      val result = try {
+        terrainProbe.probe(origin, coastGrid = coastGridProvider())
+      } catch (cancelled: kotlinx.coroutines.CancellationException) {
+        throw cancelled
+      } catch (error: Exception) {
+        com.example.data.suitability.TerrainProbeResult.ElevationUnavailable(
+          error::class.java.simpleName
+        )
+      }
+      val assessment = when (result) {
+        is com.example.data.suitability.TerrainProbeResult.Success ->
+          TerrainSelfAssessment.Result(result.verdict, result.coastKnown)
+        is com.example.data.suitability.TerrainProbeResult.ElevationUnavailable ->
+          TerrainSelfAssessment.Unavailable(result.detail)
+      }
+      _uiState.update {
+        it.copy(isAssessingTerrain = false, terrainSelfAssessment = assessment)
+      }
+    }
+  }
+
+  fun dismissTerrainAssessment() {
+    terrainAssessJob?.cancel()
+    _uiState.update {
+      it.copy(terrainSelfAssessment = null, isAssessingTerrain = false)
+    }
+  }
+
+  // ============================================== AUTHORITY FIELD REGISTRY ==
+
+  /**
+   * Reloads operator-entered registry records from the store. Field shelters
+   * join the live evaluated set; rejected entries surface verbatim. Called on
+   * cold start and after every save.
+   */
+  fun reloadFieldRegistry(silent: Boolean = false) {
+    val shelters = fieldRegistryStore.loadShelters()
+    val habitations = fieldRegistryStore.loadHabitations()
+    val rejections = (fieldRegistryStore as? com.example.data.habitations.FileFieldRegistryStore)
+      ?.lastRejections() ?: emptyList()
+    _uiState.update {
+      it.copy(
+        fieldShelters = shelters,
+        fieldHabitations = habitations,
+        registryRejections = rejections,
+        snackbarMessage = if (silent) it.snackbarMessage else
+          "Field registry reloaded: ${shelters.size} shelter record(s), ${habitations.size} habitation record(s)."
+      )
+    }
+    recomputeIntelligence()
+  }
+
+  /** Saves one field-entered shelter (replace-by-id semantics). */
+  fun saveFieldShelter(zone: SafeZone) {
+    if (!com.example.data.disaster.IndiaGeo.contains(zone.point)) {
+      _uiState.update {
+        it.copy(snackbarMessage = "Shelter not saved: coordinates ${zone.lat},${zone.lon} are outside India.")
+      }
+      return
+    }
+    val current = fieldRegistryStore.loadShelters()
+    val next = current.filterNot { it.id == zone.id } + zone
+    fieldRegistryStore.saveShelters(next)
+    reloadFieldRegistry()
+  }
+
+  /** Saves one field-entered habitation (replace-by-id semantics). */
+  fun saveFieldHabitation(habitation: com.example.data.habitations.Habitation) {
+    if (!com.example.data.disaster.IndiaGeo.contains(habitation.point)) {
+      _uiState.update {
+        it.copy(snackbarMessage = "Habitation not saved: coordinates are outside India.")
+      }
+      return
+    }
+    val current = fieldRegistryStore.loadHabitations()
+    val next = current.filterNot { it.id == habitation.id } + habitation
+    fieldRegistryStore.saveHabitations(next)
+    reloadFieldRegistry()
+  }
+
+  fun deleteFieldShelter(id: String) {
+    fieldRegistryStore.saveShelters(fieldRegistryStore.loadShelters().filterNot { it.id == id })
+    reloadFieldRegistry()
+  }
+
+  fun deleteFieldHabitation(id: String) {
+    fieldRegistryStore.saveHabitations(fieldRegistryStore.loadHabitations().filterNot { it.id == id })
+    reloadFieldRegistry()
+  }
+
+  private var priorityJob: Job? = null
+
+  /**
+   * Opens the RELOCATION PRIORITIZATION DASHBOARD: ranks the dashboard input
+   * set (real registry records + the labelled demo network) against the live
+   * hazard picture and the shelter network. [liveTerrainScan] additionally
+   * probes each habitation's terrain via the keyless elevation service —
+   * OFF by default so opening the dashboard never fires a request storm.
+   */
+  fun openAuthorityDashboard(liveTerrainScan: Boolean = false) {
+    _uiState.update { it.copy(showAuthorityDashboard = true) }
+    runRanking(liveTerrainScan)
+  }
+
+  fun closeAuthorityDashboard() {
+    priorityJob?.cancel()
+    _uiState.update {
+      it.copy(showAuthorityDashboard = false, isRankingPriorities = false)
+    }
+  }
+
+  fun rerunAuthorityRanking(liveTerrainScan: Boolean) {
+    runRanking(liveTerrainScan)
+  }
+
+  private fun runRanking(liveTerrainScan: Boolean) {
+    priorityJob?.cancel()
+    priorityJob = viewModelScope.launch {
+      _uiState.update { it.copy(isRankingPriorities = true) }
+      val state = _uiState.value
+      val hazards = state.hazardZones
+      val shelters = (state.fieldShelters + state.safeZones).distinctBy { it.id }
+      var inputs = com.example.data.habitations.DemoHabitations.forDashboard(
+        fieldRecords = state.fieldHabitations,
+        includeDemo = state.isMockDataVisible
+      )
+      if (liveTerrainScan) {
+        val probe = terrainProbe
+        val grid = coastGridProvider()
+        inputs = inputs.map { hab ->
+          val result = try {
+            probe.probe(hab.point, grid)
+          } catch (cancelled: kotlinx.coroutines.CancellationException) {
+            throw cancelled
+          } catch (_: Exception) {
+            null
+          }
+          if (result is com.example.data.suitability.TerrainProbeResult.Success) {
+            hab.copy(terrainVerdict = result.verdict)
+          } else hab
+        }
+      }
+      val ranked = com.example.data.habitations.HabitationPriorityEngine.rank(inputs, hazards, shelters)
+      _uiState.update {
+        it.copy(relocationPriorities = ranked, isRankingPriorities = false)
+      }
+    }
+  }
+
+  /**
+   * Last-resort terrain search: probe outward from the user for the nearest
+   * location the habitability engine rates SAFE, then offer it as a labelled
+   * DERIVED destination (never presented as a shelter). Runs only on an
+   * explicit tap; the honest unavailable state stays visible when the probe
+   * cannot reach the elevation service.
+   */
+  private var havenJob: Job? = null
+
+  fun searchTerrainHaven() {
+    if (_uiState.value.isSearchingHaven) return
+    val origin = _uiState.value.userLocation
+    val finder = havenFinderOverride
+      ?: com.example.data.shelters.SafeHavenFinder.live(terrainProbe)
+    havenJob?.cancel()
+    havenJob = viewModelScope.launch {
+      _uiState.update { it.copy(isSearchingHaven = true) }
+      val haven = try {
+        finder.find(origin, coastGrid = coastGridProvider(), maxCandidates = 24)
+      } catch (cancelled: kotlinx.coroutines.CancellationException) {
+        throw cancelled
+      } catch (_: Exception) {
+        null
+      }
+      _uiState.update {
+        it.copy(
+          isSearchingHaven = false,
+          terrainHaven = haven,
+          snackbarMessage = haven?.let { h ->
+            "Terrain-safe point found about ${com.example.data.model.GeoMath.formatKm(h.distanceMeters)} away — " +
+              "open terrain, not a registered shelter."
+          } ?: "No terrain-safe point could be verified nearby (elevation service unavailable or no safe candidate found)."
+        )
+      }
+    }
+  }
+
+  /** Routes to the found terrain haven as an explicit DERIVED destination. */
+  fun routeToTerrainHaven() {
+    val haven = _uiState.value.terrainHaven ?: return
+    val pseudo = SafeZone(
+      id = "haven-${haven.point.lat}-${haven.point.lon}",
+      name = "Terrain-safe open point",
+      lat = haven.point.lat,
+      lon = haven.point.lon,
+      locationNote = "DERIVED from SRTM slope + rainfall + coast analysis — open terrain, not a registered shelter.",
+      capacityTotal = 0,
+      capacityCurrent = 0,
+      waterAvailable = false,
+      foodAvailable = false,
+      electricityAvailable = false,
+      sanitationAvailable = false,
+      medicalSupport = false,
+      accessibility = "Open terrain — no road guarantee",
+      womenChildrenSuitability = false,
+      operatingStatus = "OPEN",
+      verificationStatus = "DERIVED (unverified facility status)",
+      elevationNote = "",
+      provenance = haven.verdict.provenance(System.currentTimeMillis())
+    )
+    // selectSafeZone finds no ranked evaluation for the haven (evaluation =
+    // null), which every consumer handles; the route is computed to the zone
+    // itself. The haven is labelled DERIVED everywhere it renders.
+    selectSafeZone(pseudo, autoRoute = true)
   }
 
   /**

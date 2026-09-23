@@ -108,6 +108,8 @@ fun ProfileScreen(
   onOpenAddContact: () -> Unit,
   onOpenEditProfile: () -> Unit,
   onOpenSituationReport: () -> Unit,
+  /** Opens the AUTHORITY CONSOLE (field registry + relocation prioritization). */
+  onOpenAuthorityConsole: () -> Unit = {},
   modifier: Modifier = Modifier
 ) {
   Column(
@@ -168,6 +170,15 @@ fun ProfileScreen(
           actionLabel = stringResource(R.string.profile_add_contact),
           onActionClick = onOpenAddContact
         ) {
+          if (uiState.contactsList.isEmpty()) {
+            Text(
+              text = "No emergency contacts yet — add family or neighbours so your local SOS record can reference them. Contacts stay on this device only.",
+              fontSize = 12.sp,
+              color = TacticalOnSurfaceVariant,
+              lineHeight = 16.sp,
+              modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)
+            )
+          }
           uiState.contactsList.forEachIndexed { index, contact ->
             if (index > 0) {
               RowDivider()
@@ -182,6 +193,26 @@ fun ProfileScreen(
               colorHex = contact.colorHex
             )
           }
+        }
+      }
+      item {
+        ProfileSectionHeader(title = "AUTHORITY CONSOLE")
+      }
+      item {
+        SectionCard(
+          actionLabel = "Open",
+          onActionClick = onOpenAuthorityConsole
+        ) {
+          Text(
+            text = "Enter field shelter & habitation records and rank habitations for " +
+              "IMMEDIATE / SHORT-TERM / MEDIUM-TERM relocation against the live " +
+              "hazard picture (SIH 26191). Records stay on this device; demo rows " +
+              "stay labelled SIMULATED.",
+            fontSize = 12.sp,
+            color = TacticalOnSurfaceVariant,
+            lineHeight = 16.sp,
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)
+          )
         }
       }
       item {
