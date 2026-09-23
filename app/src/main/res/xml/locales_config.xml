@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Per-app language support (Android 13+ / AppCompat backport): the six languages
+  Vippatti Sarana ships resources for. Android resolves the matching values-*
+  folder automatically, and this config lets the user pick a language for the
+  app inside the system settings screen.
+-->
+<locale-config xmlns:android="http://schemas.android.com/apk/res/android">
+    <locale android:name="en" />
+    <locale android:name="hi" />
+    <locale android:name="te" />
+    <locale android:name="ta" />
+    <locale android:name="bn" />
+    <locale android:name="mr" />
+</locale-config>

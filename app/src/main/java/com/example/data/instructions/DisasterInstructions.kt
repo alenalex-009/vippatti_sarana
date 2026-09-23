@@ -4,10 +4,28 @@ package com.example.data.instructions
  * ============================================================================
  * HIERARCHICAL INSTRUCTION SYSTEM — Disaster Category -> Before / During / After
  * ============================================================================
- * Proper data structure instead of instruction text scattered in UI files.
- * Extension path: add a DisasterCategory entry (or new InstructionPhase items);
- * the UI renders whatever the data provides. Regional/agency-specific variants
- * can be added via [region] on InstructionItem.
+ * Architecture: static English COPY lives here as the single source of truth
+ * for instruction CONTENT (titles + details + critical flags). Language
+ * switching is handled by Android string resources for every UI label; the
+ * guide copy above is verified general public-safety guidance consistent with
+ * NDMA/NDRF/IMD public dos-and-don'ts (monitor official warnings, evacuate
+ * on orders, never enter floodwater, DROP-COVER-HOLD ON, stay clear of
+ * slopes/debris, stay low under smoke, never use lifts in fire, never
+ * re-enter until cleared). Nothing here replaces official orders.
+ *
+ * Content update path (instructions-tab only):
+ *  1. Edit/append an InstructionItem below (BEFORE / DURING / AFTER).
+ *  2. Keep each detail to 1-2 short sentences, scannable under stress.
+ *  3. Critical life-safety items get isCritical = true (red escalation).
+ *  4. The disaster's approved safety poster (res/drawable-nodpi/
+ *     instructions_poster_*.png, sourced from InstructionImages) is shown by
+ *     DisasterInstructionPoster on the disaster screen — no per-item wiring
+ *     is needed; new items appear with the existing numbered-step card
+ *     style automatically.
+ *
+ * Protected: navigation (InstructionsRoutes), screens, ViewModel, emergency
+ * numbers (112/101/100/108/1077 module) and reporting entry points are
+ * untouched by content edits.
  */
 
 /** One instruction item inside a phase. */
@@ -75,6 +93,10 @@ object DisasterInstructions {
           InstructionItem(
             "Elevate valuables",
             "Move grain, electronics and livestock feed to upper floors or raised platforms before the monsoon peaks."
+          ),
+          InstructionItem(
+            "Know your home mains",
+            "Everyone at home should know where the main power switch and LPG regulator are, and how to switch them off quickly."
           )
         )
       ),
@@ -102,6 +124,18 @@ object DisasterInstructions {
           InstructionItem(
             "Help children, elderly and disabled neighbors first",
             "Carry the go-bag; leave heavy furniture behind."
+          ),
+          InstructionItem(
+            "Follow official evacuation orders",
+            "When authorities announce evacuation, leave at once. Late evacuation gets caught in rising water."
+          ),
+          InstructionItem(
+            "Stay clear of fallen power lines",
+            "Never touch or step over wires in or near water. Warn others from a safe distance."
+          ),
+          InstructionItem(
+            "Keep away from drains, canals and weak structures",
+            "Open manholes hide under brown water; walls and footbridges can give way without warning."
           )
         )
       ),
@@ -128,6 +162,14 @@ object DisasterInstructions {
           InstructionItem(
             "Report damage for relief",
             "Register losses with the village officer / taluk office so relief and compensation can be processed."
+          ),
+          InstructionItem(
+            "Get wet wiring inspected",
+            "Have an electrician check damp switchboards and wiring before switching power back on."
+          ),
+          InstructionItem(
+            "Report blocked or flooded roads",
+            "Use the incident report on the Radar tab so neighbours and rescue teams can see the hazard."
           )
         )
       )
@@ -156,6 +198,14 @@ object DisasterInstructions {
           InstructionItem(
             "Avoid building at slope base",
             "Consult the district geologist before new construction on or below steep slopes."
+          ),
+          InstructionItem(
+            "Track official rain and landslide warnings",
+            "Follow IMD district bulletins and control-room alerts through heavy rain; act on warnings, not rumours."
+          ),
+          InstructionItem(
+            "Keep the emergency kit reachable",
+            "Water, medicines, torch and documents in one bag you can grab in seconds."
           )
         )
       ),
@@ -179,6 +229,14 @@ object DisasterInstructions {
           InstructionItem(
             "Warn neighbors downhill",
             "Shout, call or use the siren so people below the slope get out in time."
+          ),
+          InstructionItem(
+            "Never cross an active slide area",
+            "Mud, rocks and debris keep moving. Find another route on higher, stable ground."
+          ),
+          InstructionItem(
+            "Avoid debris-covered roads and bridges",
+            "A cracked or buried road can collapse under weight. Wait for official clearance."
           )
         )
       ),
@@ -201,6 +259,14 @@ object DisasterInstructions {
           InstructionItem(
             "Expect damaged water and power",
             "Springs and pipes may be contaminated or severed; treat all drinking water."
+          ),
+          InstructionItem(
+            "Follow authority instructions",
+            "Return to slopes and buildings only after officials inspect and clear the area."
+          ),
+          InstructionItem(
+            "Report blocked roads and cracks",
+            "Use the incident report on the Radar tab and inform the village officer about new slope cracks."
           )
         )
       )
@@ -227,7 +293,19 @@ object DisasterInstructions {
           ),
           InstructionItem(
             "Clear dry vegetation around homes",
-            "In dry season, grassland fire spreads fast — keep a fire break around the house."
+            "In dry season, grassland fire spreads fast - keep a fire break around the house."
+          ),
+          InstructionItem(
+            "Keep escape routes clear",
+            "Do not store boxes, vehicles or scrap in staircases, corridors or doorways."
+          ),
+          InstructionItem(
+            "Know where safety equipment is",
+            "Extinguishers and sand buckets help only on small, starting fires - know their location in advance."
+          ),
+          InstructionItem(
+            "Keep emergency numbers handy",
+            "Save 101 (Fire) and 112 (Emergency) where every family member can find them fast."
           )
         )
       ),
@@ -249,7 +327,19 @@ object DisasterInstructions {
           ),
           InstructionItem(
             "Call 101 (Fire) and 112 (Emergency)",
-            "Report location landmarks — plantation names, road numbers — for faster response."
+            "Report location landmarks - plantation names, road numbers - for faster response."
+          ),
+          InstructionItem(
+            "Raise the alarm first",
+            "Shout Fire, press the alarm, and alert neighbours as you leave - if it is safe to do so."
+          ),
+          InstructionItem(
+            "Test doors before opening",
+            "If a door is hot or smoke seeps through it, use your second escape route."
+          ),
+          InstructionItem(
+            "Use an extinguisher only with a safe exit behind you",
+            "Fight a fire only if it is small and only with an escape route at your back - otherwise get out and call for help."
           )
         )
       ),
@@ -268,6 +358,18 @@ object DisasterInstructions {
           InstructionItem(
             "Document damage for relief",
             "Photograph and list losses for insurance and relief claims."
+          ),
+          InstructionItem(
+            "Watch for hidden dangers",
+            "Smouldering spots, hot surfaces, damaged wiring and weak floors can hurt long after the flames are out."
+          ),
+          InstructionItem(
+            "Get medical help when needed",
+            "Smoke inhalation and burns can worsen hours later â go to a hospital even if injuries look minor."
+          ),
+          InstructionItem(
+            "Follow official instructions",
+            "Wait for fire and rescue teams to declare the building safe before any return."
           )
         )
       )
@@ -290,6 +392,10 @@ object DisasterInstructions {
           InstructionItem(
             "Keep the go-bag by the door",
             "The same kit serves flood and earthquake evacuation."
+          ),
+          InstructionItem(
+            "Practice the drill with your family",
+            "Rehearse drop-cover-hold and your exit route so the actions come automatically."
           )
         )
       ),
@@ -313,6 +419,10 @@ object DisasterInstructions {
           InstructionItem(
             "Do not use lifts",
             "Use stairs only after shaking stops."
+          ),
+          InstructionItem(
+            "If driving, stop safely and stay inside",
+            "Pull over away from bridges, wires and slopes; remain in the vehicle until shaking stops."
           )
         )
       ),
@@ -331,6 +441,10 @@ object DisasterInstructions {
           InstructionItem(
             "Use stairs, not lifts",
             "Structural and electrical damage makes elevators unsafe."
+          ),
+          InstructionItem(
+            "Wait for clearance to re-enter",
+            "Strong aftershocks and gas or utility damage can collapse buildings — only return once authorities inspect and declare the area safe."
           )
         )
       )
@@ -394,4 +508,5 @@ object DisasterInstructions {
     )
   )
 }
+
 

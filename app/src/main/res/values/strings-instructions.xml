@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  English (default) strings that belong EXCLUSIVELY to the Instructions module.
+  The rest of the English instruction labels live in values/strings.xml; this
+  file only holds the poster (instruction-image) strings added by the
+  InstructionImages integration, so the shared strings.xml stays untouched.
+-->
+<resources>
+    <string name="instructions_poster_title">Safety poster</string>
+    <string name="instructions_poster_subtitle">Before · During · After at a glance</string>
+    <string name="instructions_poster_open">Tap to enlarge</string>
+    <string name="instructions_poster_close">Close poster</string>
+    <string name="instructions_poster_hint">Pinch to zoom · drag to move · double-tap to reset</string>
+    <string name="instructions_poster_content_desc">Safety poster for %1$s showing the before, during and after guidance</string>
+    <string name="instructions_choose_disaster">Choose a disaster</string>
+    <string name="instructions_kit_subtitle">72-hour self-reliance pack</string>
+</resources>

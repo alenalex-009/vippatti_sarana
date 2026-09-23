@@ -1,12 +1,9 @@
-package com.example.ui.components
+﻿package com.example.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.runtime.getValue
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.config.ConfigRegistry
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -62,45 +59,36 @@ fun VippattiBottomNavBar(
   onTabSelected: (ScreenTab) -> Unit,
   modifier: Modifier = Modifier
 ) {
-  val remoteConfig by ConfigRegistry.manager.configState.collectAsStateWithLifecycle()
-  
-  val items = mutableListOf<NavItemData>()
-  
-  if (remoteConfig.featureRadarEnabled) {
-      items.add(NavItemData(
-        tab = ScreenTab.RADAR_MAP,
-        label = "Radar Map",
-        activeIcon = Icons.Filled.LocationOn,
-        inactiveIcon = Icons.Outlined.LocationOn,
-        testTag = "nav_radar_map"
-      ))
-  }
-  
-  if (remoteConfig.featureDispatchesEnabled) {
-      items.add(NavItemData(
-        tab = ScreenTab.NEWS_DISPATCHES,
-        label = "News",
-        activeIcon = Icons.Filled.Newspaper,
-        inactiveIcon = Icons.Outlined.Newspaper,
-        testTag = "nav_news"
-      ))
-  }
-  
-  items.add(NavItemData(
-    tab = ScreenTab.INSTRUCTIONS,
-    label = "Instructions",
-    activeIcon = Icons.Filled.MenuBook,
-    inactiveIcon = Icons.Outlined.MenuBook,
-    testTag = "nav_instructions"
-  ))
-  
-  items.add(NavItemData(
-    tab = ScreenTab.PROFILE,
-    label = "Profile",
-    activeIcon = Icons.Filled.Person,
-    inactiveIcon = Icons.Outlined.Person,
-    testTag = "nav_profile"
-  ))
+  val items = listOf(
+    NavItemData(
+      tab = ScreenTab.RADAR_MAP,
+      label = "Radar Map",
+      activeIcon = Icons.Filled.LocationOn,
+      inactiveIcon = Icons.Outlined.LocationOn,
+      testTag = "nav_radar_map"
+    ),
+    NavItemData(
+      tab = ScreenTab.NEWS_DISPATCHES,
+      label = "News",
+      activeIcon = Icons.Filled.Newspaper,
+      inactiveIcon = Icons.Outlined.Newspaper,
+      testTag = "nav_news"
+    ),
+    NavItemData(
+      tab = ScreenTab.INSTRUCTIONS,
+      label = "Instructions",
+      activeIcon = Icons.Filled.MenuBook,
+      inactiveIcon = Icons.Outlined.MenuBook,
+      testTag = "nav_instructions"
+    ),
+    NavItemData(
+      tab = ScreenTab.PROFILE,
+      label = "Profile",
+      activeIcon = Icons.Filled.Person,
+      inactiveIcon = Icons.Outlined.Person,
+      testTag = "nav_profile"
+    )
+  )
 
   Box(
     modifier = modifier

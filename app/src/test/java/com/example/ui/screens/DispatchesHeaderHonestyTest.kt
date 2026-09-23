@@ -137,20 +137,22 @@ class DispatchesHeaderHonestyTest {
   }
 
   @Test
-  fun `the SOS hero states local-only, never a live relay`() {
+  fun `the SOS hero states what it relays, never a live relay claim`() {
+    // The Profile SOS center is the current SOS hero surface. It honestly
+    // describes what it relays and must never claim a live authority relay.
     composeTestRule.setContent {
       VippattiTheme {
-        DistressSignalCenter(
+        SosCenterCard(
           onBroadcastSos = {},
-          onOpenSituationReport = {},
-          pulseScale = 1f
+          onOpenSituationReport = {}
         )
       }
     }
 
-    composeTestRule.onNodeWithText("LOCAL SOS — NOT TRANSMITTED").assertExists()
-    composeTestRule.onNodeWithText("RECORD SOS WITH LIVE GPS").assertExists()
+    composeTestRule.onNodeWithText("SOS Center").assertExists()
+    composeTestRule.onNodeWithText("Relays live GPS, battery level and medical tag")
+      .assertExists()
+    composeTestRule.onNodeWithTag("broadcast_sos_hero_button").assertExists()
     composeTestRule.onAllNodesWithText("LIVE RELAY ACTIVE", substring = true).assertCountEquals(0)
-    composeTestRule.onAllNodesWithText("BROADCAST SOS", substring = true).assertCountEquals(0)
   }
 }

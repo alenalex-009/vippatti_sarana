@@ -169,7 +169,11 @@ class ResponsiveLayoutSmokeTest {
     composeTestRule.onNodeWithTag("broadcast_sos_hero_button").assertExists()
     composeTestRule.onNodeWithTag("report_situation_hero_button").assertExists()
     composeTestRule.onNodeWithTag("profile_edit_button").assertExists()
-    composeTestRule.onNodeWithTag("profile_theme_toggle_button").assertExists()
+    // The theme toggle lives in the lazily-composed Preferences section far
+    // below the fold: scroll it into view before asserting.
+    composeTestRule.onNodeWithTag("profile_theme_toggle_button")
+      .performScrollTo()
+      .assertExists()
   }
 
   @Test
@@ -218,7 +222,11 @@ class ResponsiveLayoutSmokeTest {
     renderInstructionsLight()
     composeTestRule.onNodeWithTag("instructions_theme_toggle_button").assertExists()
     composeTestRule.onNodeWithTag("instructions_offline_switch").assertExists()
-    composeTestRule.onNodeWithTag("phase_during_tab").assertExists()
+    // Home is the disaster chooser: the four disasters are the main choices.
+    composeTestRule.onNodeWithTag("disaster_card_flood").assertExists()
+    composeTestRule.onNodeWithTag("disaster_card_earthquake").assertExists()
+    composeTestRule.onNodeWithTag("disaster_card_landslide").assertExists()
+    composeTestRule.onNodeWithTag("disaster_card_fire").assertExists()
     composeTestRule.onNodeWithTag("emergency_flashlight_button").assertExists()
     composeTestRule.onNodeWithTag("emergency_siren_button").assertExists()
   }
@@ -227,19 +235,24 @@ class ResponsiveLayoutSmokeTest {
   @Config(qualifiers = "w360dp-h720dp")
   fun instructionsScreen_navigatesCategoryDetailAndBack() {
     renderInstructions()
+    // Choose Flood, then open its DURING phase guidance.
+    composeTestRule.onNodeWithTag("disaster_card_flood").performClick()
     // Flood · During has an Immediate Safety group in the classifier.
-    composeTestRule.onNodeWithTag("category_chip_flood").performClick()
     composeTestRule.onNodeWithTag("phase_during_tab").assertExists()
     val card = composeTestRule.onNodeWithTag("category_card_immediate_safety")
     card.performScrollTo()
     card.performClick()
-    // Detail screen shows the working back button.
+    // Category detail shows the working back button...
     val back = composeTestRule.onNodeWithTag("instructions_back_button")
     back.assertExists()
     back.performScrollTo()
     back.performClick()
-    // Back returns Home with the offline switch (state preserved).
+    // ...and back returns to THAT disaster (phase tabs still mounted).
+    composeTestRule.onNodeWithTag("phase_during_tab").assertExists()
+    // One more back returns to the Instructions home (disaster chooser).
+    composeTestRule.onNodeWithTag("instructions_back_button").performClick()
     composeTestRule.onNodeWithTag("instructions_offline_switch").assertExists()
+    composeTestRule.onNodeWithTag("disaster_card_flood").assertExists()
   }
 
   @Test

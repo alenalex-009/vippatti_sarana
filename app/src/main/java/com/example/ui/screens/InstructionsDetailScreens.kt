@@ -41,10 +41,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.R
 import com.example.data.instructions.CommonModule
 import com.example.data.instructions.DisasterCategory
 import com.example.data.instructions.DisasterInstructions
@@ -70,7 +72,7 @@ import com.example.ui.theme.TacticalOutlineVariant
 
 /** Shared detail-screen header: WORKING back button, icon, title, context subtitle. */
 @Composable
-private fun DetailHeader(
+internal fun DetailHeader(
   icon: ImageVector,
   iconTint: Color,
   title: String,
@@ -94,7 +96,7 @@ private fun DetailHeader(
     ) {
       Icon(
         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-        contentDescription = "Back to Instructions",
+        contentDescription = stringResource(R.string.instructions_back),
         tint = TacticalOnSurface,
         modifier = Modifier.size(18.dp)
       )
@@ -135,21 +137,29 @@ internal fun GroupDetailScreen(
 
   Column(modifier = Modifier.fillMaxWidth()) {
     val (icon, accent) = groupVisual(group.id)
+    val (groupTitle, groupSubtitle) = groupLabels(group.id, category.title)
     DetailHeader(
       icon = icon,
       iconTint = accent,
-      title = group.title,
-      subtitle = "${category.title} Â· ${phase.title}",
+      title = groupTitle,
+      subtitle = groupSubtitle,
       onBack = onBack
     )
     Text(
-      text = "Your safety comes first. Follow these instructions to reduce risk.",
+      text = stringResource(R.string.instructions_detail_intro),
       fontSize = 11.sp,
       color = TacticalOnSurfaceVariant,
       modifier = Modifier.padding(horizontal = 14.dp, vertical = 4.dp)
     )
-    group.items.forEach { item ->
-      InstructionDetailCard(item)
+    group.items.forEachIndexed { index, item ->
+      InstructionDetailCard(
+        item,
+        stepLabel = stringResource(
+          R.string.instructions_step_format,
+          index + 1,
+          group.items.size
+        )
+      )
     }
   }
 }
@@ -182,7 +192,10 @@ internal fun ModuleDetailScreen(module: CommonModule, onBack: () -> Unit) {
 
 /** Full instruction card â€” critical items escalate to the red emergency look. */
 @Composable
-private fun InstructionDetailCard(item: InstructionItem) {
+private fun InstructionDetailCard(
+  item: InstructionItem,
+  stepLabel: String? = null
+) {
   Column(
     modifier = Modifier
       .fillMaxWidth()
@@ -218,16 +231,25 @@ private fun InstructionDetailCard(item: InstructionItem) {
           modifier = Modifier.size(13.dp)
         )
       }
-      Text(
-        text = item.title,
-        fontSize = 13.sp,
-        fontWeight = FontWeight.Bold,
-        color = TacticalOnSurface,
-        modifier = Modifier.weight(1f)
-      )
+      Column(modifier = Modifier.weight(1f)) {
+        Text(
+          text = item.title,
+          fontSize = 13.sp,
+          fontWeight = FontWeight.Bold,
+          color = TacticalOnSurface
+        )
+        if (stepLabel != null) {
+          Text(
+            text = stepLabel,
+            fontSize = 9.sp,
+            color = TacticalOnSurfaceVariant,
+            letterSpacing = 0.4.sp
+          )
+        }
+      }
       if (item.isCritical) {
         Text(
-          text = "CRITICAL",
+          text = stringResource(R.string.instructions_critical_badge),
           fontSize = 8.sp,
           fontWeight = FontWeight.Black,
           color = EmergencyRedBright,
@@ -243,7 +265,7 @@ private fun InstructionDetailCard(item: InstructionItem) {
     )
     if (item.region != null) {
       Text(
-        text = "Regional: ${item.region}",
+        text = stringResource(R.string.instructions_region_format, item.region),
         fontSize = 9.sp,
         color = TacticalCyan
       )

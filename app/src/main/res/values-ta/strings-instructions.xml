@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tamil: instructions. Concise, safety-accurate. -->
+<resources>
+    <string name="instructions_manual_title">உயிர் பாதுகாப்பு கையேடு</string>
+    <string name="instructions_manual_subtitle">அறிந்து கொள்ளுங்கள். தயாராக இருங்கள். பாதுகாப்பாக இருங்கள்.</string>
+    <string name="instructions_offline_title">ஆஃப்லைன்-முதல் முறை</string>
+    <string name="instructions_offline_subtitle">பார்த்த வரைபட பகுதிகளை வைத்திருக்கும்; இதில் மொத்த பதிவிறக்கம் இல்லை</string>
+    <string name="instructions_section_critical">இப்போது முக்கிய செயல்கள்</string>
+    <string name="instructions_section_critical_subtitle">உடனே என்ன செய்ய வேண்டும்</string>
+    <string name="instructions_critical_empty">இந்த கட்டத்திற்கு முக்கிய செயல் இல்லை — கீழே உள்ள பிரிவுகளைப் பார்க்கவும்.</string>
+    <string name="instructions_section_categories">வழிகாட்டு பிரிவுகள்</string>
+    <string name="instructions_section_resources">அத்தியாவசிய வளங்கள்</string>
+    <string name="instructions_phase_before">முன்</string>
+    <string name="instructions_phase_during">நடக்கும்போது</string>
+    <string name="instructions_phase_after">பின்</string>
+    <string name="instructions_detail_intro">உங்கள் பாதுகாப்பே முதலில். ஆபத்தைக் குறைக்க இந்த வழிகளைப் பின்பற்றுங்கள்.</string>
+    <string name="instructions_step_format">படி %1$d / %2$d</string>
+    <string name="instructions_critical_badge">முக்கியம்</string>
+    <string name="instructions_group_immediate_safety">உடனடி பாதுகாப்பு</string>
+    <string name="instructions_group_immediate_safety_sub">இப்போது பாதுகாப்பாக இருங்கள்</string>
+    <string name="instructions_group_evacuation">வெளியேற்ற வழிகாட்டி</string>
+    <string name="instructions_group_evacuation_sub">எங்கு செல்ல வேண்டும், என்ன செய்ய வேண்டும்</string>
+    <string name="instructions_group_utilities">மின்சாரம் மற்றும் பயன்கள்</string>
+    <string name="instructions_group_utilities_sub">மின், எரிவாயு, நீர் பாதுகாப்பு</string>
+    <string name="instructions_group_vulnerable">பாதிக்கப்படக்கூடியவர்கள்</string>
+    <string name="instructions_group_vulnerable_sub">குழந்தைகள், முதியோர், மாற்றுத்திறனாளிகள்</string>
+    <string name="instructions_group_recovery">%1$s க்குப் பின்</string>
+    <string name="instructions_group_recovery_sub">மீட்பு மற்றும் உடல்நல முன்னெச்சரிக்கை</string>
+    <string name="instructions_group_more">மேலும் பாதுகாப்பு படிகள்</string>
+    <string name="instructions_group_more_sub">இந்த கட்டத்திற்கு கூடுதல் வழிகாட்டல்</string>
+    <string name="instructions_resources_contacts">அவசர தொடர்புகள்</string>
+    <string name="instructions_resources_contacts_sub">முக்கிய உதவி எண்கள்</string>
+    <string name="instructions_resources_evacuation">அவசர பை</string>
+    <string name="instructions_resources_kit">ஊடாடும் வெளியேற்ற பை</string>
+    <string name="instructions_resources_kit_sub">இடம் மாறும் முன் பொருட்களை சரிபார்க்கவும்</string>
+    <string name="instructions_back">வழிகாட்டலுக்குத் திரும்பு</string>
+    <string name="instructions_region_format">பகுதி: %1$s</string>
+    <string name="instructions_call_format">அழைக்கவும் %1$s</string>
+
+
+    <!-- Safety poster (instruction image). -->
+    <string name="instructions_poster_title">பாதுகாப்பு சுவரொட்டி</string>
+    <string name="instructions_poster_subtitle">முன் · இடையே · பின் — ஒரே பார்வையில்</string>
+    <string name="instructions_poster_open">பெரிதாக்க தட்டவும்</string>
+    <string name="instructions_poster_close">சுவரொட்டியை மூடு</string>
+    <string name="instructions_poster_hint">பெரிதாக்க இரு விரல்களால் இழுக்கவும் · நகர்த்த இழுக்கவும் · மீட்டமைக்க இருமுறை தட்டவும்</string>
+    <string name="instructions_poster_content_desc">%1$s க்கான பாதுகாப்பு சுவரொட்டி — முன், இடையே, பின் வழிகாட்டல்</string>
+    <string name="instructions_choose_disaster">பேரிடரைத் தேர்வுசெய்க</string>
+    <string name="instructions_kit_subtitle">72 மணி நேர சுயசார்பு பொதி</string>
+</resources>

@@ -1,0 +1,151 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Marathi (mr) profile strings â€” same keys as values/strings.xml.
+  Missing keys fall back to the English resource automatically.
+-->
+<resources>
+    <string name="profile_header_title">à¤®à¤¾à¤à¥‡ à¤ªà¥à¤°à¥‹à¤«à¤¾à¤‡à¤²</string>
+    <string name="profile_avatar_content_description">à¤ªà¥à¤°à¥‹à¤«à¤¾à¤‡à¤² à¤«à¥‹à¤Ÿà¥‹</string>
+    <string name="profile_verified_content_description">à¤¸à¤¤à¥à¤¯à¤¾à¤ªà¤¿à¤¤ à¤¨à¤¾à¤—à¤°à¤¿à¤• à¤†à¤¯à¤¡à¥€</string>
+    <string name="profile_id_label">à¤†à¤¯à¤¡à¥€: %1$s</string>
+    <string name="profile_edit_content_description">à¤ªà¥à¤°à¥‹à¤«à¤¾à¤‡à¤² à¤¸à¤‚à¤ªà¤¾à¤¦à¤¿à¤¤ à¤•à¤°à¤¾</string>
+
+    <string name="profile_section_safety_status">à¤®à¤¾à¤à¥€ à¤¸à¥à¤°à¤•à¥à¤·à¤¿à¤¤à¤¤à¤¾ à¤¸à¥à¤¥à¤¿à¤¤à¥€</string>
+    <string name="profile_safety_safe">à¤®à¥€ à¤¸à¥à¤°à¤•à¥à¤·à¤¿à¤¤ à¤†à¤¹à¥‡</string>
+    <string name="profile_safety_needs_help">à¤®à¤¦à¤¤ à¤¹à¤µà¥€</string>
+    <string name="profile_safety_safe_description">à¤®à¤¦à¤¤ à¤¨à¥‡à¤Ÿà¤µà¤°à¥à¤•à¤µà¤° à¤¤à¥à¤®à¥à¤¹à¤¾à¤²à¤¾ à¤¸à¥à¤°à¤•à¥à¤·à¤¿à¤¤ à¤¨à¥‹à¤‚à¤¦à¤µà¤¤à¥‡</string>
+    <string name="profile_safety_needs_help_description">à¤¤à¥à¤®à¤šà¥à¤¯à¤¾ à¤•à¥à¤Ÿà¥à¤‚à¤¬à¤¾à¤²à¤¾ à¤ªà¥à¤°à¤¾à¤§à¤¾à¤¨à¥à¤¯ à¤®à¤¦à¤¤à¥€à¤¤ à¤œà¥‹à¤¡à¤¤à¥‡</string>
+
+    <string name="profile_sos_title">à¤à¤¸à¤“à¤à¤¸ à¤•à¥‡à¤‚à¤¦à¥à¤°</string>
+    <string name="profile_sos_subtitle">à¤¥à¥‡à¤Ÿ à¤œà¥€à¤ªà¥€à¤à¤¸, à¤¬à¥…à¤Ÿà¤°à¥€ à¤ªà¤¾à¤¤à¤³à¥€ à¤†à¤£à¤¿ à¤µà¥ˆà¤¦à¥à¤¯à¤•à¥€à¤¯ à¤Ÿà¥…à¤— à¤ªà¤¾à¤ à¤µà¤¤à¥‡</string>
+    <string name="profile_sos_broadcast">à¤à¤¸à¤“à¤à¤¸ à¤ªà¥à¤°à¤¸à¤¾à¤°à¤£</string>
+    <string name="profile_sos_report_situation">à¤®à¤¾à¤à¥€ à¤¸à¥à¤¥à¤¿à¤¤à¥€ à¤¸à¤¾à¤‚à¤—à¤¾</string>
+
+    <string name="profile_section_helplines">à¤†à¤ªà¤¤à¥à¤•à¤¾à¤²à¥€à¤¨ à¤¹à¥‡à¤²à¥à¤ªà¤²à¤¾à¤‡à¤¨</string>
+    <string name="profile_section_helplines_caption">à¤Ÿà¥‹à¤²-à¤«à¥à¤°à¥€ à¤ªà¥à¤°à¤¾à¤§à¤¾à¤¨à¥à¤¯ à¤²à¤¾à¤‡à¤¨</string>
+    <string name="profile_helpline_ndrf">à¤à¤¨à¤¡à¥€à¤†à¤°à¤à¤« 112</string>
+    <string name="profile_helpline_ndrf_description">à¤†à¤ªà¤¤à¥à¤¤à¥€ à¤¦à¤²</string>
+    <string name="profile_helpline_ambulance">à¤°à¥à¤—à¥à¤£à¤µà¤¾à¤¹à¤¿à¤•à¤¾</string>
+    <string name="profile_helpline_ambulance_description">à¤¡à¤¾à¤¯à¤² 108</string>
+    <string name="profile_helpline_fire">à¤…à¤—à¥à¤¨à¤¿à¤¶à¤®à¤¨ 101</string>
+    <string name="profile_helpline_fire_description">à¤¬à¤šà¤¾à¤µ à¤ªà¤¥à¤•</string>
+    <string name="profile_dial_error">%1$s à¤µà¤° à¤•à¥‰à¤² à¤•à¤°à¤¤à¤¾ à¤†à¤²à¤¾ à¤¨à¤¾à¤¹à¥€: %2$s</string>
+
+    <string name="profile_section_details">à¤®à¤¾à¤à¥€ à¤®à¤¾à¤¹à¤¿à¤¤à¥€</string>
+    <string name="profile_household_label">à¤•à¥à¤Ÿà¥à¤‚à¤¬</string>
+    <string name="profile_household_description">à¤¤à¥à¤®à¤šà¥à¤¯à¤¾ à¤˜à¤°à¤¾à¤¤à¥€à¤² à¤…à¤µà¤²à¤‚à¤¬à¥‚à¤¨ à¤¸à¤¦à¤¸à¥à¤¯</string>
+    <string name="profile_medical_label">à¤µà¥ˆà¤¦à¥à¤¯à¤•à¥€à¤¯ à¤Ÿà¥…à¤—</string>
+    <string name="profile_medical_description">à¤¬à¤šà¤¾à¤µ à¤ªà¤¥à¤•à¤¾à¤‚à¤¸à¥‹à¤¬à¤¤ à¤¸à¤¾à¤®à¤¾à¤¯à¤¿à¤• à¤•à¥‡à¤²à¥‡ à¤œà¤¾à¤¤à¥‡</string>
+    <string name="profile_evacuation_needs_label">à¤¸à¥à¤¥à¤²à¤¾à¤‚à¤¤à¤° à¤¶à¤¿à¤¬à¤¿à¤° à¤—à¤°à¤œà¤¾</string>
+    <string name="profile_evacuation_needs_description">à¤¨à¤¿à¤¯à¥à¤•à¥à¤¤ à¤¶à¤¿à¤¬à¤¿à¤°à¥‡ à¤¯à¤¾ à¤—à¤°à¤œà¤¾à¤‚à¤¶à¥€ à¤¸à¥à¤µà¤¯à¤‚à¤šà¤²à¤¿à¤¤à¤ªà¤£à¥‡ à¤œà¥à¤³à¤¤à¤¾à¤¤</string>
+    <string name="profile_need_elderly_mobility">à¤œà¥à¤¯à¥‡à¤·à¥à¤  / à¤¹à¤¾à¤²à¤šà¤¾à¤²</string>
+    <string name="profile_need_disability">à¤¦à¤¿à¤µà¥à¤¯à¤¾à¤‚à¤— à¤¸à¤¹à¤¾à¤¯à¥à¤¯</string>
+    <string name="profile_need_medical_dependency">à¤µà¥ˆà¤¦à¥à¤¯à¤•à¥€à¤¯ à¤…à¤µà¤²à¤‚à¤¬à¤¿à¤¤à¥à¤µ</string>
+    <string name="profile_need_pet_friendly">à¤ªà¤¾à¤³à¥€à¤µ à¤ªà¥à¤°à¤¾à¤£à¥à¤¯à¤¾à¤‚à¤¸à¤¾à¤ à¥€ à¤¯à¥‹à¤—à¥à¤¯</string>
+    <string name="profile_need_oxygen_meds">à¤‘à¤•à¥à¤¸à¤¿à¤œà¤¨ / à¤”à¤·à¤§à¥‡</string>
+    <string name="profile_relocation_label">à¤¸à¥à¤¥à¤²à¤¾à¤‚à¤¤à¤° à¤ªà¥à¤°à¤¾à¤§à¤¾à¤¨à¥à¤¯</string>
+    <string name="profile_relocation_description">à¤¤à¥à¤®à¤šà¥à¤¯à¤¾ à¤•à¥à¤Ÿà¥à¤‚à¤¬à¤¾à¤šà¥à¤¯à¤¾ à¤®à¤¾à¤¹à¤¿à¤¤à¥€à¤µà¤°à¥‚à¤¨ à¤¸à¥à¤¥à¤²à¤¾à¤‚à¤¤à¤° à¤•à¥à¤°à¤®à¤µà¤¾à¤°à¥€</string>
+    <string name="profile_relocation_assigned_shelter">à¤¨à¤¿à¤¯à¥à¤•à¥à¤¤ à¤¶à¤¿à¤¬à¤¿à¤°: %1$s</string>
+    <string name="profile_relocation_shelter_capacity">%1$d à¤œà¤¾à¤—à¤¾ à¤‰à¤ªà¤²à¤¬à¥à¤§</string>
+    <string name="profile_section_contacts">à¤†à¤ªà¤¤à¥à¤•à¤¾à¤²à¥€à¤¨ à¤¸à¤‚à¤ªà¤°à¥à¤•</string>
+    <string name="profile_add_contact">à¤¸à¤‚à¤ªà¤°à¥à¤• à¤œà¥‹à¤¡à¤¾</string>
+    <string name="profile_contact_role">%1$s (%2$s)</string>
+    <string name="profile_contact_details">%1$s â€¢ %2$s</string>
+    <string name="profile_contact_call_content_description">%1$s à¤¯à¤¾à¤‚à¤¨à¤¾ à¤•à¥‰à¤² à¤•à¤°à¤¾</string>
+    <string name="profile_contact_sos_sms">à¤à¤¸à¤“à¤à¤¸ à¤à¤¸à¤à¤®à¤à¤¸</string>
+    <string name="profile_contact_sos_sms_body">à¤†à¤ªà¤¤à¥à¤•à¤¾à¤²à¥€à¤¨ à¤à¤¸à¤“à¤à¤¸: à¤®à¤²à¤¾ à¤®à¤¦à¤¤ à¤¹à¤µà¥€! à¤œà¥€à¤ªà¥€à¤à¤¸: %1$s à¤‰à¤¤à¥à¤¤à¤°, %2$s à¤ªà¥‚à¤°à¥à¤µ %3$s. à¤µà¤¿à¤ªà¥à¤ªà¤Ÿà¥à¤Ÿà¥€ à¤¸à¤¾à¤°à¤£à¤¾ à¤¦à¥à¤µà¤¾à¤°à¥‡ à¤ªà¤¾à¤ à¤µà¤²à¥‡.</string>
+    <string name="profile_contact_sos_location_device_gps">(à¤¡à¤¿à¤µà¥à¤¹à¤¾à¤‡à¤¸ à¤œà¥€à¤ªà¥€à¤à¤¸)</string>
+    <string name="profile_contact_sos_location_india_fallback">(à¤­à¤¾à¤°à¤¤ à¤…à¤‚à¤¦à¤¾à¤œà¤¿à¤¤ à¤¸à¥à¤¥à¤¾à¤¨)</string>
+    <string name="profile_sms_error">à¤à¤¸à¤à¤®à¤à¤¸ à¤ªà¤¾à¤ à¤µà¤¤à¤¾ à¤†à¤²à¤¾ à¤¨à¤¾à¤¹à¥€: %1$s</string>
+
+    <string name="profile_section_app_data">à¤…â€à¥…à¤ª à¤¡à¥‡à¤Ÿà¤¾ à¤†à¤£à¤¿ à¤‘à¤«à¤²à¤¾à¤‡à¤¨</string>
+    <string name="profile_offline_first_label">à¤‘à¤«à¤²à¤¾à¤‡à¤¨-à¤ªà¥à¤°à¤¥à¤® à¤®à¥‹à¤¡</string>
+    <string name="profile_offline_maps_label">à¤‘à¤«à¤²à¤¾à¤‡à¤¨ à¤®à¤¦à¤¤ à¤¨à¤•à¤¾à¤¶à¤¾ à¤•à¥…à¤¶</string>
+    <string name="profile_offline_maps_value">%2$s à¤ªà¥ˆà¤•à¥€ %1$s</string>
+    <string name="profile_offline_maps_not_measured">à¤…à¤œà¥‚à¤¨ à¤®à¥‹à¤œà¤²à¥‡ à¤¨à¤¾à¤¹à¥€</string>
+    <string name="profile_disaster_sync_label">à¤†à¤ªà¤¤à¥à¤¤à¥€ à¤¡à¥‡à¤Ÿà¤¾ à¤¸à¤¿à¤‚à¤•</string>
+    <string name="profile_disaster_sync_never">à¤…à¤œà¥‚à¤¨ à¤šà¤¾à¤²à¤µà¤²à¥‡ à¤¨à¤¾à¤¹à¥€</string>
+    <string name="profile_data_source_label">à¤¡à¥‡à¤Ÿà¤¾ à¤¸à¥à¤°à¥‹à¤¤</string>
+
+    <string name="profile_section_preferences">à¤ªà¥à¤°à¤¾à¤§à¤¾à¤¨à¥à¤¯à¥‡</string>
+    <string name="profile_theme_label">à¤¡à¤¾à¤°à¥à¤• à¤¥à¥€à¤®</string>
+    <string name="profile_theme_appearance">à¤¸à¥à¤µà¤°à¥‚à¤ª</string>
+    <string name="profile_theme_on">à¤šà¤¾à¤²à¥‚</string>
+    <string name="profile_theme_off">à¤¬à¤‚à¤¦</string>
+    <string name="profile_language_label">à¤­à¤¾à¤·à¤¾</string>
+    <string name="profile_language_description">à¤¡à¤¿à¤µà¥à¤¹à¤¾à¤‡à¤¸ à¤†à¤£à¤¿ à¤…â€à¥…à¤ªà¤šà¥€ à¤­à¤¾à¤·à¤¾</string>
+    <string name="profile_language_open_settings">à¤…â€à¥…à¤ª à¤­à¤¾à¤·à¤¾ à¤¸à¥‡à¤Ÿà¤¿à¤‚à¤—à¥à¤œ à¤‰à¤˜à¤¡à¤¤à¥‡</string>
+
+    <string name="profile_section_account">à¤–à¤¾à¤¤à¥‡</string>
+    <string name="profile_account_email_label">à¤¯à¤¾ à¤–à¤¾à¤¤à¥à¤¯à¤¾à¤¨à¥‡ à¤¸à¤¾à¤‡à¤¨ à¤‡à¤¨</string>
+    <string name="profile_account_no_email">à¤¸à¥à¤¥à¤¾à¤¨à¤¿à¤• à¤¡à¤¿à¤µà¥à¤¹à¤¾à¤‡à¤¸ à¤ªà¥à¤°à¥‹à¤«à¤¾à¤‡à¤²</string>
+    <string name="profile_sign_out">à¤¸à¤¾à¤‡à¤¨ à¤†à¤‰à¤Ÿ</string>
+    <string name="profile_sign_out_content_description">à¤¯à¤¾ à¤–à¤¾à¤¤à¥à¤¯à¤¾à¤¤à¥‚à¤¨ à¤¸à¤¾à¤‡à¤¨ à¤†à¤‰à¤Ÿ à¤•à¤°à¤¾</string>
+
+    <string name="profile_section_about">à¤¬à¤¦à¥à¤¦à¤²</string>
+    <string name="profile_about_version_label">à¤…â€à¥…à¤ª à¤†à¤µà¥ƒà¤¤à¥à¤¤à¥€</string>
+    <string name="profile_about_version_value">%1$s (à¤¬à¤¿à¤²à¥à¤¡ %2$d)</string>
+    <string name="profile_about_app_label">à¤µà¤¿à¤ªà¥à¤ªà¤Ÿà¥à¤Ÿà¥€ à¤¸à¤¾à¤°à¤£à¤¾</string>
+    <string name="profile_about_tagline">à¤†à¤ªà¤¤à¥à¤¤à¥€ à¤®à¤¦à¤¤ à¤†à¤£à¤¿ à¤†à¤ªà¤¤à¥à¤•à¤¾à¤²à¥€à¤¨ à¤¨à¥‡à¤Ÿà¤µà¤°à¥à¤•</string>
+
+    <string name="action_edit">à¤¸à¤‚à¤ªà¤¾à¤¦à¤¿à¤¤ à¤•à¤°à¤¾</string>
+    <string name="action_call">à¤•à¥‰à¤²</string>
+    <string name="action_save">à¤œà¤¤à¤¨ à¤•à¤°à¤¾</string>
+    <string name="action_cancel">à¤°à¤¦à¥à¤¦ à¤•à¤°à¤¾</string>
+
+    <string-array name="profile_contact_role_keys">
+        <item>Spouse</item>
+        <item>Brother</item>
+        <item>Block Lead / Neighbor</item>
+        <item>Sister</item>
+        <item>Parent</item>
+        <item>Child</item>
+        <item>Neighbour</item>
+        <item>Friend</item>
+        <item>Volunteer</item>
+        <item>Other</item>
+    </string-array>
+    <string-array name="profile_contact_role_labels">
+        <item>à¤œà¥‹à¤¡à¥€à¤¦à¤¾à¤°</item>
+        <item>à¤­à¤¾à¤Š</item>
+        <item>à¤µà¤¿à¤­à¤¾à¤— à¤ªà¥à¤°à¤®à¥à¤– / à¤¶à¥‡à¤œà¤¾à¤°à¥€</item>
+        <item>à¤¬à¤¹à¥€à¤£</item>
+        <item>à¤†à¤ˆ-à¤µà¤¡à¥€à¤²</item>
+        <item>à¤®à¥‚à¤²</item>
+        <item>à¤¶à¥‡à¤œà¤¾à¤°à¥€</item>
+        <item>à¤®à¤¿à¤¤à¥à¤°</item>
+        <item>à¤¸à¥à¤µà¤¯à¤‚à¤¸à¥‡à¤µà¤•</item>
+        <item>à¤‡à¤¤à¤°</item>
+    </string-array>
+    <!-- ONBOARDING — first-launch carousel (5 cards) -->
+    <string name="onboarding_skip">वगळा</string>
+    <string name="onboarding_back_cd">मागे जा</string>
+    <string name="onboarding_step_format">पायरी %1$d / %2$d</string>
+    <string name="onboarding_continue">पुढे जा</string>
+    <string name="onboarding_get_started">सुरू करा</string>
+    <string name="onboarding_continue_sign_up">साइन अपसाठी पुढे जा</string>
+    <string name="onboarding_log_in">लॉग इन करा</string>
+    <string name="onboarding_brand_label">विपत्ती सारणा</string>
+    <string name="onboarding_emblem_cd">विपत्ती सारणा चिन्ह</string>
+    <string name="onboarding_welcome_title">तयारी आपत्कालापूर्वीच सुरू होते.</string>
+    <string name="onboarding_welcome_body">विपत्ती सारणा आवश्यक आपत्ती माहिती, सुरक्षा मार्गदर्शन आणि आपत्कालीन साधने एका ठिकाणी आणते.</string>
+    <string name="onboarding_map_title">तुमच्या आजुबाजूचा धोका पहा.</string>
+    <string name="onboarding_map_body">रडार नकाशावर तुमच्या ठिकाणाभोवती आपत्ती सूचना, धोके, सुरक्षित भाग आणि महत्त्वाची स्थिती पहा.</string>
+    <string name="onboarding_map_illustration_cd">धोके व सुरक्षित भागाच्या खुणांसह रडार नकाशाचे चित्र</string>
+    <string name="onboarding_news_title">माहितीत राहा. तयार राहा.</string>
+    <string name="onboarding_news_body">आपत्तीसंबंधी अपडेट्स आणि संबंधित बातम्या मिळवा, काय घडत आहे ते समजून घ्या आणि महत्त्वाच्या अधिकृत सूचनांचे पालन करा.</string>
+    <string name="onboarding_news_illustration_cd">आपत्ती बातम्या दाखवणाऱ्या फोनचे चित्र</string>
+    <string name="onboarding_guide_title">गरजेच्या क्षणी, काय करायचे ते जाणून घ्या.</string>
+    <string name="onboarding_guide_body">पूर, भूकंप, दरडकोसळणी आणि आगीसाठी आधी, दरम्यान आणि नंतरचे स्पष्ट मार्गदर्शन मिळवा.</string>
+    <string name="onboarding_phase_before">आधी</string>
+    <string name="onboarding_phase_during">दरम्यान</string>
+    <string name="onboarding_phase_after">नंतर</string>
+    <string name="onboarding_hazard_flood">पूर</string>
+    <string name="onboarding_hazard_quake">भूकंप</string>
+    <string name="onboarding_hazard_landslide">दरडकोसळणी</string>
+    <string name="onboarding_hazard_fire">आग</string>
+    <string name="onboarding_tools_title">तुमची सुरक्षा साधने. एकाच ठिकाणी.</string>
+    <string name="onboarding_tools_body">गरजेनुसार आपत्कालीन साधने, SOS मदत, तक्रार नोंद, स्थानांतरण मार्गदर्शन आणि इतर तयारी सुविधा वापरा.</string>
+    <string name="onboarding_tools_illustration_cd">फोनभोवती आपत्कालीन साधनांचे चित्र</string>
+    <string name="onboarding_ready_status">तुम्ही विपत्ती सारणा वापरण्यासाठी तयार आहात.</string>
+</resources>

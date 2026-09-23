@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Hindi: instructions. Concise, safety-accurate. -->
+<resources>
+    <string name="instructions_manual_title">उत्तरजीविता नियमावली</string>
+    <string name="instructions_manual_subtitle">जानकार बनें। तैयार रहें। सुरक्षित रहें।</string>
+    <string name="instructions_offline_title">ऑफ़लाइन-प्रथम मोड</string>
+    <string name="instructions_offline_subtitle">देखे गए मानचित्र टाइल रखता है; इस बिल्ड में थोक डाउनलोड नहीं</string>
+    <string name="instructions_section_critical">अभी महत्वपूर्ण कार्य</string>
+    <string name="instructions_section_critical_subtitle">तुरंत क्या करें</string>
+    <string name="instructions_critical_empty">इस चरण के लिए कोई महत्वपूर्ण कार्य चिह्नित नहीं — नीचे श्रेणियाँ देखें।</string>
+    <string name="instructions_section_categories">निर्देश श्रेणियाँ</string>
+    <string name="instructions_section_resources">आवश्यक संसाधन</string>
+    <string name="instructions_phase_before">पहले</string>
+    <string name="instructions_phase_during">दौरान</string>
+    <string name="instructions_phase_after">बाद में</string>
+    <string name="instructions_detail_intro">आपकी सुरक्षा सबसे पहले। जोखिम कम करने के लिए इन निर्देशों का पालन करें।</string>
+    <string name="instructions_step_format">चरण %1$d / %2$d</string>
+    <string name="instructions_critical_badge">महत्वपूर्ण</string>
+    <string name="instructions_group_immediate_safety">तत्काल सुरक्षा</string>
+    <string name="instructions_group_immediate_safety_sub">अभी सुरक्षित रहें</string>
+    <string name="instructions_group_evacuation">निकासी मार्गदर्शिका</string>
+    <string name="instructions_group_evacuation_sub">कहाँ जाएँ और क्या करें</string>
+    <string name="instructions_group_utilities">बिजली और उपयोगिताएँ</string>
+    <string name="instructions_group_utilities_sub">बिजली, गैस और पानी की सुरक्षा</string>
+    <string name="instructions_group_vulnerable">संवेदनशील लोग</string>
+    <string name="instructions_group_vulnerable_sub">बच्चे, बुजुर्ग, दिव्यांग</string>
+    <string name="instructions_group_recovery">%1$s के बाद</string>
+    <string name="instructions_group_recovery_sub">पुनर्प्राप्ति और स्वास्थ्य सावधानियाँ</string>
+    <string name="instructions_group_more">अधिक सुरक्षा चरण</string>
+    <string name="instructions_group_more_sub">इस चरण के लिए अतिरिक्त मार्गदर्शन</string>
+    <string name="instructions_resources_contacts">आपातकालीन संपर्क</string>
+    <string name="instructions_resources_contacts_sub">महत्वपूर्ण हेल्पलाइन</string>
+    <string name="instructions_resources_evacuation">आपातकालीन किट</string>
+    <string name="instructions_resources_kit">इंटरैक्टिव निकासी किट</string>
+    <string name="instructions_resources_kit_sub">स्थानांतर से पहले वस्तुएँ जाँचें</string>
+    <string name="instructions_back">निर्देशों पर वापस</string>
+    <string name="instructions_region_format">क्षेत्रीय: %1$s</string>
+    <string name="instructions_call_format">डायल करें %1$s</string>
+
+
+    <!-- Safety poster (instruction image). The artwork itself is English; these
+         labels stay localized so the surrounding UI is fully translated. -->
+    <string name="instructions_poster_title">सुरक्षा पोस्टर</string>
+    <string name="instructions_poster_subtitle">पहले · दौरान · बाद में — एक नज़र में</string>
+    <string name="instructions_poster_open">बड़ा करने के लिए टैप करें</string>
+    <string name="instructions_poster_close">पोस्टर बंद करें</string>
+    <string name="instructions_poster_hint">ज़ूम के लिए पिंच करें · खिसकाने के लिए ड्रैग करें · रीसेट के लिए दो बार टैप करें</string>
+    <string name="instructions_poster_content_desc">%1$s के लिए सुरक्षा पोस्टर — पहले, दौरान और बाद के निर्देश</string>
+    <string name="instructions_choose_disaster">आपदा चुनें</string>
+    <string name="instructions_kit_subtitle">72 घंटे का आत्मनिर्भर पैक</string>
+</resources>

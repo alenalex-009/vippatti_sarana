@@ -103,22 +103,23 @@ import com.example.viewmodel.VippattiUiState
 
 /**
  * ============================================================================
- * INSTRUCTIONS MODULE — SURVIVAL MANUAL (complete ground-up rebuild)
+ * INSTRUCTIONS MODULE — SURVIVAL MANUAL
  * ============================================================================
- * Hierarchical, emergency-first information architecture:
+ * Two clear levels, no redundant layers:
  *
- *   HOME  ->  Disaster type  ->  Phase (Before/During/After)
- *         ->  CRITICAL ACTIONS NOW (scannable top-priority actions)
- *         ->  Instruction Categories -> dedicated detail screens
- *         ->  Emergency Contacts / Emergency Kit / Interactive Kit
+ *   HOME  ->  choose one of the FOUR disasters (Flood / Earthquake /
+ *             Landslide / Fire) or open the essential resources.
+ *   DISASTER  ->  [Back] [title] [approved poster] [BEFORE | DURING | AFTER]
+ *                 [critical actions now] [instruction categories -> detail]
  *
  * All instruction content comes from the existing DisasterInstructions data
  * model — nothing is invented, nothing dropped. The EMERGENCY QUICK TRIGGER
  * (flashlight + SOS siren) is pinned OUTSIDE the scrolling list, permanently
  * visible above the bottom navigation, on every route of this module.
  *
- * Back navigation returns Home while PRESERVING the selected disaster and
- * phase (user context is never reset).
+ * Back pops exactly ONE level: category/module detail -> its disaster,
+ * disaster detail -> home. The poster reader is the innermost layer, so
+ * system back closes it first without losing the disaster screen.
  */
 
 /** In-module navigation routes (detail views are internal to this module). */
@@ -126,6 +127,7 @@ internal object InstructionsRoutes {
   const val HOME = "home"
   const val CONTACTS = "contacts"
   const val KIT = "kit"
+  fun disaster(categoryId: String) = "disaster:$categoryId"
   fun group(categoryId: String, phaseId: String, groupId: String) =
     "group:$categoryId:$phaseId:$groupId"
   fun module(moduleId: String) = "module:$moduleId"
@@ -146,6 +148,9 @@ fun InstructionsScreen(
   var selectedCategoryId by rememberSaveable { mutableStateOf(DisasterInstructions.categories.first().id) }
   var selectedPhaseId by rememberSaveable { mutableStateOf("during") }
   var route by rememberSaveable { mutableStateOf(InstructionsRoutes.HOME) }
+  // Full-screen safety-poster reader. "" = closed (empty string rather than a
+  // nullable value so the saver stays trivially Bundle-compatible).
+  var posterCategoryId by rememberSaveable { mutableStateOf("") }
 
   val category = DisasterInstructions.categories.firstOrNull { it.id == selectedCategoryId }
     ?: DisasterInstructions.categories.first()
@@ -154,67 +159,117 @@ fun InstructionsScreen(
     "after" -> category.after
     else -> category.during
   }
+  val posterCategory = DisasterInstructions.categories.firstOrNull { it.id == posterCategoryId }
 
-  // In-module back navigation returns Home WITHOUT resetting disaster/phase.
-  BackHandler(enabled = route != InstructionsRoutes.HOME) {
-    route = InstructionsRoutes.HOME
+  // Choosing a disaster opens its detail screen; the choice survives tab
+  // switches and process death like every other state in this module.
+  val selectDisaster: (String) -> Unit = { id ->
+    selectedCategoryId = id
+    route = InstructionsRoutes.disaster(id)
   }
 
-  Column(
+  // Back pops exactly ONE level. The poster reader is the INNERMOST layer, so
+  // system back closes it first; then a category detail returns to its
+  // disaster, and the disaster detail returns to the Instructions home.
+  BackHandler(enabled = route != InstructionsRoutes.HOME || posterCategoryId.isNotEmpty()) {
+    when {
+      posterCategoryId.isNotEmpty() -> posterCategoryId = ""
+      route.startsWith("group:") -> route = InstructionsRoutes.disaster(selectedCategoryId)
+      else -> route = InstructionsRoutes.HOME
+    }
+  }
+
+  Box(
     modifier = modifier
       .fillMaxSize()
       .background(ObsidianSurface)
   ) {
-    LazyColumn(
-      modifier = Modifier
-        .weight(1f) // scrolling content always ends ABOVE the emergency trigger
-        .fillMaxWidth(),
-      contentPadding = PaddingValues(bottom = 12.dp),
-      verticalArrangement = Arrangement.spacedBy(4.dp)
+    Column(
+      modifier = Modifier.fillMaxSize()
     ) {
-      item(key = route) {
-        val goHome = { route = InstructionsRoutes.HOME }
-        when {
-          route == InstructionsRoutes.CONTACTS -> ContactsDetailScreen(onBack = goHome)
-          route == InstructionsRoutes.KIT -> KitDetailScreen(onBack = goHome)
-          route.startsWith("group:") -> GroupDetailScreen(route, category, phase, onBack = goHome)
-          route.startsWith("module:") -> {
-            val module = DisasterInstructions.commonModules.firstOrNull {
-              it.id == route.removePrefix("module:")
+      LazyColumn(
+        modifier = Modifier
+          .weight(1f) // scrolling content always ends ABOVE the emergency trigger
+          .fillMaxWidth(),
+        contentPadding = PaddingValues(bottom = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+      ) {
+        item(key = route) {
+          val goHome = { route = InstructionsRoutes.HOME }
+          when {
+            route == InstructionsRoutes.CONTACTS -> ContactsDetailScreen(onBack = goHome)
+            route == InstructionsRoutes.KIT -> KitDetailScreen(onBack = goHome)
+            route.startsWith("group:") -> GroupDetailScreen(
+              route,
+              category,
+              phase,
+              // Back returns to THAT disaster (not the whole Instructions home),
+              // so the user keeps their place and never re-picks the disaster.
+              onBack = { route = InstructionsRoutes.disaster(category.id) }
+            )
+            route.startsWith("module:") -> {
+              val module = DisasterInstructions.commonModules.firstOrNull {
+                it.id == route.removePrefix("module:")
+              }
+              if (module != null) {
+                ModuleDetailScreen(module, onBack = goHome)
+              } else {
+                // Unknown module id (e.g. after a data change) — fall back to
+                // the home chooser instead of an empty screen.
+                InstructionsHome(
+                  uiState = uiState,
+                  onToggleTheme = onToggleTheme,
+                  onToggleOfflineAccess = onToggleOfflineAccess,
+                  onOpenInteractiveBag = onOpenInteractiveBag,
+                  onSelectDisaster = selectDisaster,
+                  onNavigate = { newRoute -> route = newRoute }
+                )
+              }
             }
-            if (module != null) ModuleDetailScreen(module, onBack = goHome) else InstructionsHome(
-              uiState, category, phase, selectedCategoryId, selectedPhaseId,
-              onToggleTheme, onToggleOfflineAccess, onOpenInteractiveBag,
-              { r -> route = r }, { cid, pid -> selectedCategoryId = cid; selectedPhaseId = pid }
+            route == InstructionsRoutes.disaster(category.id) -> DisasterDetailHome(
+              uiState = uiState,
+              category = category,
+              phase = phase,
+              selectedPhaseId = selectedPhaseId,
+              onBack = goHome,
+              onNavigate = { newRoute -> route = newRoute },
+              onSelectPhase = { pid -> selectedPhaseId = pid },
+              onOpenPoster = { posterCategoryId = category.id }
+            )
+            else -> InstructionsHome(
+              uiState = uiState,
+              onToggleTheme = onToggleTheme,
+              onToggleOfflineAccess = onToggleOfflineAccess,
+              onOpenInteractiveBag = onOpenInteractiveBag,
+              onSelectDisaster = selectDisaster,
+              onNavigate = { newRoute -> route = newRoute }
             )
           }
-          else -> InstructionsHome(
-            uiState = uiState,
-            category = category,
-            phase = phase,
-            selectedCategoryId = selectedCategoryId,
-            selectedPhaseId = selectedPhaseId,
-            onToggleTheme = onToggleTheme,
-            onToggleOfflineAccess = onToggleOfflineAccess,
-            onOpenInteractiveBag = onOpenInteractiveBag,
-            onNavigate = { newRoute -> route = newRoute },
-            onSelectCategory = { cid, pid ->
-              selectedCategoryId = cid
-              selectedPhaseId = pid
-            }
-          )
         }
       }
+
+      // PERMANENT EMERGENCY QUICK TRIGGER — pinned above the bottom navigation
+      // on every route of the Instructions module (never scrolls away).
+      EmergencyQuickTrigger(
+        isFlashlightOn = uiState.isFlashlightOn,
+        isSirenOn = uiState.isSirenOn,
+        onToggleFlashlight = onToggleFlashlight,
+        onToggleSiren = onToggleSiren
+      )
     }
 
-    // PERMANENT EMERGENCY QUICK TRIGGER — pinned above the bottom navigation
-    // on every route of the Instructions module (never scrolls away).
-    EmergencyQuickTrigger(
-      isFlashlightOn = uiState.isFlashlightOn,
-      isSirenOn = uiState.isSirenOn,
-      onToggleFlashlight = onToggleFlashlight,
-      onToggleSiren = onToggleSiren
-    )
+    // FULL-SCREEN SAFETY POSTER READER (safety infographic for the selected
+    // disaster). It is the INNERMOST layer of this module — a sibling of the
+    // content column, never a replacement for it — so opening it never
+    // unmounts any instruction content, and the app's bottom navigation and
+    // every other tab stay exactly where they are.
+    if (posterCategory != null) {
+      InstructionPosterZoomOverlay(
+        categoryId = posterCategory.id,
+        disasterTitle = posterCategory.title,
+        onDismiss = { posterCategoryId = "" }
+      )
+    }
   }
 }
 

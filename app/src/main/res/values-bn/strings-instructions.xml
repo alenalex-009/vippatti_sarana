@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Bengali: instructions. Concise, safety-accurate. -->
+<resources>
+    <string name="instructions_manual_title">বাঁচার নির্দেশিকা</string>
+    <string name="instructions_manual_subtitle">জানুন। প্রস্তুত থাকুন। নিরাপদ থাকুন।</string>
+    <string name="instructions_offline_title">অফলাইন-প্রথম মোড</string>
+    <string name="instructions_offline_subtitle">দেখা মানচিত্র অংশ রাখে; এই বিল্ডে বড় ডাউনলোড নেই</string>
+    <string name="instructions_section_critical">এখনই গুরুত্বপূর্ণ কাজ</string>
+    <string name="instructions_section_critical_subtitle">এখনই কী করবেন</string>
+    <string name="instructions_critical_empty">এই ধাপে গুরুত্বপূর্ণ কাজ নেই — নিচের বিভাগ দেখুন।</string>
+    <string name="instructions_section_categories">নির্দেশ বিভাগ</string>
+    <string name="instructions_section_resources">জরুরি সম্পদ</string>
+    <string name="instructions_phase_before">আগে</string>
+    <string name="instructions_phase_during">চলাকালীন</string>
+    <string name="instructions_phase_after">পরে</string>
+    <string name="instructions_detail_intro">আপনার নিরাপত্তাই আগে। ঝুঁকি কমাতে এই নির্দেশ মানুন।</string>
+    <string name="instructions_step_format">ধাপ %1$d / %2$d</string>
+    <string name="instructions_critical_badge">গুরুত্বপূর্ণ</string>
+    <string name="instructions_group_immediate_safety">তাৎক্ষণিক নিরাপত্তা</string>
+    <string name="instructions_group_immediate_safety_sub">এখনই নিরাপদ থাকুন</string>
+    <string name="instructions_group_evacuation">সরিয়ে নেওয়ার নির্দেশিকা</string>
+    <string name="instructions_group_evacuation_sub">কোথায় যাবেন, কী করবেন</string>
+    <string name="instructions_group_utilities">বিদ্যুৎ ও পরিষেবা</string>
+    <string name="instructions_group_utilities_sub">বিদ্যুৎ, গ্যাস, পানির নিরাপত্তা</string>
+    <string name="instructions_group_vulnerable">ঝুঁকিপূর্ণ মানুষ</string>
+    <string name="instructions_group_vulnerable_sub">শিশু, বয়স্ক, প্রতিবন্ধী</string>
+    <string name="instructions_group_recovery">%1$s-এর পর</string>
+    <string name="instructions_group_recovery_sub">পুনরুদ্ধার ও স্বাস্থ্য সতর্কতা</string>
+    <string name="instructions_group_more">আরও নিরাপত্তা ধাপ</string>
+    <string name="instructions_group_more_sub">এই ধাপের অতিরিক্ত নির্দেশ</string>
+    <string name="instructions_resources_contacts">জরুরি যোগাযোগ</string>
+    <string name="instructions_resources_contacts_sub">গুরুত্বপূর্ণ হেল্পলাইন</string>
+    <string name="instructions_resources_evacuation">জরুরি কিট</string>
+    <string name="instructions_resources_kit">ইন্টার‌্যাক্টিভ সরানোর কিট</string>
+    <string name="instructions_resources_kit_sub">সরার আগে জিনিস মিলিয়ে নিন</string>
+    <string name="instructions_back">নির্দেশনায় ফিরুন</string>
+    <string name="instructions_region_format">আঞ্চলিক: %1$s</string>
+    <string name="instructions_call_format">ডায়াল %1$s</string>
+
+
+    <!-- Safety poster (instruction image). -->
+    <string name="instructions_poster_title">নিরাপত্তা পোস্টার</string>
+    <string name="instructions_poster_subtitle">আগে · চলাকালীন · পরে — এক নজরে</string>
+    <string name="instructions_poster_open">বড় করতে ট্যাপ করুন</string>
+    <string name="instructions_poster_close">পোস্টার বন্ধ করুন</string>
+    <string name="instructions_poster_hint">জুম করতে পিঞ্চ করুন · সরাতে ড্র্যাগ করুন · রিসেট করতে দুবার ট্যাপ করুন</string>
+    <string name="instructions_poster_content_desc">%1$s এর জন্য নিরাপত্তা পোস্টার — আগে, চলাকালীন ও পরের নির্দেশনা</string>
+    <string name="instructions_choose_disaster">দুর্যোগ বেছে নিন</string>
+    <string name="instructions_kit_subtitle">৭২ ঘণ্টার স্বয়ংসম্পূর্ণ প্যাক</string>
+</resources>

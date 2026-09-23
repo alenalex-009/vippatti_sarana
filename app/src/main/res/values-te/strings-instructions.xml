@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Telugu: instructions. Concise, safety-accurate. -->
+<resources>
+    <string name="instructions_manual_title">మనుగడ మార్గదర్శిక</string>
+    <string name="instructions_manual_subtitle">తెలుసుకోండి. సిద్ధంగా ఉండండి. సురక్షితంగా ఉండండి.</string>
+    <string name="instructions_offline_title">ఆఫ్‌లైన్-ఫస్ట్ మోడ్</string>
+    <string name="instructions_offline_subtitle">చూసిన మ్యాప్ టైల్స్ ఉంచుతుంది; ఈ బిల్డ్‌లో భారీ డౌన్‌లోడ్ లేదు</string>
+    <string name="instructions_section_critical">ఇప్పుడు కీలక చర్యలు</string>
+    <string name="instructions_section_critical_subtitle">వెంటనే ఏమి చేయాలి</string>
+    <string name="instructions_critical_empty">ఈ దశకు కీలక చర్యలు లేవు — కింది వర్గాలు చూడండి.</string>
+    <string name="instructions_section_categories">సూచన వర్గాలు</string>
+    <string name="instructions_section_resources">అత్యవసర వనరులు</string>
+    <string name="instructions_phase_before">ముందు</string>
+    <string name="instructions_phase_during">సమయంలో</string>
+    <string name="instructions_phase_after">తర్వాత</string>
+    <string name="instructions_detail_intro">మీ భద్రతే ముందు. ప్రమాదం తగ్గించేందుకు ఈ సూచనలు పాటించండి.</string>
+    <string name="instructions_step_format">దశ %1$d / %2$d</string>
+    <string name="instructions_critical_badge">కీలకం</string>
+    <string name="instructions_group_immediate_safety">వెంటనే భద్రత</string>
+    <string name="instructions_group_immediate_safety_sub">ఇప్పుడు సురక్షితంగా ఉండండి</string>
+    <string name="instructions_group_evacuation">తరలింపు మార్గదర్శి</string>
+    <string name="instructions_group_evacuation_sub">ఎక్కడికి వెళ్లాలి, ఏమి చేయాలి</string>
+    <string name="instructions_group_utilities">విద్యుత్ మరియు వినియోగాలు</string>
+    <string name="instructions_group_utilities_sub">విద్యుత్, గ్యాస్, నీటి భద్రత</string>
+    <string name="instructions_group_vulnerable">బలహీన వర్గాలు</string>
+    <string name="instructions_group_vulnerable_sub">పిల్లలు, వృద్ధులు, వికలాంగులు</string>
+    <string name="instructions_group_recovery">%1$s తర్వాత</string>
+    <string name="instructions_group_recovery_sub">కోలుకోవడం, ఆరోగ్య జాగ్రత్తలు</string>
+    <string name="instructions_group_more">మరిన్ని భద్రతా దశలు</string>
+    <string name="instructions_group_more_sub">ఈ దశకు అదనపు మార్గదర్శనం</string>
+    <string name="instructions_resources_contacts">అత్యవసర సంప్రదింపులు</string>
+    <string name="instructions_resources_contacts_sub">ముఖ్యమైన హెల్ప్‌లైన్లు</string>
+    <string name="instructions_resources_evacuation">అత్యవసర కిట్</string>
+    <string name="instructions_resources_kit">ఇంటరాక్టివ్ తరలింపు కిట్</string>
+    <string name="instructions_resources_kit_sub">మారే ముందు వస్తువులు టిక్ చేయండి</string>
+    <string name="instructions_back">సూచనలకు తిరిగి</string>
+    <string name="instructions_region_format">ప్రాంతీయం: %1$s</string>
+    <string name="instructions_call_format">డయల్ చేయండి %1$s</string>
+
+
+    <!-- Safety poster (instruction image). -->
+    <string name="instructions_poster_title">భద్రతా పోస్టర్</string>
+    <string name="instructions_poster_subtitle">ముందు · సమయంలో · తర్వాత — ఒక్క చూపులో</string>
+    <string name="instructions_poster_open">పెద్దగా చూడటానికి నొక్కండి</string>
+    <string name="instructions_poster_close">పోస్టర్ మూసివేయండి</string>
+    <string name="instructions_poster_hint">జూమ్ కోసం పించ్ చేయండి · జరపడానికి డ్రాగ్ చేయండి · రీసెట్ కోసం రెండుసార్లు నొక్కండి</string>
+    <string name="instructions_poster_content_desc">%1$s కోసం భద్రతా పోస్టర్ — ముందు, సమయంలో, తర్వాత మార్గదర్శనం</string>
+    <string name="instructions_choose_disaster">విపత్తును ఎంచుకోండి</string>
+    <string name="instructions_kit_subtitle">72 గంటల ఆత్మనిర్భర ప్యాక్</string>
+</resources>

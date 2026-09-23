@@ -16,6 +16,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
+import com.example.R
 import com.example.data.instructions.DisasterCategory
 import com.example.data.instructions.InstructionItem
 import com.example.data.instructions.InstructionPhase
@@ -47,6 +49,32 @@ internal fun groupVisual(groupId: String): Pair<ImageVector, Color> = when (grou
   "vulnerable" -> Icons.Default.Groups to TacticalCyan
   "recovery" -> Icons.Default.HealthAndSafety to TacticalCyan
   else -> Icons.Default.MenuBook to TacticalCyan
+}
+
+/**
+ * Localized title/subtitle for an instruction group. The classifier below
+ * keeps its internal English keys; the LABELS come from the existing string
+ * resources so every supported language is shown correctly.
+ */
+@Composable
+internal fun groupLabels(groupId: String, disasterTitle: String): Pair<String, String> {
+  val title = when (groupId) {
+    "immediate_safety" -> stringResource(R.string.instructions_group_immediate_safety)
+    "evacuation" -> stringResource(R.string.instructions_group_evacuation)
+    "utilities" -> stringResource(R.string.instructions_group_utilities)
+    "vulnerable" -> stringResource(R.string.instructions_group_vulnerable)
+    "recovery" -> stringResource(R.string.instructions_group_recovery, disasterTitle)
+    else -> stringResource(R.string.instructions_group_more)
+  }
+  val subtitle = when (groupId) {
+    "immediate_safety" -> stringResource(R.string.instructions_group_immediate_safety_sub)
+    "evacuation" -> stringResource(R.string.instructions_group_evacuation_sub)
+    "utilities" -> stringResource(R.string.instructions_group_utilities_sub)
+    "vulnerable" -> stringResource(R.string.instructions_group_vulnerable_sub)
+    "recovery" -> stringResource(R.string.instructions_group_recovery_sub)
+    else -> stringResource(R.string.instructions_group_more_sub)
+  }
+  return title to subtitle
 }
 
 internal fun buildInstructionGroups(

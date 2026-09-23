@@ -1,15 +1,9 @@
-package com.example.ui.screens
+﻿package com.example.ui.screens
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -23,66 +17,64 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessibleForward
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.LocalHospital
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.CloudSync
-import androidx.compose.material.icons.filled.CrisisAlert
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Emergency
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.HolidayVillage
-import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.LocalFireDepartment
+import androidx.compose.material.icons.filled.LocalHospital
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.MedicalInformation
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.RecordVoiceOver
 import androidx.compose.material.icons.filled.Pets
+import androidx.compose.material.icons.filled.RecordVoiceOver
 import androidx.compose.material.icons.filled.Send
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Vaccines
 import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material.icons.outlined.Shield
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringArrayResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.BuildConfig
+import com.example.R
 import com.example.ui.theme.EmergencyRed
 import com.example.ui.theme.EmergencyRedBright
 import com.example.ui.theme.EmergencyRedContainer
 import com.example.ui.theme.NeonEmerald
-import com.example.ui.theme.NeonEmeraldContainer
 import com.example.ui.theme.ObsidianContainer
 import com.example.ui.theme.ObsidianContainerHigh
 import com.example.ui.theme.ObsidianContainerLow
@@ -97,500 +89,14 @@ import com.example.data.news.NewsPresentation
 import com.example.viewmodel.VippattiUiState
 import java.util.Locale
 
-/** Honest reference point for the tile-cache progress bar (64 MB). */
 
-@Composable
-internal fun DistressSignalCenter(
-  onBroadcastSos: () -> Unit,
-  onOpenSituationReport: () -> Unit,
-  pulseScale: Float
-) {
-      Box(
-        modifier = Modifier
-          .fillMaxWidth()
-          .padding(horizontal = 14.dp, vertical = 8.dp)
-      ) {
-        Column(
-          modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(18.dp))
-            .background(
-              Brush.linearGradient(
-                colors = listOf(
-                  EmergencyRed,
-                  Color(0xFFBE123C)
-                )
-              )
-            )
-            .padding(16.dp),
-          verticalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-          Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.Top
-          ) {
-            Column {
-              Row(
-                modifier = Modifier
-                  .clip(CircleShape)
-                  .background(Color.White.copy(alpha = 0.2f))
-                  .padding(horizontal = 8.dp, vertical = 2.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
-              ) {
-                Box(
-                  modifier = Modifier
-                    .size(6.dp)
-                    .scale(pulseScale)
-                    .background(NeonEmerald, CircleShape)
-                )
-                Text(
-                  // STAGE 7 — local-only honesty: this build has no
-                  // relief-network backend (see RELAY_CHANNEL), so the badge
-                  // must never read as a live transmission relay.
-                  text = "LOCAL SOS — NOT TRANSMITTED",
-                  fontSize = 10.sp,
-                  fontWeight = FontWeight.Bold,
-                  color = Color.White,
-                  letterSpacing = 0.5.sp
-                )
-              }
-
-              Text(
-                text = "Distress Signal Center",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Black,
-                color = Color.White,
-                modifier = Modifier.padding(top = 4.dp)
-              )
-
-              Text(
-                text = "Records live GPS, battery & medical tags on this device only. " +
-                  "Nothing is transmitted — dial 112 for response.",
-                fontSize = 12.sp,
-                color = Color.White.copy(alpha = 0.9f),
-                lineHeight = 16.sp,
-                modifier = Modifier.padding(top = 2.dp)
-              )
-            }
-
-            Box(
-              modifier = Modifier
-                .size(42.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .background(Color.White.copy(alpha = 0.2f)),
-              contentAlignment = Alignment.Center
-            ) {
-              Icon(
-                imageVector = Icons.Default.CrisisAlert,
-                contentDescription = null,
-                tint = Color.White,
-                modifier = Modifier.size(24.dp)
-              )
-            }
-          }
-
-          Button(
-            onClick = onBroadcastSos,
-            colors = ButtonDefaults.buttonColors(
-              containerColor = Color.White,
-              contentColor = EmergencyRed
-            ),
-            shape = RoundedCornerShape(12.dp),
-            modifier = Modifier
-              .fillMaxWidth()
-              .height(46.dp)
-              .testTag("broadcast_sos_hero_button")
-          ) {
-            Icon(
-              imageVector = Icons.Default.Emergency,
-              contentDescription = null,
-              tint = EmergencyRed,
-              modifier = Modifier.size(18.dp)
-            )
-            Spacer(modifier = Modifier.width(6.dp))
-            Text(
-              text = "RECORD SOS WITH LIVE GPS",
-              fontSize = 13.sp,
-              fontWeight = FontWeight.Black,
-              letterSpacing = 0.4.sp
-            )
-          }
-
-          // REPORT MY SITUATION — voice/form/photo channel into the LOCAL
-          // device record (no relief-network backend exists, so nothing
-          // reaches any dispatcher). Deliberately separate from the SOS
-          // record: no distress signal is armed, no confirmation gate required.
-          OutlinedButton(
-            onClick = onOpenSituationReport,
-            shape = RoundedCornerShape(12.dp),
-            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.6f)),
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
-            modifier = Modifier
-              .fillMaxWidth()
-              .height(44.dp)
-              .testTag("report_situation_hero_button")
-          ) {
-            Icon(
-              imageVector = Icons.Default.RecordVoiceOver,
-              contentDescription = null,
-              tint = Color.White,
-              modifier = Modifier.size(18.dp)
-            )
-            Spacer(modifier = Modifier.width(6.dp))
-            Text(
-              text = "REPORT MY SITUATION",
-              fontSize = 12.sp,
-              fontWeight = FontWeight.Bold,
-              letterSpacing = 0.4.sp
-            )
-          }
-        }
-      }
-}
-
-@Composable
-internal fun DispatchPriorityLines() {
-  val context = LocalContext.current
-      Column(
-        modifier = Modifier
-          .fillMaxWidth()
-          .padding(horizontal = 14.dp, vertical = 6.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-      ) {
-        Row(
-          modifier = Modifier.fillMaxWidth(),
-          horizontalArrangement = Arrangement.SpaceBetween,
-          verticalAlignment = Alignment.CenterVertically
-        ) {
-          Text(
-            text = "DISASTER DISPATCH (TOLL-FREE)",
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Bold,
-            color = TacticalOnSurfaceVariant,
-            letterSpacing = 0.6.sp
-          )
-          Text(
-            text = "Priority Lines",
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Bold,
-            color = EmergencyRedBright
-          )
-        }
-
-        Row(
-          modifier = Modifier.fillMaxWidth(),
-          horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-          // NDRF 112
-          Column(
-            modifier = Modifier
-              .weight(1f)
-              .clip(RoundedCornerShape(12.dp))
-              .background(ObsidianContainerLow)
-              .border(1.dp, TacticalOutlineVariant.copy(alpha = 0.4f), RoundedCornerShape(12.dp))
-              .clickable {
-                try {
-                  val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:112"))
-                  context.startActivity(intent)
-                } catch (e: Exception) {
-                  Toast.makeText(context, "Cannot dial 112: ${e.message}", Toast.LENGTH_SHORT).show()
-                }
-              }
-              .padding(vertical = 12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-          ) {
-            Box(
-              modifier = Modifier
-                .size(38.dp)
-                .clip(CircleShape)
-                .background(EmergencyRedContainer.copy(alpha = 0.3f)),
-              contentAlignment = Alignment.Center
-            ) {
-              Icon(Icons.Default.Shield, contentDescription = null, tint = EmergencyRedBright, modifier = Modifier.size(20.dp))
-            }
-            Text("NDRF 112", fontSize = 14.sp, fontWeight = FontWeight.Black, color = TacticalOnSurface, modifier = Modifier.padding(top = 4.dp))
-            Text("Disaster Force", fontSize = 10.sp, color = TacticalOnSurfaceVariant)
-          }
-
-          // Ambulance 108
-          Column(
-            modifier = Modifier
-              .weight(1f)
-              .clip(RoundedCornerShape(12.dp))
-              .background(ObsidianContainerLow)
-              .border(1.dp, TacticalOutlineVariant.copy(alpha = 0.4f), RoundedCornerShape(12.dp))
-              .clickable {
-                try {
-                  val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:108"))
-                  context.startActivity(intent)
-                } catch (e: Exception) {
-                  Toast.makeText(context, "Cannot dial 108: ${e.message}", Toast.LENGTH_SHORT).show()
-                }
-              }
-              .padding(vertical = 12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-          ) {
-            Box(
-              modifier = Modifier
-                .size(38.dp)
-                .clip(CircleShape)
-                .background(Color(0xFF0284C7).copy(alpha = 0.2f)),
-              contentAlignment = Alignment.Center
-            ) {
-              Icon(Icons.Default.LocalHospital, contentDescription = null, tint = TacticalCyan, modifier = Modifier.size(20.dp))
-            }
-            Text("Ambulance", fontSize = 14.sp, fontWeight = FontWeight.Black, color = TacticalOnSurface, modifier = Modifier.padding(top = 4.dp))
-            Text("Dial 108", fontSize = 10.sp, color = TacticalOnSurfaceVariant)
-          }
-
-          // Fire 101
-          Column(
-            modifier = Modifier
-              .weight(1f)
-              .clip(RoundedCornerShape(12.dp))
-              .background(ObsidianContainerLow)
-              .border(1.dp, TacticalOutlineVariant.copy(alpha = 0.4f), RoundedCornerShape(12.dp))
-              .clickable {
-                try {
-                  val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:101"))
-                  context.startActivity(intent)
-                } catch (e: Exception) {
-                  Toast.makeText(context, "Cannot dial 101: ${e.message}", Toast.LENGTH_SHORT).show()
-                }
-              }
-              .padding(vertical = 12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-          ) {
-            Box(
-              modifier = Modifier
-                .size(38.dp)
-                .clip(CircleShape)
-                .background(WarningAmber.copy(alpha = 0.2f)),
-              contentAlignment = Alignment.Center
-            ) {
-              Icon(Icons.Default.LocalFireDepartment, contentDescription = null, tint = WarningAmber, modifier = Modifier.size(20.dp))
-            }
-            Text("Fire 101", fontSize = 14.sp, fontWeight = FontWeight.Black, color = TacticalOnSurface, modifier = Modifier.padding(top = 4.dp))
-            Text("Rescue Squad", fontSize = 10.sp, color = TacticalOnSurfaceVariant)
-          }
-        }
-      }
-}
-
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-internal fun EvacuationShelterNeeds() {
-      Box(
-        modifier = Modifier
-          .fillMaxWidth()
-          .padding(horizontal = 14.dp, vertical = 6.dp)
-      ) {
-        Column(
-          modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(ObsidianContainerLow)
-            .border(1.dp, TacticalOutlineVariant.copy(alpha = 0.4f), RoundedCornerShape(16.dp))
-            .padding(14.dp),
-          verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-          Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-          ) {
-            Row(
-              verticalAlignment = Alignment.CenterVertically,
-              horizontalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-              Icon(Icons.Default.HolidayVillage, contentDescription = null, tint = EmergencyRedBright, modifier = Modifier.size(18.dp))
-              Text(
-                text = "EVACUATION SHELTER NEEDS",
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                color = TacticalOnSurface,
-                letterSpacing = 0.5.sp
-              )
-            }
-            Text("Self-Declared", fontSize = 11.sp, color = TacticalOnSurfaceVariant)
-          }
-
-          Text(
-            text = "Assigned disaster camps match these requirements automatically during emergency evacuations:",
-            fontSize = 12.sp,
-            color = TacticalOnSurfaceVariant,
-            lineHeight = 16.sp
-          )
-
-          // FlowRow so the requirement chips wrap to a new line on narrow
-          // screens instead of overflowing the card edge.
-          FlowRow(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-          ) {
-            // Elder
-            Row(
-              modifier = Modifier
-                .clip(CircleShape)
-                .background(NeonEmeraldContainer.copy(alpha = 0.15f))
-                .border(1.dp, NeonEmerald.copy(alpha = 0.3f), CircleShape)
-                .padding(horizontal = 8.dp, vertical = 4.dp),
-              verticalAlignment = Alignment.CenterVertically,
-              horizontalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-              Icon(Icons.Default.AccessibleForward, contentDescription = null, tint = NeonEmerald, modifier = Modifier.size(14.dp))
-              Text("Elderly / Mobility", fontSize = 10.sp, fontWeight = FontWeight.SemiBold, color = NeonEmerald)
-            }
-
-            // Pet
-            Row(
-              modifier = Modifier
-                .clip(CircleShape)
-                .background(WarningAmber.copy(alpha = 0.15f))
-                .border(1.dp, WarningAmber.copy(alpha = 0.3f), CircleShape)
-                .padding(horizontal = 8.dp, vertical = 4.dp),
-              verticalAlignment = Alignment.CenterVertically,
-              horizontalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-              Icon(Icons.Default.Pets, contentDescription = null, tint = WarningAmber, modifier = Modifier.size(14.dp))
-              Text("Pet-Friendly (1 Dog)", fontSize = 10.sp, fontWeight = FontWeight.SemiBold, color = WarningAmber)
-            }
-
-            // Oxygen
-            Row(
-              modifier = Modifier
-                .clip(CircleShape)
-                .background(TacticalCyan.copy(alpha = 0.15f))
-                .border(1.dp, TacticalCyan.copy(alpha = 0.3f), CircleShape)
-                .padding(horizontal = 8.dp, vertical = 4.dp),
-              verticalAlignment = Alignment.CenterVertically,
-              horizontalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-              Icon(Icons.Default.Vaccines, contentDescription = null, tint = TacticalCyan, modifier = Modifier.size(14.dp))
-              Text("Oxygen / Meds", fontSize = 10.sp, fontWeight = FontWeight.SemiBold, color = TacticalCyan)
-            }
-          }
-        }
-      }
-}
-
-@Composable
-internal fun OfflineResiliencePack(
-  uiState: VippattiUiState
-) {
-      Box(
-        modifier = Modifier
-          .fillMaxWidth()
-          .padding(horizontal = 14.dp, vertical = 6.dp)
-      ) {
-        Column(
-          modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(ObsidianContainerLow)
-            .border(1.dp, TacticalOutlineVariant.copy(alpha = 0.4f), RoundedCornerShape(16.dp))
-            .padding(14.dp),
-          verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-          Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-          ) {
-            Row(
-              verticalAlignment = Alignment.CenterVertically,
-              horizontalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-              Icon(Icons.Default.CloudSync, contentDescription = null, tint = TacticalCyan, modifier = Modifier.size(18.dp))
-              Text(
-                text = "OFFLINE RESILIENCE PACK",
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                color = TacticalOnSurface,
-                letterSpacing = 0.5.sp
-              )
-            }
-
-            Row(
-              verticalAlignment = Alignment.CenterVertically,
-              horizontalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-              Box(modifier = Modifier.size(6.dp).background(if (uiState.isOfflineFirstMode) NeonEmerald else TacticalOnSurfaceVariant, CircleShape))
-              Text(
-                text = if (uiState.isOfflineFirstMode) "Offline-first ON" else "Offline-first OFF",
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
-                color = if (uiState.isOfflineFirstMode) NeonEmerald else TacticalOnSurfaceVariant
-              )
-            }
-          }
-
-          // REAL offline map-cache size — measured from the osmdroid tile
-          // directory on disk. No fabricated "48 MB / 64 MB" numbers: until a
-          // measurement exists the row says so honestly.
-          Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-          ) {
-            Text("Offline Relief Map Cache", fontSize = 11.sp, color = TacticalOnSurfaceVariant)
-            Text(
-              text = uiState.tileCacheSizeLabel ?: "Not measured yet",
-              fontSize = 11.sp,
-              fontWeight = FontWeight.Bold,
-              color = TacticalOnSurface
-            )
-          }
-
-          LinearProgressIndicator(
-            progress = {
-              uiState.tileCacheBytes?.let { bytes ->
-                (bytes.toFloat() / OFFLINE_MAP_CACHE_TARGET_BYTES).coerceIn(0f, 1f)
-              } ?: 0f
-            },
-            modifier = Modifier
-              .fillMaxWidth()
-              .height(6.dp)
-              .clip(RoundedCornerShape(3.dp)),
-            color = TacticalCyan,
-            trackColor = ObsidianContainerHigh
-          )
-
-          Row(
-            modifier = Modifier
-              .fillMaxWidth()
-              .border(1.dp, TacticalOutlineVariant.copy(alpha = 0.2f))
-              .padding(top = 8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
-          ) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-              Icon(Icons.Default.MyLocation, contentDescription = null, tint = TacticalOnSurfaceVariant, modifier = Modifier.size(14.dp))
-              Text(
-                text = uiState.disasterLastSyncMillis?.let { millis ->
-                  "Disaster sync: " + NewsPresentation.relativeAge(millis, System.currentTimeMillis())
-                } ?: "Disaster sync: not yet run",
-                fontSize = 11.sp,
-                color = TacticalOnSurfaceVariant
-              )
-            }
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-              Icon(Icons.Default.Verified, contentDescription = null, tint = NeonEmerald, modifier = Modifier.size(14.dp))
-              Text(
-                text = "Data: ${uiState.disasterDataStatusLabel}",
-                fontSize = 11.sp,
-                color = NeonEmerald
-              )
-            }
-          }
-        }
-      }
-}
-
+/** Honest reference point for the tile-cache bar (64 MB) — no fabricated sizes. */
 private const val OFFLINE_MAP_CACHE_TARGET_BYTES: Long = 64L * 1000L * 1000L
 
-@OptIn(ExperimentalLayoutApi::class)
+/** Human-readable form of [OFFLINE_MAP_CACHE_TARGET_BYTES] for the cache row. */
+private fun offlineMapCacheTargetLabel(): String =
+  "${OFFLINE_MAP_CACHE_TARGET_BYTES / (1000L * 1000L)} MB"
+
 @Composable
 fun ProfileScreen(
   uiState: VippattiUiState,
@@ -606,731 +112,1299 @@ fun ProfileScreen(
   onOpenAuthorityConsole: () -> Unit = {},
   modifier: Modifier = Modifier
 ) {
-  val context = LocalContext.current
-  val infiniteTransition = rememberInfiniteTransition(label = "profile_anim")
-  val pulseScale by infiniteTransition.animateFloat(
-    initialValue = 0.8f,
-    targetValue = 1.3f,
-    animationSpec = infiniteRepeatable(
-      animation = tween(1000, easing = FastOutSlowInEasing),
-      repeatMode = RepeatMode.Reverse
-    ),
-    label = "profile_live_pulse"
-  )
-
-  LazyColumn(
+  Column(
     modifier = modifier
       .fillMaxSize()
       .background(ObsidianSurface)
-      .padding(bottom = 8.dp)
   ) {
-    // 1. Header Bar
-    item {
-      Row(
-        modifier = Modifier
-          .fillMaxWidth()
-          .background(ObsidianSurface)
-          .border(1.dp, TacticalOutlineVariant.copy(alpha = 0.3f))
-          .padding(horizontal = 16.dp, vertical = 12.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-      ) {
-        Row(
-          verticalAlignment = Alignment.CenterVertically,
-          horizontalArrangement = Arrangement.spacedBy(10.dp),
-          modifier = Modifier.weight(1f)
+    // ---- 1. COMPACT PROFILE HEADER -----------------------------------------
+    ProfileHeaderCard(
+      uiState = uiState,
+      accountEmail = accountEmail,
+      onOpenEditProfile = onOpenEditProfile
+    )
+
+    // ---- 2..10. SCANNABLE SETTINGS GROUPS ----------------------------------
+    LazyColumn(
+      modifier = Modifier
+        .fillMaxSize()
+        .padding(horizontal = 16.dp)
+    ) {
+      item {
+        // Compact screen title — the only heading on the page, kept small so
+        // the identity card and safety controls stay above the fold.
+        ProfileSectionHeader(
+          title = stringResource(R.string.profile_header_title),
+          modifier = Modifier.padding(top = 4.dp)
+        )
+      }
+      item {
+        SafetyStatusCard(
+          userIsSafe = uiState.userIsSafe,
+          onSetSafety = onSetSafety
+        )
+      }
+      item {
+        SosCenterCard(
+          onBroadcastSos = onBroadcastSos,
+          onOpenSituationReport = onOpenSituationReport
+        )
+      }
+      item {
+        EmergencyHelplinesSection()
+      }
+      item {
+        ProfileSectionHeader(
+          title = stringResource(R.string.profile_section_details),
+          modifier = Modifier.padding(top = 4.dp)
+        )
+      }
+      item {
+        ProfileDetailsCard(uiState = uiState)
+      }
+      item {
+        ProfileSectionHeader(title = stringResource(R.string.profile_section_contacts))
+      }
+      item {
+        SectionCard(
+          actionLabel = stringResource(R.string.profile_add_contact),
+          onActionClick = onOpenAddContact
         ) {
-          Box(
-            modifier = Modifier
-              .size(38.dp)
-              .clip(CircleShape)
-              .background(EmergencyRedContainer.copy(alpha = 0.3f))
-              .border(1.dp, EmergencyRed.copy(alpha = 0.4f), CircleShape),
-            contentAlignment = Alignment.Center
-          ) {
-            Icon(
-              imageVector = Icons.Outlined.Shield,
-              contentDescription = null,
-              tint = EmergencyRedBright,
-              modifier = Modifier.size(20.dp)
-            )
-          }
-          Column {
+          if (uiState.contactsList.isEmpty()) {
             Text(
-              text = "VIPPATTI SARANA",
-              fontSize = 11.sp,
-              fontWeight = FontWeight.Black,
-              color = EmergencyRedBright,
-              letterSpacing = 0.8.sp
+              text = "No emergency contacts yet — add family or neighbours so your local SOS record can reference them. Contacts stay on this device only.",
+              fontSize = 12.sp,
+              color = TacticalOnSurfaceVariant,
+              lineHeight = 16.sp,
+              modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)
             )
-            Text(
-              text = "Profile & Emergency Net",
-              fontSize = 15.sp,
-              fontWeight = FontWeight.Bold,
-              color = TacticalOnSurface
-            )
-            if (!accountEmail.isNullOrBlank()) {
-              Text(
-                text = String.format(Locale.US, "%s \u2022 SARANA", accountEmail),
-                fontSize = 9.sp,
-                color = TacticalOnSurfaceVariant,
-                maxLines = 1
-              )
+          }
+          uiState.contactsList.forEachIndexed { index, contact ->
+            if (index > 0) {
+              RowDivider()
             }
-          }
-        }
-
-        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-          if (!accountEmail.isNullOrBlank()) {
-            IconButton(
-              onClick = onSignOut,
-              modifier = Modifier
-                .size(34.dp)
-                .clip(CircleShape)
-                .background(ObsidianContainer)
-                .testTag("profile_sign_out_button")
-            ) {
-              Icon(
-                imageVector = Icons.Default.Logout,
-                contentDescription = "Sign Out",
-                tint = EmergencyRed,
-                modifier = Modifier.size(17.dp)
-              )
-            }
-          }
-          IconButton(
-            onClick = onToggleTheme,
-            modifier = Modifier
-              .size(34.dp)
-              .clip(CircleShape)
-              .background(ObsidianContainer)
-              .testTag("profile_theme_toggle_button")
-          ) {
-            Icon(
-              imageVector = if (uiState.isDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,
-              contentDescription = "Theme",
-              tint = if (uiState.isDarkTheme) WarningAmber else TacticalOnSurface,
-              modifier = Modifier.size(17.dp)
-            )
-          }
-
-          IconButton(
-            onClick = { /* Open settings */ },
-            modifier = Modifier
-              .size(34.dp)
-              .clip(CircleShape)
-              .background(ObsidianContainer)
-              .testTag("profile_settings_button")
-          ) {
-            Icon(
-              imageVector = Icons.Default.Settings,
-              contentDescription = "Settings",
-              tint = TacticalOnSurface,
-              modifier = Modifier.size(17.dp)
+            ContactRow(
+              uiState = uiState,
+              name = contact.name,
+              role = contact.role,
+              phone = contact.phone,
+              locationNote = contact.locationNote,
+              initials = contact.initials,
+              colorHex = contact.colorHex
             )
           }
         }
       }
+      item {
+        ProfileSectionHeader(title = "AUTHORITY CONSOLE")
+      }
+      item {
+        SectionCard(
+          actionLabel = "Open",
+          onActionClick = onOpenAuthorityConsole
+        ) {
+          Text(
+            text = "Enter field shelter & habitation records and rank habitations for " +
+              "IMMEDIATE / SHORT-TERM / MEDIUM-TERM relocation against the live " +
+              "hazard picture (SIH 26191). Records stay on this device; demo rows " +
+              "stay labelled SIMULATED.",
+            fontSize = 12.sp,
+            color = TacticalOnSurfaceVariant,
+            lineHeight = 16.sp,
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)
+          )
+        }
+      }
+      item {
+        ProfileSectionHeader(title = stringResource(R.string.profile_section_app_data))
+      }
+      item {
+        AppDataCard(uiState = uiState)
+      }
+      item {
+        ProfileSectionHeader(title = stringResource(R.string.profile_section_preferences))
+      }
+      item {
+        PreferencesCard(
+          isDarkTheme = uiState.isDarkTheme,
+          onToggleTheme = onToggleTheme
+        )
+      }
+      item {
+        ProfileSectionHeader(title = stringResource(R.string.profile_section_account))
+      }
+      item {
+        AccountCard(
+          accountEmail = accountEmail,
+          onSignOut = onSignOut
+        )
+      }
+      item {
+        ProfileSectionHeader(title = stringResource(R.string.profile_section_about))
+      }
+      item {
+        AboutCard()
+      }
+      item { Spacer(modifier = Modifier.height(20.dp)) }
     }
+  }
+}
 
-    // 2. Distress Signal Center (Red Gradient Hero Card)
-    item {
-      DistressSignalCenter(
-        onBroadcastSos = onBroadcastSos,
-        onOpenSituationReport = onOpenSituationReport,
-        pulseScale = pulseScale
+// ---------------------------------------------------------------------------
+// SECTION 2 — SAFETY STATUS (existing I-am-safe / need-assistance switcher)
+// ---------------------------------------------------------------------------
+
+@Composable
+internal fun SafetyStatusCard(
+  userIsSafe: Boolean,
+  onSetSafety: (Boolean) -> Unit
+) {
+  Column(
+    modifier = Modifier
+      .fillMaxWidth()
+      .padding(top = 4.dp),
+    verticalArrangement = Arrangement.spacedBy(8.dp)
+  ) {
+    Row(
+      modifier = Modifier
+        .fillMaxWidth()
+        .clip(RoundedCornerShape(16.dp))
+        .background(ObsidianContainerLow)
+        .border(
+          width = 1.dp,
+          color = TacticalOutlineVariant.copy(alpha = 0.22f),
+          shape = RoundedCornerShape(16.dp)
+        )
+        .padding(4.dp),
+      horizontalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+      SafetyOption(
+        selected = userIsSafe,
+        label = stringResource(R.string.profile_safety_safe),
+        icon = Icons.Default.CheckCircle,
+        selectedContainer = NeonEmerald,
+        selectedContent = OnNeonEmerald,
+        onClick = { onSetSafety(true) },
+        modifier = Modifier.weight(1f)
+      )
+      SafetyOption(
+        selected = !userIsSafe,
+        label = stringResource(R.string.profile_safety_needs_help),
+        icon = Icons.Default.Warning,
+        selectedContainer = EmergencyRed,
+        selectedContent = Color.White,
+        onClick = { onSetSafety(false) },
+        modifier = Modifier.weight(1f)
       )
     }
-    item {
-      Box(
-        modifier = Modifier
-          .fillMaxWidth()
-          .padding(horizontal = 14.dp, vertical = 6.dp)
-      ) {
-        Column(
-          modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(ObsidianContainerLow)
-            .border(1.dp, TacticalOutlineVariant.copy(alpha = 0.4f), RoundedCornerShape(16.dp))
-            .padding(14.dp),
-          verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-          // User Details Header Row
-          Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-          ) {
-            Row(
-              verticalAlignment = Alignment.CenterVertically,
-              horizontalArrangement = Arrangement.spacedBy(10.dp),
-              // Flex so long citizen names wrap and the blood-group chip +
-              // edit button stay fully visible on any width.
-              modifier = Modifier.weight(1f)
-            ) {
-              Box(contentAlignment = Alignment.BottomEnd) {
-                Box(
-                  modifier = Modifier
-                    .size(48.dp)
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(ObsidianContainerHigh)
-                    .border(1.dp, TacticalOutlineVariant, RoundedCornerShape(14.dp)),
-                  contentAlignment = Alignment.Center
-                ) {
-                  Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = null,
-                    tint = TacticalOnSurfaceVariant,
-                    modifier = Modifier.size(28.dp)
-                  )
-                }
-                Box(
-                  modifier = Modifier
-                    .size(12.dp)
-                    .background(NeonEmerald, CircleShape)
-                    .border(2.dp, ObsidianContainerLow, CircleShape)
-                )
-              }
+    RowDescription(
+      text = if (userIsSafe) {
+        stringResource(R.string.profile_safety_safe_description)
+      } else {
+        stringResource(R.string.profile_safety_needs_help_description)
+      },
+      modifier = Modifier.padding(start = 4.dp)
+    )
+  }
+}
 
-              Column {
-                Row(
-                  verticalAlignment = Alignment.CenterVertically,
-                  horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                  Text(
-                    text = uiState.userProfile.fullName,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = TacticalOnSurface
-                  )
-                  Icon(
-                    imageVector = Icons.Default.Verified,
-                    contentDescription = "Verified ID",
-                    tint = Color(0xFF3B82F6),
-                    modifier = Modifier.size(16.dp)
-                  )
-                }
-                Text(
-                  text = "ID: ${uiState.userProfile.citizenId}",
-                  fontSize = 12.sp,
-                  color = TacticalOnSurfaceVariant
-                )
-              }
-            }
+@Composable
+private fun SafetyOption(
+  selected: Boolean,
+  label: String,
+  icon: ImageVector,
+  selectedContainer: Color,
+  selectedContent: Color,
+  onClick: () -> Unit,
+  modifier: Modifier = Modifier
+) {
+  Row(
+    modifier = modifier
+      .clip(RoundedCornerShape(12.dp))
+      .background(if (selected) selectedContainer else Color.Transparent)
+      .clickable(onClick = onClick)
+      .heightIn(min = 48.dp)
+      .padding(horizontal = 10.dp, vertical = 10.dp),
+    horizontalArrangement = Arrangement.Center,
+    verticalAlignment = Alignment.CenterVertically
+  ) {
+    Icon(
+      imageVector = icon,
+      contentDescription = null,
+      tint = if (selected) selectedContent else TacticalOnSurfaceVariant,
+      modifier = Modifier.size(17.dp)
+    )
+    Spacer(modifier = Modifier.width(6.dp))
+    Text(
+      text = label,
+      fontSize = 13.sp,
+      fontWeight = FontWeight.Bold,
+      color = if (selected) selectedContent else TacticalOnSurfaceVariant,
+      textAlign = TextAlign.Center
+    )
+  }
+}
 
-            Box(
-              modifier = Modifier
-                .clip(CircleShape)
-                .background(EmergencyRedContainer.copy(alpha = 0.4f))
-                .border(1.dp, EmergencyRed.copy(alpha = 0.4f), CircleShape)
-                .padding(horizontal = 10.dp, vertical = 4.dp)
-            ) {
-              Text(
-                text = uiState.userProfile.bloodGroupLabel,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Black,
-                color = EmergencyRedBright
-              )
-            }
+// ---------------------------------------------------------------------------
+// SECTION 3 — SOS CENTER  |  SECTION 4 — EMERGENCY HELPLINES
+// ---------------------------------------------------------------------------
 
-            // Edit Profile — opens the editable citizen identity dialog
-            IconButton(
-              onClick = onOpenEditProfile,
-              modifier = Modifier
-                .size(30.dp)
-                .clip(CircleShape)
-                .background(ObsidianContainer)
-                .border(1.dp, TacticalOutlineVariant.copy(alpha = 0.4f), CircleShape)
-                .testTag("profile_edit_button")
-            ) {
-              Icon(
-                imageVector = Icons.Default.Edit,
-                contentDescription = "Edit Profile",
-                tint = TacticalCyan,
-                modifier = Modifier.size(15.dp)
-              )
-            }
-          }
-
-          // Safety Status Switcher
-          Row(
-            modifier = Modifier
-              .fillMaxWidth()
-              .clip(RoundedCornerShape(12.dp))
-              .background(ObsidianContainer)
-              .border(1.dp, TacticalOutlineVariant.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
-              .padding(4.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
-          ) {
-            // I AM SAFE
-            Row(
-              modifier = Modifier
-                .weight(1f)
-                .clip(RoundedCornerShape(8.dp))
-                .background(if (uiState.userIsSafe) NeonEmerald else Color.Transparent)
-                .clickable { onSetSafety(true) }
-                .padding(vertical = 8.dp),
-              horizontalArrangement = Arrangement.Center,
-              verticalAlignment = Alignment.CenterVertically
-            ) {
-              Icon(
-                imageVector = Icons.Default.CheckCircle,
-                contentDescription = null,
-                tint = if (uiState.userIsSafe) OnNeonEmerald else TacticalOnSurfaceVariant,
-                modifier = Modifier.size(16.dp)
-              )
-              Spacer(modifier = Modifier.width(4.dp))
-              Text(
-                text = "I AM SAFE",
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
-                color = if (uiState.userIsSafe) OnNeonEmerald else TacticalOnSurfaceVariant
-              )
-            }
-
-            // NEED ASSISTANCE
-            Row(
-              modifier = Modifier
-                .weight(1f)
-                .clip(RoundedCornerShape(8.dp))
-                .background(if (!uiState.userIsSafe) EmergencyRed else Color.Transparent)
-                .clickable { onSetSafety(false) }
-                .padding(vertical = 8.dp),
-              horizontalArrangement = Arrangement.Center,
-              verticalAlignment = Alignment.CenterVertically
-            ) {
-              Icon(
-                imageVector = Icons.Default.Warning,
-                contentDescription = null,
-                tint = if (!uiState.userIsSafe) Color.White else TacticalOnSurfaceVariant,
-                modifier = Modifier.size(16.dp)
-              )
-              Spacer(modifier = Modifier.width(4.dp))
-              Text(
-                text = "NEED ASSISTANCE",
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
-                color = if (!uiState.userIsSafe) Color.White else TacticalOnSurfaceVariant
-              )
-            }
-          }
-
-          // Two Info Cards (Dependents & Medical)
-          Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-          ) {
-            // Dependents
-            Column(
-              modifier = Modifier
-                .weight(1f)
-                .clip(RoundedCornerShape(12.dp))
-                .background(ObsidianContainer)
-                .border(1.dp, TacticalOutlineVariant.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
-                .padding(10.dp),
-              verticalArrangement = Arrangement.spacedBy(2.dp)
-            ) {
-              Text("Family Dependents", fontSize = 11.sp, color = TacticalOnSurfaceVariant)
-              Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                modifier = Modifier.padding(top = 2.dp)
-              ) {
-                Icon(Icons.Default.Group, contentDescription = null, tint = EmergencyRedBright, modifier = Modifier.size(16.dp))
-                Text(uiState.userProfile.dependentsLabel, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = TacticalOnSurface)
-              }
-              Text(uiState.userProfile.dependentsDetail, fontSize = 10.sp, color = TacticalOnSurfaceVariant)
-            }
-
-            // Medical
-            Column(
-              modifier = Modifier
-                .weight(1f)
-                .clip(RoundedCornerShape(12.dp))
-                .background(ObsidianContainer)
-                .border(1.dp, TacticalOutlineVariant.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
-                .padding(10.dp),
-              verticalArrangement = Arrangement.spacedBy(2.dp)
-            ) {
-              Text("Medical Attention Tag", fontSize = 11.sp, color = TacticalOnSurfaceVariant)
-              Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                modifier = Modifier.padding(top = 2.dp)
-              ) {
-                Icon(Icons.Default.MedicalInformation, contentDescription = null, tint = WarningAmber, modifier = Modifier.size(16.dp))
-                Text(uiState.userProfile.medicalTag, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = TacticalOnSurface)
-              }
-              Text(uiState.userProfile.medicalNotes, fontSize = 10.sp, color = TacticalOnSurfaceVariant)
-            }
-          }
-        }
-      }
-    }
-    // 4. Disaster Dispatch (Toll-Free) Priority Lines
-    item { DispatchPriorityLines() }
-    // 5. Family & Neighborhood Kin
-    item {
+@Composable
+internal fun SosCenterCard(
+  onBroadcastSos: () -> Unit,
+  onOpenSituationReport: () -> Unit
+) {
+  Column(
+    modifier = Modifier
+      .fillMaxWidth()
+      .padding(top = 16.dp)
+      .clip(RoundedCornerShape(18.dp))
+      .background(
+        Brush.linearGradient(
+          colors = listOf(EmergencyRed, Color(0xFFBE123C))
+        )
+      )
+      .padding(16.dp),
+    verticalArrangement = Arrangement.spacedBy(10.dp)
+  ) {
+    Row(
+      modifier = Modifier.fillMaxWidth(),
+      verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+      Icon(
+        imageVector = Icons.Default.Emergency,
+        contentDescription = null,
+        tint = Color.White,
+        modifier = Modifier.size(22.dp)
+      )
       Column(
-        modifier = Modifier
-          .fillMaxWidth()
-          .padding(horizontal = 14.dp, vertical = 6.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        modifier = Modifier.weight(1f),
+        verticalArrangement = Arrangement.spacedBy(2.dp)
       ) {
-        Row(
-          modifier = Modifier.fillMaxWidth(),
-          horizontalArrangement = Arrangement.SpaceBetween,
-          verticalAlignment = Alignment.CenterVertically
-        ) {
-          Text(
-            text = "FAMILY & NEIGHBORHOOD KIN",
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Bold,
-            color = TacticalOnSurfaceVariant,
-            letterSpacing = 0.6.sp
-          )
-          Row(
-            modifier = Modifier
-              .clickable { onOpenAddContact() }
-              .padding(4.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(2.dp)
-          ) {
-            Icon(Icons.Default.Add, contentDescription = null, tint = EmergencyRedBright, modifier = Modifier.size(14.dp))
-            Text("+ Add Contact", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = EmergencyRedBright)
-          }
-        }
-      }
-    }
-
-    if (uiState.contactsList.isEmpty()) {
-      item {
         Text(
-          "No emergency contacts yet — add family or neighbours so your local SOS\n" +
-            "record and go-bag checklists can reference them. (Contacts are stored\n" +
-            "on this device only and nothing is transmitted from this build.)",
-          fontSize = 9.sp, color = TacticalOnSurfaceVariant, lineHeight = 12.sp,
-          modifier = Modifier.padding(horizontal = 14.dp, vertical = 4.dp)
+          text = stringResource(R.string.profile_sos_title),
+          fontSize = 17.sp,
+          fontWeight = FontWeight.Black,
+          color = Color.White
+        )
+        Text(
+          text = stringResource(R.string.profile_sos_subtitle),
+          fontSize = 12.sp,
+          lineHeight = 16.sp,
+          color = Color.White.copy(alpha = 0.9f)
         )
       }
     }
 
-    items(uiState.contactsList) { contact ->
-      Box(
-        modifier = Modifier
-          .fillMaxWidth()
-          .padding(horizontal = 14.dp, vertical = 4.dp)
-      ) {
-        Row(
-          modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(14.dp))
-            .background(ObsidianContainerLow)
-            .border(1.dp, TacticalOutlineVariant.copy(alpha = 0.3f), RoundedCornerShape(14.dp))
-            .padding(12.dp),
-          horizontalArrangement = Arrangement.SpaceBetween,
-          verticalAlignment = Alignment.CenterVertically
-        ) {
-          Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
-            // Flex so long names wrap safely and the call/SOS buttons stay on screen.
-            modifier = Modifier.weight(1f)
-          ) {
-            Box(
-              modifier = Modifier
-                .size(36.dp)
-                .clip(CircleShape)
-                .background(Color(contact.colorHex).copy(alpha = 0.25f)),
-              contentAlignment = Alignment.Center
-            ) {
-              Text(
-                text = contact.initials,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Black,
-                color = Color(contact.colorHex)
-              )
-            }
-
-            Column {
-              Text(
-                text = "${contact.name} (${contact.role})",
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Bold,
-                color = TacticalOnSurface
-              )
-              Text(
-                text = "${contact.phone} • ${contact.locationNote}",
-                fontSize = 11.sp,
-                color = TacticalOnSurfaceVariant
-              )
-            }
-          }
-
-          Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            // Call button
-            IconButton(
-              onClick = {
-                try {
-                  val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:${contact.phone.replace(" ", "")}"))
-                  context.startActivity(intent)
-                } catch (e: Exception) {
-                  Toast.makeText(context, "Cannot dial ${contact.name}: ${e.message}", Toast.LENGTH_SHORT).show()
-                }
-              },
-              modifier = Modifier
-                .size(32.dp)
-                .clip(RoundedCornerShape(8.dp))
-                .background(ObsidianContainer)
-            ) {
-              Icon(Icons.Default.Call, contentDescription = "Call", tint = TacticalOnSurface, modifier = Modifier.size(16.dp))
-            }
-
-            // SOS SMS button
-            Button(
-              onClick = {
-                try {
-                  val smsIntent = Intent(Intent.ACTION_SENDTO, Uri.parse("smsto:${contact.phone.replace(" ", "")}")).apply {
-                    // Fallback India-centre coordinates until a REAL GPS fix is applied.
-                    val locationTag = if (uiState.isUserLocationFallback) " (INDIA FALLBACK)" else " (DEVICE GPS)"
-                    putExtra(
-                      "sms_body",
-                      "EMERGENCY SOS: I need assistance! GPS: " +
-                        String.format("%.4f", uiState.userLocation.lat) + " N, " +
-                        String.format("%.4f", uiState.userLocation.lon) + " E" +
-                        locationTag + ". Sent via VIPPATTI SARANA."
-                    )
-                  }
-                  context.startActivity(smsIntent)
-                } catch (e: Exception) {
-                  Toast.makeText(context, "Cannot send SMS: ${e.message}", Toast.LENGTH_SHORT).show()
-                }
-              },
-              colors = ButtonDefaults.buttonColors(
-                containerColor = EmergencyRedContainer.copy(alpha = 0.3f),
-                contentColor = EmergencyRedBright
-              ),
-              shape = RoundedCornerShape(8.dp),
-              contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp, vertical = 4.dp),
-              modifier = Modifier.height(32.dp)
-            ) {
-              Icon(Icons.Default.Send, contentDescription = null, modifier = Modifier.size(13.dp))
-              Spacer(modifier = Modifier.width(3.dp))
-              Text("SOS SMS", fontSize = 10.sp, fontWeight = FontWeight.Bold)
-            }
-          }
-        }
-      }
-    }
-
-    // 6. Evacuation Shelter Needs
-    item { EvacuationShelterNeeds() }
-    // 7. Relocation Intelligence (household evacuation priority)
-    item {
-      val plan = uiState.relocationPlan
-      if (plan != null) {
-        Column(
-          modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 14.dp, vertical = 6.dp)
-            .clip(RoundedCornerShape(16.dp))
-            .background(ObsidianContainerLow)
-            .border(1.dp, TacticalOutlineVariant.copy(alpha = 0.4f), RoundedCornerShape(16.dp))
-            .padding(14.dp),
-          verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-          Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-          ) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-              Icon(Icons.Default.HolidayVillage, contentDescription = null, tint = TacticalCyan, modifier = Modifier.size(18.dp))
-              Text(
-                text = "RELOCATION INTELLIGENCE",
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                color = TacticalOnSurface,
-                letterSpacing = 0.5.sp
-              )
-            }
-            Text(
-              text = plan.priorityBand,
-              fontSize = 10.sp,
-              fontWeight = FontWeight.Black,
-              color = EmergencyRedBright
-            )
-          }
-
-          Text(
-            text = plan.bandExplanation,
-            fontSize = 11.sp,
-            color = TacticalOnSurface,
-            lineHeight = 15.sp
-          )
-
-          if (plan.assignedShelter != null) {
-            Text(
-              text = "Assigned shelter: ${plan.assignedShelter.zone.name} (${plan.assignedShelter.capacityReport.availableCapacity} spots available)",
-              fontSize = 11.sp,
-              color = NeonEmerald,
-              fontWeight = FontWeight.Bold
-            )
-          }
-          // Population & demand: baseline, affected and the figure actually used
-          // for capacity assessment — each labelled for what it is.
-          Text(
-            text = "POPULATION & DEMAND",
-            fontSize = 10.sp,
-            fontWeight = FontWeight.Black,
-            color = TacticalCyan,
-            letterSpacing = 0.6.sp
-          )
-          Text(
-            text = "Baseline population: ${uiState.baselinePopulationLabel}",
-            fontSize = 11.sp,
-            color = TacticalOnSurface
-          )
-          Text(
-            text = "Affected population: ${uiState.affectedPopulationLabel}",
-            fontSize = 11.sp,
-            color = TacticalOnSurface
-          )
-          Text(
-            text = "Relocation demand: ${uiState.relocationDemandLabel}",
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Bold,
-            color = when (uiState.populationResolution?.demand?.state) {
-              com.example.data.capacity.ResourceDataState.SIMULATED -> TacticalCyan
-              com.example.data.capacity.ResourceDataState.USER_DECLARED -> WarningAmber
-              com.example.data.capacity.ResourceDataState.NOT_PROVIDED -> TacticalOnSurfaceVariant
-              else -> NeonEmerald
-            }
-          )
-          uiState.populationResolution?.let { resolution ->
-            resolution.demand.referenceMillis?.let { reference ->
-              Text(
-                text = "Demand reference: " +
-                  com.example.data.news.NewsPresentation.relativeAge(reference, System.currentTimeMillis()) +
-                  " (${resolution.demand.source})",
-                fontSize = 9.sp,
-                color = TacticalOnSurfaceVariant
-              )
-            } ?: Text(
-              text = "Demand reference time: not stated by the source (${resolution.demand.source})",
-              fontSize = 9.sp,
-              color = TacticalOnSurfaceVariant
-            )
-            Text(
-              text = "Population source status: ${resolution.statusLabel}",
-              fontSize = 9.sp,
-              fontWeight = FontWeight.Bold,
-              color = TacticalOnSurfaceVariant
-            )
-          }
-          // A failed fetch is stated plainly; the previous figures stay in use.
-          uiState.populationSourceError?.let { error ->
-            Text(
-              text = error,
-              fontSize = 9.sp,
-              color = WarningAmber,
-              lineHeight = 12.sp
-            )
-          }
-
-          // Carrying-capacity verdict for the assigned destination: required vs
-          // effective capacity, limiting resource and the honest reason.
-          plan.capacityAssessment?.let { assessment ->
-            Text(
-              text = "Capacity check: ${assessment.status.label.uppercase()} — " +
-                "required ${assessment.demand.people?.toString() ?: "not available"}, " +
-                "effective ${assessment.effectiveCapacity?.toString() ?: "not available"}, " +
-                "limiting ${assessment.limitingResource?.label ?: "not identified"}",
-              fontSize = 11.sp,
-              fontWeight = FontWeight.Bold,
-              color = when (assessment.status) {
-                com.example.data.capacity.FeasibilityStatus.FEASIBLE -> NeonEmerald
-                com.example.data.capacity.FeasibilityStatus.INFEASIBLE -> EmergencyRedBright
-                com.example.data.capacity.FeasibilityStatus.SIMULATED -> TacticalCyan
-                com.example.data.capacity.FeasibilityStatus.INSUFFICIENT_DATA -> WarningAmber
-              }
-            )
-          }
-          if (plan.feasibilityNote != null) {
-            Text(
-              text = plan.feasibilityNote,
-              fontSize = 10.sp,
-              color = TacticalOnSurfaceVariant,
-              lineHeight = 14.sp
-            )
-          }
-          // Ranked sites the capacity check skipped, with their own shortfall.
-          if (plan.skippedSites.isNotEmpty()) {
-            Text(
-              text = "Capacity-checked sites not assigned:",
-              fontSize = 10.sp,
-              fontWeight = FontWeight.Bold,
-              color = WarningAmber
-            )
-            plan.skippedSites.forEach { skipped ->
-              Text(
-                text = "• ${skipped.siteName} — ${skipped.reason}" +
-                  "${skipped.status?.let { status -> " (${status.status.label}, limiting " +
-                    "${status.limitingResource?.label?.lowercase() ?: "not identified"})" } ?: ""}",
-                fontSize = 10.sp,
-                color = TacticalOnSurfaceVariant,
-                lineHeight = 14.sp
-              )
-            }
-          }
-          if (plan.overflowNote != null) {
-            Text(
-              text = plan.overflowNote,
-              fontSize = 10.sp,
-              color = WarningAmber
-            )
-          }
-          Text(
-            text = "Vulnerable priority categories: Elderly • Children • Persons with disabilities • Pregnant women • Medical dependency — household data is entered or connected later; no population statistics are fabricated.",
-            fontSize = 9.sp,
-            color = TacticalOnSurfaceVariant,
-            lineHeight = 12.sp
-          )
-        }
-      }
-    }
-    // 7. Offline Resilience Pack
-    item { OfflineResiliencePack(uiState = uiState) }
-
-    // 8. AUTHORITY CONSOLE (SIH 26191) — field registry + relocation
-    //    prioritization for survey operators / district officials.
-    item {
-      Column(
-        modifier = Modifier
-          .fillMaxWidth()
-          .padding(horizontal = 14.dp, vertical = 8.dp)
-          .clip(RoundedCornerShape(14.dp))
-          .background(ObsidianContainerLow)
-          .border(1.dp, TacticalCyan.copy(alpha = 0.45f), RoundedCornerShape(14.dp))
-          .clickable(onClick = onOpenAuthorityConsole)
-          .padding(14.dp)
-      ) {
-        Text(
-          "AUTHORITY CONSOLE",
-          fontSize = 12.sp, fontWeight = FontWeight.Black, color = TacticalCyan,
-          letterSpacing = 0.6.sp
+    // Primary distress action (existing callback + existing test tag).
+    Box(
+      modifier = Modifier
+        .fillMaxWidth()
+        .height(EMERGENCY_ACTION_HEIGHT)
+        .clip(RoundedCornerShape(12.dp))
+        .background(Color.White)
+        .clickable(onClick = onBroadcastSos)
+        .testTag("broadcast_sos_hero_button"),
+      contentAlignment = Alignment.Center
+    ) {
+      Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(
+          imageVector = Icons.Default.Emergency,
+          contentDescription = null,
+          tint = EmergencyRed,
+          modifier = Modifier.size(18.dp)
         )
+        Spacer(modifier = Modifier.width(8.dp))
         Text(
-          "Enter field shelter & habitation records and rank habitations for " +
-            "IMMEDIATE / SHORT-TERM / MEDIUM-TERM relocation against the live " +
-            "hazard picture. Records stay on this device; demo rows stay labelled SIMULATED.",
-          fontSize = 9.sp,
-          color = TacticalOnSurfaceVariant,
-          lineHeight = 12.sp,
-          modifier = Modifier.padding(top = 4.dp)
+          text = stringResource(R.string.profile_sos_broadcast),
+          fontSize = 14.sp,
+          fontWeight = FontWeight.Black,
+          color = EmergencyRed
+        )
+      }
+    }
+
+    // Secondary channel (existing callback + existing test tag).
+    Box(
+      modifier = Modifier
+        .fillMaxWidth()
+        .heightIn(min = EMERGENCY_ACTION_HEIGHT)
+        .clip(RoundedCornerShape(12.dp))
+        .border(
+          width = 1.dp,
+          color = Color.White.copy(alpha = 0.6f),
+          shape = RoundedCornerShape(12.dp)
+        )
+        .clickable(onClick = onOpenSituationReport)
+        .testTag("report_situation_hero_button")
+        .padding(horizontal = 12.dp, vertical = 10.dp),
+      contentAlignment = Alignment.Center
+    ) {
+      Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(
+          imageVector = Icons.Default.RecordVoiceOver,
+          contentDescription = null,
+          tint = Color.White,
+          modifier = Modifier.size(18.dp)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+          text = stringResource(R.string.profile_sos_report_situation),
+          fontSize = 13.sp,
+          fontWeight = FontWeight.Bold,
+          color = Color.White
         )
       }
     }
   }
 }
+
+// SECTION 4 — EMERGENCY HELPLINES (toll-free)
+// ---------------------------------------------------------------------------
+
+@Composable
+internal fun EmergencyHelplinesSection() {
+  val context = LocalContext.current
+  val helplines = listOf(
+    HelplineRow(
+      number = "112",
+      title = stringResource(R.string.profile_helpline_ndrf),
+      subtitle = stringResource(R.string.profile_helpline_ndrf_description),
+      icon = Icons.Default.Shield,
+      tint = EmergencyRedBright
+    ),
+    HelplineRow(
+      number = "108",
+      title = stringResource(R.string.profile_helpline_ambulance),
+      subtitle = stringResource(R.string.profile_helpline_ambulance_description),
+      icon = Icons.Default.LocalHospital,
+      tint = TacticalCyan
+    ),
+    HelplineRow(
+      number = "101",
+      title = stringResource(R.string.profile_helpline_fire),
+      subtitle = stringResource(R.string.profile_helpline_fire_description),
+      icon = Icons.Default.LocalFireDepartment,
+      tint = WarningAmber
+    )
+  )
+
+  Column(modifier = Modifier.fillMaxWidth()) {
+    ProfileSectionHeader(title = stringResource(R.string.profile_section_helplines))
+    RowDescription(
+      text = stringResource(R.string.profile_section_helplines_caption),
+      modifier = Modifier.padding(start = 4.dp, bottom = 8.dp)
+    )
+    SectionCard {
+      helplines.forEachIndexed { index, helpline ->
+        if (index > 0) {
+          RowDivider()
+        }
+        Row(
+          modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = { dialNumber(context, helpline.number) })
+            .heightIn(min = 56.dp)
+            .padding(horizontal = 14.dp, vertical = 12.dp),
+          verticalAlignment = Alignment.CenterVertically,
+          horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+          Icon(
+            imageVector = helpline.icon,
+            contentDescription = null,
+            tint = helpline.tint,
+            modifier = Modifier.size(20.dp)
+          )
+          Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(2.dp)
+          ) {
+            RowTitle(text = helpline.title)
+            RowDescription(text = helpline.subtitle)
+          }
+          RowValue(text = helpline.number, color = EmergencyRedBright)
+          Icon(
+            imageVector = Icons.Default.Call,
+            contentDescription = null,
+            tint = TacticalOnSurfaceVariant,
+            modifier = Modifier.size(18.dp)
+          )
+        }
+      }
+    }
+  }
+}
+
+/** The three existing toll-free lines; no new numbers were introduced. */
+private data class HelplineRow(
+  val number: String,
+  val title: String,
+  val subtitle: String,
+  val icon: ImageVector,
+  val tint: Color
+)
+
+/** Existing ACTION_DIAL behaviour, unchanged — only the Toast text is localized. */
+private fun dialNumber(context: Context, number: String) {
+  try {
+    val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:$number"))
+    context.startActivity(intent)
+  } catch (e: Exception) {
+    Toast.makeText(
+      context,
+      context.getString(R.string.profile_dial_error, number, e.message ?: ""),
+      Toast.LENGTH_SHORT
+    ).show()
+  }
+}
+
+// SECTION 5 — PROFILE DETAILS (household, medical, evacuation, relocation)
+// ---------------------------------------------------------------------------
+
+/** Household / medical / evacuation needs / relocation priority, as rows. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+internal fun ProfileDetailsCard(uiState: VippattiUiState) {
+  val relocationPlan = uiState.relocationPlan
+  val profile = uiState.userProfile
+
+  SectionCard {
+    // HOUSEHOLD — same dependents label + detail the card showed before.
+    SettingsRow(
+      icon = Icons.Default.Group,
+      title = stringResource(R.string.profile_household_label),
+      description = profile.dependentsDetail,
+      value = profile.dependentsLabel,
+      leadingTint = EmergencyRedBright
+    )
+
+    RowDivider()
+
+    // MEDICAL TAG — medical tag + notes, exactly as before.
+    SettingsRow(
+      icon = Icons.Default.MedicalInformation,
+      title = stringResource(R.string.profile_medical_label),
+      description = profile.medicalNotes,
+      value = profile.medicalTag,
+      leadingTint = WarningAmber
+    )
+
+    RowDivider()
+
+    // EVACUATION SHELTER NEEDS — existing self-declared requirement chips.
+    Column(
+      modifier = Modifier
+        .fillMaxWidth()
+        .padding(horizontal = 14.dp, vertical = 12.dp),
+      verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+      Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+      ) {
+        Icon(
+          imageVector = Icons.Default.HolidayVillage,
+          contentDescription = null,
+          tint = TacticalCyan,
+          modifier = Modifier.size(20.dp)
+        )
+        Column(modifier = Modifier.weight(1f)) {
+          RowTitle(text = stringResource(R.string.profile_evacuation_needs_label))
+        }
+      }
+      RowDescription(text = stringResource(R.string.profile_evacuation_needs_description))
+      FlowRow(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp)
+      ) {
+        EvacuationNeedChip(
+          icon = Icons.Default.AccessibleForward,
+          label = stringResource(R.string.profile_need_elderly_mobility),
+          tint = NeonEmerald
+        )
+        EvacuationNeedChip(
+          icon = Icons.Default.Pets,
+          label = stringResource(R.string.profile_need_pet_friendly),
+          tint = WarningAmber
+        )
+        EvacuationNeedChip(
+          icon = Icons.Default.Vaccines,
+          label = stringResource(R.string.profile_need_oxygen_meds),
+          tint = TacticalCyan
+        )
+      }
+    }
+
+    // RELOCATION INTELLIGENCE — only when the engine produced a plan.
+    if (relocationPlan != null) {
+      RowDivider()
+      Column(
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(horizontal = 14.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp)
+      ) {
+        Row(
+          modifier = Modifier.fillMaxWidth(),
+          verticalAlignment = Alignment.CenterVertically,
+          horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+          Icon(
+            imageVector = Icons.Default.HolidayVillage,
+            contentDescription = null,
+            tint = EmergencyRedBright,
+            modifier = Modifier.size(20.dp)
+          )
+          Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(2.dp)
+          ) {
+            RowTitle(text = stringResource(R.string.profile_relocation_label))
+            RowDescription(text = stringResource(R.string.profile_relocation_description))
+          }
+          RowValue(text = relocationPlan.priorityBand, color = EmergencyRedBright)
+        }
+        Text(
+          text = relocationPlan.bandExplanation,
+          fontSize = 12.sp,
+          lineHeight = 16.sp,
+          color = TacticalOnSurface
+        )
+        relocationPlan.assignedShelter?.let { shelter ->
+          Text(
+            text = stringResource(
+              R.string.profile_relocation_assigned_shelter,
+              shelter.zone.name
+            ) + " • " + stringResource(
+              R.string.profile_relocation_shelter_capacity,
+              shelter.capacityReport.availableCapacity
+            ),
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold,
+            color = NeonEmerald
+          )
+        }
+        relocationPlan.overflowNote?.let { note ->
+          Text(
+            text = note,
+            fontSize = 12.sp,
+            lineHeight = 16.sp,
+            color = WarningAmber
+          )
+        }
+        RowDescription(text = stringResource(R.string.profile_relocation_priority_note))
+      }
+    }
+  }
+}
+
+/** Requirement chip: wraps to as many lines as the translation needs. */
+@Composable
+private fun EvacuationNeedChip(
+  icon: ImageVector,
+  label: String,
+  tint: Color
+) {
+  Row(
+    modifier = Modifier
+      .clip(RoundedCornerShape(10.dp))
+      .background(tint.copy(alpha = 0.14f))
+      .padding(horizontal = 10.dp, vertical = 6.dp),
+    verticalAlignment = Alignment.CenterVertically,
+    horizontalArrangement = Arrangement.spacedBy(6.dp)
+  ) {
+    Icon(
+      imageVector = icon,
+      contentDescription = null,
+      tint = tint,
+      modifier = Modifier.size(15.dp)
+    )
+    Text(
+      text = label,
+      fontSize = 12.sp,
+      fontWeight = FontWeight.SemiBold,
+      color = tint
+    )
+  }
+}
+
+// SECTION 6 — EMERGENCY CONTACTS (existing kin list + Add contact)
+// ---------------------------------------------------------------------------
+
+/** One kin contact row: identity, phone/location, call + SOS SMS actions. */
+@Composable
+internal fun ContactRow(
+  uiState: VippattiUiState,
+  name: String,
+  role: String,
+  phone: String,
+  locationNote: String,
+  initials: String,
+  colorHex: Long
+) {
+  val context = LocalContext.current
+  Row(
+    modifier = Modifier
+      .fillMaxWidth()
+      .padding(horizontal = 14.dp, vertical = 12.dp),
+    verticalAlignment = Alignment.CenterVertically,
+    horizontalArrangement = Arrangement.spacedBy(12.dp)
+  ) {
+    Box(
+      modifier = Modifier
+        .size(40.dp)
+        .clip(CircleShape)
+        .background(Color(colorHex).copy(alpha = 0.25f)),
+      contentAlignment = Alignment.Center
+    ) {
+      Text(
+        text = initials,
+        fontSize = 13.sp,
+        fontWeight = FontWeight.Black,
+        color = Color(colorHex)
+      )
+    }
+
+    Column(
+      modifier = Modifier.weight(1f),
+      verticalArrangement = Arrangement.spacedBy(2.dp)
+    ) {
+      RowTitle(text = stringResource(R.string.profile_contact_role, name, localizedContactRole(role)))
+      RowDescription(
+        text = stringResource(R.string.profile_contact_details, phone, locationNote)
+      )
+      Row(
+        modifier = Modifier.padding(top = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalAlignment = Alignment.CenterVertically
+      ) {
+        Row(
+          modifier = Modifier
+            .clip(RoundedCornerShape(8.dp))
+            .background(ObsidianContainer)
+            .clickable { dialNumber(context, phone.replace(" ", "")) }
+            .heightIn(min = 36.dp)
+            .padding(horizontal = 10.dp),
+          verticalAlignment = Alignment.CenterVertically,
+          horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+          Icon(
+            imageVector = Icons.Default.Call,
+            contentDescription = stringResource(
+              R.string.profile_contact_call_content_description,
+              name
+            ),
+            tint = TacticalOnSurface,
+            modifier = Modifier.size(15.dp)
+          )
+          Text(
+            text = stringResource(R.string.action_call),
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold,
+            color = TacticalOnSurface
+          )
+        }
+
+        Row(
+          modifier = Modifier
+            .clip(RoundedCornerShape(8.dp))
+            .background(EmergencyRedContainer.copy(alpha = 0.3f))
+            .clickable {
+              sendSosSms(
+                context = context,
+                phone = phone,
+                latitude = uiState.userLocation.lat,
+                longitude = uiState.userLocation.lon,
+                isFallbackLocation = uiState.isUserLocationFallback
+              )
+            }
+            .heightIn(min = 36.dp)
+            .padding(horizontal = 10.dp),
+          verticalAlignment = Alignment.CenterVertically,
+          horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+          Icon(
+            imageVector = Icons.Default.Send,
+            contentDescription = null,
+            tint = EmergencyRedBright,
+            modifier = Modifier.size(14.dp)
+          )
+          Text(
+            text = stringResource(R.string.profile_contact_sos_sms),
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold,
+            color = EmergencyRedBright
+          )
+        }
+      }
+    }
+  }
+}
+
+/** Existing SOS-SMS intent; only the message body + Toasts are localized. */
+private fun sendSosSms(
+  context: Context,
+  phone: String,
+  latitude: Double,
+  longitude: Double,
+  isFallbackLocation: Boolean
+) {
+  try {
+    val locationTag = if (isFallbackLocation) {
+      context.getString(R.string.profile_contact_sos_location_india_fallback)
+    } else {
+      context.getString(R.string.profile_contact_sos_location_device_gps)
+    }
+    val body = context.getString(
+      R.string.profile_contact_sos_sms_body,
+      String.format(Locale.US, "%.4f", latitude),
+      String.format(Locale.US, "%.4f", longitude),
+      locationTag
+    )
+    val smsIntent = Intent(Intent.ACTION_SENDTO, Uri.parse("smsto:${phone.replace(" ", "")}")).apply {
+      putExtra("sms_body", body)
+    }
+    context.startActivity(smsIntent)
+  } catch (e: Exception) {
+    Toast.makeText(
+      context,
+      context.getString(R.string.profile_sms_error, e.message ?: ""),
+      Toast.LENGTH_SHORT
+    ).show()
+  }
+}
+
+/** Maps the stored (English) contact role onto the localized label. */
+@Composable
+internal fun localizedContactRole(role: String): String {
+  val keys = stringArrayResource(R.array.profile_contact_role_keys)
+  val labels = stringArrayResource(R.array.profile_contact_role_labels)
+  val index = keys.indexOfFirst { it.equals(role, ignoreCase = true) }
+  return if (index in labels.indices) labels[index] else role
+}
+
+// SECTION 7 — APP DATA / OFFLINE
+// ---------------------------------------------------------------------------
+
+/** Offline readiness + data-source honesty, collected into one group. */
+@Composable
+internal fun AppDataCard(uiState: VippattiUiState) {
+  val context = LocalContext.current
+  val tileCacheLabel = uiState.tileCacheSizeLabel
+    ?: stringResource(R.string.profile_offline_maps_not_measured)
+  val cacheValue = if (uiState.tileCacheSizeLabel != null) {
+    stringResource(
+      R.string.profile_offline_maps_value,
+      tileCacheLabel,
+      offlineMapCacheTargetLabel()
+    )
+  } else {
+    tileCacheLabel
+  }
+  val syncValue = uiState.disasterLastSyncMillis?.let { millis ->
+    NewsPresentation.relativeAge(millis, System.currentTimeMillis())
+  } ?: stringResource(R.string.profile_disaster_sync_never)
+
+  SectionCard {
+    SettingsRow(
+      icon = Icons.Default.CloudSync,
+      title = stringResource(R.string.profile_offline_first_label),
+      value = if (uiState.isOfflineFirstMode) {
+        stringResource(R.string.profile_theme_on)
+      } else {
+        stringResource(R.string.profile_theme_off)
+      },
+      valueColor = if (uiState.isOfflineFirstMode) NeonEmerald else TacticalOnSurfaceVariant,
+      leadingTint = TacticalCyan
+    )
+
+    RowDivider()
+
+    SettingsRow(
+      icon = Icons.Default.CloudSync,
+      title = stringResource(R.string.profile_offline_maps_label),
+      value = cacheValue,
+      leadingTint = TacticalCyan
+    )
+
+    RowDivider()
+
+    SettingsRow(
+      icon = Icons.Default.MyLocation,
+      title = stringResource(R.string.profile_disaster_sync_label),
+      value = syncValue,
+      leadingTint = TacticalCyan
+    )
+
+    RowDivider()
+
+    SettingsRow(
+      icon = Icons.Default.Verified,
+      title = stringResource(R.string.profile_data_source_label),
+      value = uiState.disasterDataStatusLabel,
+      valueColor = NeonEmerald,
+      leadingTint = NeonEmerald
+    )
+  }
+}
+
+// SECTION 8 — PREFERENCES (theme + device/app language)
+// ---------------------------------------------------------------------------
+
+@Composable
+internal fun PreferencesCard(
+  isDarkTheme: Boolean,
+  onToggleTheme: () -> Unit
+) {
+  val context = LocalContext.current
+  val appLocale = androidx.compose.ui.platform.LocalConfiguration.current.locales[0]
+  val languageLabel = remember(appLocale) {
+    appLocale.getDisplayLanguage(appLocale).replaceFirstChar { first ->
+      if (first.isLowerCase()) first.titlecase(appLocale) else first.toString()
+    }
+  }
+
+  SectionCard {
+    SettingsRow(
+      icon = Icons.Default.DarkMode,
+      title = stringResource(R.string.profile_theme_label),
+      description = stringResource(R.string.profile_theme_appearance),
+      value = if (isDarkTheme) {
+        stringResource(R.string.profile_theme_on)
+      } else {
+        stringResource(R.string.profile_theme_off)
+      },
+      valueColor = if (isDarkTheme) WarningAmber else TacticalOnSurfaceVariant,
+      leadingTint = WarningAmber,
+      onClick = onToggleTheme,
+      modifier = Modifier.testTag("profile_theme_toggle_button")
+    )
+
+    RowDivider()
+
+    // Language is resolved by Android itself (res/values-*/strings.xml plus
+    // res/xml/locales_config.xml). This row reports the ACTIVE language and
+    // opens the system picker — it does not replace the localization
+    // architecture with a second, in-app one.
+    Column(
+      modifier = Modifier
+        .fillMaxWidth()
+        .clickable { openAppLanguageSettings(context) }
+        .heightIn(min = 56.dp)
+        .padding(horizontal = 14.dp, vertical = 12.dp),
+      verticalArrangement = Arrangement.spacedBy(2.dp)
+    ) {
+      Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+      ) {
+        Icon(
+          imageVector = Icons.Default.Language,
+          contentDescription = null,
+          tint = TacticalCyan,
+          modifier = Modifier.size(20.dp)
+        )
+        Column(
+          modifier = Modifier.weight(1f),
+          verticalArrangement = Arrangement.spacedBy(2.dp)
+        ) {
+          RowTitle(text = stringResource(R.string.profile_language_label))
+          RowDescription(text = stringResource(R.string.profile_language_description))
+        }
+        RowValue(text = languageLabel, color = NeonEmerald)
+        Text(
+          text = "\u203A",
+          fontSize = 20.sp,
+          fontWeight = FontWeight.Bold,
+          color = TacticalOnSurfaceVariant
+        )
+      }
+      RowDescription(
+        text = stringResource(R.string.profile_language_open_settings),
+        modifier = Modifier.padding(start = 32.dp)
+      )
+    }
+  }
+}
+
+/** Opens the system per-app language screen; silently no-ops when unavailable. */
+private fun openAppLanguageSettings(context: Context) {
+  try {
+    val intent = Intent(android.provider.Settings.ACTION_APP_LOCALE_SETTINGS)
+      .setData(Uri.fromParts("package", context.packageName, null))
+      .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    context.startActivity(intent)
+  } catch (e: Exception) {
+    try {
+      context.startActivity(
+        Intent(android.provider.Settings.ACTION_LOCALE_SETTINGS)
+          .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+      )
+    } catch (ignored: Exception) {
+      // No settings activity on this build — nothing to open, nothing to break.
+    }
+  }
+}
+
+// SECTION 9 — ACCOUNT  |  SECTION 10 — ABOUT
+// ---------------------------------------------------------------------------
+
+/** Account email + the existing sign-out action, kept in its own group. */
+@Composable
+internal fun AccountCard(
+  accountEmail: String?,
+  onSignOut: () -> Unit
+) {
+  SectionCard {
+    if (!accountEmail.isNullOrBlank()) {
+      SettingsRow(
+        icon = Icons.Default.Person,
+        title = stringResource(R.string.profile_account_email_label),
+        value = accountEmail,
+        leadingTint = TacticalCyan
+      )
+      RowDivider()
+    }
+    Row(
+      modifier = Modifier
+        .fillMaxWidth()
+        .clickable(onClick = onSignOut)
+        .heightIn(min = 56.dp)
+        .testTag("profile_sign_out_button")
+        .padding(horizontal = 14.dp, vertical = 12.dp),
+      verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+      Icon(
+        imageVector = Icons.Default.Logout,
+        contentDescription = stringResource(R.string.profile_sign_out_content_description),
+        tint = EmergencyRed,
+        modifier = Modifier.size(20.dp)
+      )
+      RowTitle(text = stringResource(R.string.profile_sign_out))
+    }
+  }
+}
+
+/** Version information only — provider/debug detail stays out of Profile. */
+@Composable
+internal fun AboutCard() {
+  SectionCard {
+    SettingsRow(
+      icon = Icons.Default.Verified,
+      title = stringResource(R.string.profile_about_app_label),
+      description = stringResource(R.string.profile_about_tagline),
+      leadingTint = NeonEmerald
+    )
+
+    RowDivider()
+
+    SettingsRow(
+      icon = Icons.Default.Verified,
+      title = stringResource(R.string.profile_about_version_label),
+      value = stringResource(
+        R.string.profile_about_version_value,
+        BuildConfig.VERSION_NAME,
+        BuildConfig.VERSION_CODE
+      ),
+      leadingTint = TacticalCyan
+    )
+  }
+}
+
+// ---------------------------------------------------------------------------
+// SHARED PROFILE PRIMITIVES
+//
+
+/** Row title: max 2 lines, ellipsis only here (never on emergency copy). */
+@Composable
+private fun RowTitle(text: String, modifier: Modifier = Modifier) {
+  Text(
+    text = text,
+    fontSize = 14.sp,
+    fontWeight = FontWeight.SemiBold,
+    color = TacticalOnSurface,
+    lineHeight = 18.sp,
+    maxLines = 2,
+    overflow = TextOverflow.Ellipsis,
+    modifier = modifier
+  )
+}
+
+/** Row description: grows to as many lines as the translation needs. */
+@Composable
+private fun RowDescription(text: String, modifier: Modifier = Modifier) {
+  Text(
+    text = text,
+    fontSize = 12.sp,
+    lineHeight = 16.sp,
+    color = TacticalOnSurfaceVariant,
+    modifier = modifier
+  )
+}
+
+/** Trailing value: wraps instead of clipping on narrow/translated layouts. */
+@Composable
+private fun RowValue(
+  text: String,
+  color: Color = TacticalOnSurface,
+  modifier: Modifier = Modifier
+) {
+  Text(
+    text = text,
+    fontSize = 13.sp,
+    fontWeight = FontWeight.Bold,
+    color = color,
+    textAlign = TextAlign.End,
+    lineHeight = 17.sp,
+    modifier = modifier
+  )
+}
+
+/** A single surface for a group of rows — replaces per-row bordered cards. */
+@Composable
+private fun SectionCard(
+  modifier: Modifier = Modifier,
+  actionLabel: String? = null,
+  onActionClick: (() -> Unit)? = null,
+  content: @Composable androidx.compose.foundation.layout.ColumnScope.() -> Unit
+) {
+  Column(
+    modifier = modifier
+      .fillMaxWidth()
+      .clip(RoundedCornerShape(16.dp))
+      .background(ObsidianContainerLow)
+      .border(
+        width = 1.dp,
+        color = TacticalOutlineVariant.copy(alpha = 0.22f),
+        shape = RoundedCornerShape(16.dp)
+      )
+      .padding(vertical = 4.dp)
+  ) {
+    if (actionLabel != null && onActionClick != null) {
+      Row(
+        modifier = Modifier
+          .fillMaxWidth()
+          .clickable(onClick = onActionClick)
+          .padding(horizontal = 14.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+      ) {
+        Icon(
+          imageVector = Icons.Default.Add,
+          contentDescription = null,
+          tint = NeonEmerald,
+          modifier = Modifier.size(18.dp)
+        )
+        Text(
+          text = actionLabel,
+          fontSize = 14.sp,
+          fontWeight = FontWeight.Bold,
+          color = NeonEmerald
+        )
+      }
+      RowDivider()
+    }
+    content()
+  }
+}
+
+/** Hairline separator between rows inside one group. */
+@Composable
+private fun RowDivider(modifier: Modifier = Modifier) {
+  Box(
+    modifier = modifier
+      .fillMaxWidth()
+      .padding(start = 48.dp)
+      .height(1.dp)
+      .background(TacticalOutlineVariant.copy(alpha = 0.18f))
+  )
+}
+
+/** Tappable settings row: leading icon, title, description, value, chevron. */
+@Composable
+private fun SettingsRow(
+  icon: ImageVector,
+  title: String,
+  description: String? = null,
+  value: String? = null,
+  valueColor: Color = TacticalOnSurface,
+  showChevron: Boolean = false,
+  leadingTint: Color = TacticalCyan,
+  onClick: (() -> Unit)? = null,
+  modifier: Modifier = Modifier
+) {
+  Row(
+    modifier = modifier
+      .fillMaxWidth()
+      .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
+      .heightIn(min = 56.dp)
+      .padding(horizontal = 14.dp, vertical = 12.dp),
+    verticalAlignment = Alignment.CenterVertically,
+    horizontalArrangement = Arrangement.spacedBy(12.dp)
+  ) {
+    Icon(
+      imageVector = icon,
+      contentDescription = null,
+      tint = leadingTint,
+      modifier = Modifier.size(20.dp)
+    )
+    Column(
+      modifier = Modifier.weight(1f),
+      verticalArrangement = Arrangement.spacedBy(2.dp)
+    ) {
+      RowTitle(text = title)
+      if (!description.isNullOrBlank()) {
+        RowDescription(text = description)
+      }
+    }
+    if (!value.isNullOrBlank()) {
+      RowValue(text = value, color = valueColor)
+    }
+    if (showChevron) {
+      Text(
+        text = "\u203A",
+        fontSize = 20.sp,
+        fontWeight = FontWeight.Bold,
+        color = TacticalOnSurfaceVariant
+      )
+    }
+  }
+}
+
+/** Small uppercase group label — spacing carries the hierarchy, not a bar. */
+@Composable
+private fun ProfileSectionHeader(title: String, modifier: Modifier = Modifier) {
+  Text(
+    text = title.uppercase(Locale.getDefault()),
+    fontSize = 12.sp,
+    fontWeight = FontWeight.Bold,
+    letterSpacing = 0.6.sp,
+    color = TacticalOnSurfaceVariant,
+    modifier = modifier.padding(start = 4.dp, top = 20.dp, bottom = 8.dp)
+  )
+}
+
+/** Fixed target for the two emergency CTA buttons (>= 48 dp touch target). */
+private val EMERGENCY_ACTION_HEIGHT: Dp = 48.dp
+
+// ---------------------------------------------------------------------------
+// SECTION 1 — PROFILE HEADER (compact identity card) + SECTION 2 — SAFETY
+// ---------------------------------------------------------------------------
+
+@Composable
+internal fun ProfileHeaderCard(
+  uiState: VippattiUiState,
+  accountEmail: String?,
+  onOpenEditProfile: () -> Unit
+) {
+  Row(
+    modifier = Modifier
+      .fillMaxWidth()
+      .background(ObsidianSurface)
+      .padding(horizontal = 16.dp, vertical = 12.dp),
+    verticalAlignment = Alignment.CenterVertically,
+    horizontalArrangement = Arrangement.spacedBy(12.dp)
+  ) {
+    Box(
+      modifier = Modifier
+        .size(52.dp)
+        .clip(CircleShape)
+        .background(EmergencyRedContainer.copy(alpha = 0.25f)),
+      contentAlignment = Alignment.Center
+    ) {
+      Icon(
+        imageVector = Icons.Default.Person,
+        contentDescription = stringResource(R.string.profile_avatar_content_description),
+        tint = TacticalOnSurface,
+        modifier = Modifier.size(28.dp)
+      )
+    }
+
+    Column(
+      modifier = Modifier.weight(1f),
+      verticalArrangement = Arrangement.spacedBy(2.dp)
+    ) {
+      Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
+      ) {
+        Text(
+          text = uiState.userProfile.fullName,
+          fontSize = 18.sp,
+          fontWeight = FontWeight.Bold,
+          lineHeight = 22.sp,
+          color = TacticalOnSurface,
+          modifier = Modifier.weight(1f, fill = false)
+        )
+        Icon(
+          imageVector = Icons.Default.Verified,
+          contentDescription = stringResource(R.string.profile_verified_content_description),
+          tint = NeonEmerald,
+          modifier = Modifier.size(16.dp)
+        )
+      }
+      Text(
+        text = stringResource(R.string.profile_id_label, uiState.userProfile.citizenId),
+        fontSize = 12.sp,
+        color = TacticalOnSurfaceVariant
+      )
+      Text(
+        text = if (accountEmail.isNullOrBlank()) {
+          stringResource(R.string.profile_account_no_email)
+        } else {
+          accountEmail
+        },
+        fontSize = 12.sp,
+        color = TacticalOnSurfaceVariant,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis
+      )
+    }
+
+    Column(
+      horizontalAlignment = Alignment.CenterHorizontally,
+      verticalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+      Box(
+        modifier = Modifier
+          .clip(CircleShape)
+          .background(EmergencyRedContainer.copy(alpha = 0.35f))
+          .padding(horizontal = 10.dp, vertical = 3.dp)
+      ) {
+        Text(
+          text = uiState.userProfile.bloodGroupLabel,
+          fontSize = 11.sp,
+          fontWeight = FontWeight.Black,
+          color = EmergencyRedBright
+        )
+      }
+      Box(
+        modifier = Modifier
+          .size(36.dp)
+          .clip(CircleShape)
+          .background(ObsidianContainer)
+          .border(
+            width = 1.dp,
+            color = TacticalOutlineVariant.copy(alpha = 0.3f),
+            shape = CircleShape
+          )
+          .clickable(onClick = onOpenEditProfile)
+          .testTag("profile_edit_button"),
+        contentAlignment = Alignment.Center
+      ) {
+        Icon(
+          imageVector = Icons.Default.Edit,
+          contentDescription = stringResource(R.string.profile_edit_content_description),
+          tint = TacticalCyan,
+          modifier = Modifier.size(17.dp)
+        )
+      }
+    }
+  }
+}
+

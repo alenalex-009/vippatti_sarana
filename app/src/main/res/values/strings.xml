@@ -1,3 +1,210 @@
 <resources>
     <string name="app_name">Vippatti Sarana</string>
+
+    <!-- =====================================================================
+         PROFILE SCREEN â€” simplified row-based UI (redesign).
+         Every static Profile label lives here so the six supported languages
+         (values-hi / -te / -ta / -bn / -mr) resolve automatically.
+         ===================================================================== -->
+
+    <!-- Section 1 â€” Profile header -->
+    <string name="profile_header_title">My Profile</string>
+    <string name="profile_avatar_content_description">Profile photo</string>
+    <string name="profile_verified_content_description">Verified citizen ID</string>
+    <string name="profile_id_label">ID: %1$s</string>
+    <string name="profile_edit_content_description">Edit profile</string>
+
+    <!-- Section 2 â€” Safety status -->
+    <string name="profile_section_safety_status">My safety status</string>
+    <string name="profile_safety_safe">I am safe</string>
+    <string name="profile_safety_needs_help">Need assistance</string>
+    <string name="profile_safety_safe_description">Marks you safe on the relief network</string>
+    <string name="profile_safety_needs_help_description">Flags your household for priority assistance</string>
+
+    <!-- Section 3 â€” SOS -->
+    <string name="profile_sos_title">SOS Center</string>
+    <string name="profile_sos_subtitle">Relays live GPS, battery level and medical tag</string>
+    <string name="profile_sos_broadcast">Broadcast SOS</string>
+    <string name="profile_sos_report_situation">Report my situation</string>
+
+    <!-- Section 4 â€” Emergency helplines (toll-free) -->
+    <string name="profile_section_helplines">Emergency helplines</string>
+    <string name="profile_section_helplines_caption">Toll-free priority lines</string>
+    <string name="profile_helpline_ndrf">NDRF 112</string>
+    <string name="profile_helpline_ndrf_description">Disaster force</string>
+    <string name="profile_helpline_ambulance">Ambulance</string>
+    <string name="profile_helpline_ambulance_description">Dial 108</string>
+    <string name="profile_helpline_fire">Fire 101</string>
+    <string name="profile_helpline_fire_description">Rescue squad</string>
+    <string name="profile_dial_error">Cannot dial %1$s: %2$s</string>
+
+    <!-- Section 5 â€” Profile details -->
+    <string name="profile_section_details">My details</string>
+    <string name="profile_household_label">Household</string>
+    <string name="profile_household_description">Dependents in your home</string>
+    <string name="profile_medical_label">Medical tag</string>
+    <string name="profile_medical_description">Shared with responders</string>
+    <string name="profile_evacuation_needs_label">Evacuation shelter needs</string>
+    <string name="profile_evacuation_needs_description">Assigned camps match these requirements automatically</string>
+    <string name="profile_need_elderly_mobility">Elderly / Mobility</string>
+    <string name="profile_need_disability">Disability support</string>
+    <string name="profile_need_medical_dependency">Medical dependency</string>
+    <string name="profile_need_pet_friendly">Pet friendly</string>
+    <string name="profile_need_oxygen_meds">Oxygen / Meds</string>
+    <string name="profile_relocation_label">Relocation priority</string>
+    <string name="profile_relocation_description">Evacuation ranking from your household data</string>
+    <string name="profile_relocation_assigned_shelter">Assigned shelter: %1$s</string>
+    <string name="profile_relocation_shelter_capacity">%1$d spots available</string>
+    <string name="profile_relocation_priority_note">Elderly, children, persons with disabilities, pregnant women and medical dependency all raise your household priority. Only the details you enter are used â€” no population statistics are fabricated.</string>
+
+    <!-- Section 6 â€” Emergency contacts -->
+    <string name="profile_section_contacts">Emergency contacts</string>
+    <string name="profile_add_contact">Add contact</string>
+    <string name="profile_contact_role">%1$s (%2$s)</string>
+    <string name="profile_contact_details">%1$s â€¢ %2$s</string>
+    <string name="profile_contact_call_content_description">Call %1$s</string>
+    <string name="profile_contact_sos_sms">SOS SMS</string>
+    <string name="profile_contact_sos_sms_body">EMERGENCY SOS: I need assistance! GPS: %1$s N, %2$s E %3$s. Sent via VIPPATTI SARANA.</string>
+    <string name="profile_contact_sos_location_device_gps">(DEVICE GPS)</string>
+    <string name="profile_contact_sos_location_india_fallback">(INDIA FALLBACK)</string>
+    <string name="profile_sms_error">Cannot send SMS: %1$s</string>
+
+    <!-- Section 7 â€” App data &amp; offline readiness -->
+    <string name="profile_section_app_data">App data &amp; offline</string>
+    <string name="profile_offline_first_label">Offline-first mode</string>
+    <string name="profile_offline_maps_label">Offline relief map cache</string>
+    <string name="profile_offline_maps_value">%1$s of %2$s</string>
+    <string name="profile_offline_maps_not_measured">Not measured yet</string>
+    <string name="profile_disaster_sync_label">Disaster data sync</string>
+    <string name="profile_disaster_sync_never">Not yet run</string>
+    <string name="profile_data_source_label">Data source</string>
+
+    <!-- Section 8 â€” Preferences -->
+    <string name="profile_section_preferences">Preferences</string>
+    <string name="profile_theme_label">Dark theme</string>
+    <string name="profile_theme_appearance">Appearance</string>
+    <string name="profile_theme_on">On</string>
+    <string name="profile_theme_off">Off</string>
+    <string name="profile_language_label">Language</string>
+    <string name="profile_language_description">Device &amp; app display language</string>
+    <string name="profile_language_open_settings">Opens the app language settings</string>
+
+    <!-- Section 9 â€” Account -->
+    <string name="profile_section_account">Account</string>
+    <string name="profile_account_email_label">Signed in as</string>
+    <string name="profile_account_no_email">Local device profile</string>
+    <string name="profile_sign_out">Sign out</string>
+    <string name="profile_sign_out_content_description">Sign out of this account</string>
+
+    <!-- Section 10 â€” About -->
+    <string name="profile_section_about">About</string>
+    <string name="profile_about_version_label">App version</string>
+    <string name="profile_about_version_value">%1$s (build %2$d)</string>
+    <string name="profile_about_app_label">Vippatti Sarana</string>
+    <string name="profile_about_tagline">Disaster relief &amp; emergency network</string>
+
+    <!-- Shared generic labels -->
+    <string name="action_edit">Edit</string>
+    <string name="action_call">Call</string>
+    <string name="action_save">Save</string>
+    <string name="action_cancel">Cancel</string>
+
+    <!-- INSTRUCTIONS TAB — disaster guide labels -->
+    <string name="instructions_manual_title">Survival Manual</string>
+    <string name="instructions_manual_subtitle">Be informed. Be prepared. Be safe.</string>
+    <string name="instructions_offline_title">Offline-first mode</string>
+    <string name="instructions_offline_subtitle">Keeps browsed map tiles; no bulk download in this build</string>
+    <string name="instructions_section_critical">Critical actions now</string>
+    <string name="instructions_section_critical_subtitle">What to do immediately</string>
+    <string name="instructions_critical_empty">No critical actions flagged for this phase — see categories below.</string>
+    <string name="instructions_section_categories">Instruction categories</string>
+    <string name="instructions_section_resources">Essential resources</string>
+    <string name="instructions_phase_before">Before</string>
+    <string name="instructions_phase_during">During</string>
+    <string name="instructions_phase_after">After</string>
+    <string name="instructions_detail_intro">Your safety comes first. Follow these instructions to reduce risk.</string>
+    <string name="instructions_step_format">Step %1$d of %2$d</string>
+    <string name="instructions_critical_badge">Critical</string>
+    <string name="instructions_group_immediate_safety">Immediate Safety</string>
+    <string name="instructions_group_immediate_safety_sub">Stay safe right now</string>
+    <string name="instructions_group_evacuation">Evacuation Guide</string>
+    <string name="instructions_group_evacuation_sub">Where to go and what to do</string>
+    <string name="instructions_group_utilities">Electricity and Utilities</string>
+    <string name="instructions_group_utilities_sub">Power, gas and water safety</string>
+    <string name="instructions_group_vulnerable">Vulnerable People</string>
+    <string name="instructions_group_vulnerable_sub">Children, elderly, disabled</string>
+    <string name="instructions_group_recovery">After the %1$s</string>
+    <string name="instructions_group_recovery_sub">Recovery and health precautions</string>
+    <string name="instructions_group_more">More Safety Steps</string>
+    <string name="instructions_group_more_sub">Additional guidance for this phase</string>
+    <string name="instructions_resources_contacts">Emergency Contacts</string>
+    <string name="instructions_resources_contacts_sub">Important helplines</string>
+    <string name="instructions_resources_evacuation">Emergency Kit</string>
+    <string name="instructions_resources_kit">Interactive Evacuation Kit</string>
+    <string name="instructions_resources_kit_sub">Check off items before you relocate</string>
+    <string name="instructions_back">Back to Instructions</string>
+    <string name="instructions_region_format">Regional: %1$s</string>
+    <string name="instructions_call_format">Dial %1$s</string>
+
+    <!-- Localized contact roles, keyed by the stored (English) role value -->
+    <string-array name="profile_contact_role_keys">
+        <item>Spouse</item>
+        <item>Brother</item>
+        <item>Block Lead / Neighbor</item>
+        <item>Sister</item>
+        <item>Parent</item>
+        <item>Child</item>
+        <item>Neighbour</item>
+        <item>Friend</item>
+        <item>Volunteer</item>
+        <item>Other</item>
+    </string-array>
+    <string-array name="profile_contact_role_labels">
+        <item>Spouse</item>
+        <item>Brother</item>
+        <item>Block lead / neighbour</item>
+        <item>Sister</item>
+        <item>Parent</item>
+        <item>Child</item>
+        <item>Neighbour</item>
+        <item>Friend</item>
+        <item>Volunteer</item>
+        <item>Other</item>
+    </string-array>
+
+    <!-- =====================================================================
+         ONBOARDING — first-launch carousel (5 cards).
+         All onboarding copy lives here so the six supported languages
+         (values-hi / -te / -ta / -bn / -mr) resolve automatically.
+         ===================================================================== -->
+    <string name="onboarding_skip">Skip</string>
+    <string name="onboarding_back_cd">Go back</string>
+    <string name="onboarding_step_format">Step %1$d of %2$d</string>
+    <string name="onboarding_continue">Continue</string>
+    <string name="onboarding_get_started">Get Started</string>
+    <string name="onboarding_continue_sign_up">Continue to Sign Up</string>
+    <string name="onboarding_log_in">Log In</string>
+    <string name="onboarding_brand_label">VIPPATTI SARANA</string>
+    <string name="onboarding_emblem_cd">Vippatti Sarana emblem</string>
+    <string name="onboarding_welcome_title">Preparedness Starts Before the Emergency.</string>
+    <string name="onboarding_welcome_body">Vippatti Sarana brings essential disaster information, safety guidance and emergency tools together in one place.</string>
+    <string name="onboarding_map_title">See Risk Around You.</string>
+    <string name="onboarding_map_body">Use the Radar Map to explore disaster alerts, hazards, safer areas and important conditions around your location.</string>
+    <string name="onboarding_map_illustration_cd">Illustration of the radar map with hazard and safe-area markers</string>
+    <string name="onboarding_news_title">Stay Informed. Stay Ready.</string>
+    <string name="onboarding_news_body">Get disaster-related updates and relevant news so you can understand what is happening and follow important official guidance.</string>
+    <string name="onboarding_news_illustration_cd">Illustration of a phone showing disaster news updates</string>
+    <string name="onboarding_guide_title">When It Matters, Know What To Do.</string>
+    <string name="onboarding_guide_body">Find clear Before, During and After guidance for floods, earthquakes, landslides and fires.</string>
+    <string name="onboarding_phase_before">Before</string>
+    <string name="onboarding_phase_during">During</string>
+    <string name="onboarding_phase_after">After</string>
+    <string name="onboarding_hazard_flood">Flood</string>
+    <string name="onboarding_hazard_quake">Earthquake</string>
+    <string name="onboarding_hazard_landslide">Landslide</string>
+    <string name="onboarding_hazard_fire">Fire</string>
+    <string name="onboarding_tools_title">Your Safety Tools. One Place.</string>
+    <string name="onboarding_tools_body">Access emergency tools, SOS support, reporting, evacuation guidance and other preparedness features when you need them.</string>
+    <string name="onboarding_tools_illustration_cd">Illustration of emergency tools around a phone</string>
+    <string name="onboarding_ready_status">You\'re ready to explore Vippatti Sarana.</string>
 </resources>
