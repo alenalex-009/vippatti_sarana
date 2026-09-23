@@ -81,7 +81,12 @@ buildTypes {
     }
 
     debug {
-        signingConfig = signingConfigs.getByName("debugConfig")
+        // CI / clean clones may not have the repo-root debug.keystore (it is
+        // git-ignored): fall back to AGP's auto-generated default debug store.
+        signingConfig = if (file("${rootDir}/debug.keystore").exists())
+            signingConfigs.getByName("debugConfig")
+        else
+            signingConfigs.getByName("debug")
     }
 }
 
