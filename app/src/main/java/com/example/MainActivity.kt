@@ -78,6 +78,7 @@ import com.example.data.auth.AuthRepository
 import com.example.data.auth.SharedPrefsAuthStorage
 import com.example.ui.screens.AuthorityConsoleScreen
 import com.example.ui.screens.DispatchesScreen
+import com.example.ui.screens.HomeScreen
 import com.example.ui.screens.InstructionsScreen
 import com.example.ui.screens.LoginScreen
 import com.example.ui.screens.ProfileScreen
@@ -247,6 +248,15 @@ fun VippattiAppRoot(
   val uiState by viewModel.uiState.collectAsStateWithLifecycle()
   val snackbarHostState = remember { SnackbarHostState() }
   val context = LocalContext.current
+
+  // Predictable back behaviour (UI principle: user control & freedom):
+  // console -> close it; any tab -> HOME; HOME -> system back (exit prompt).
+  androidx.activity.compose.BackHandler(
+    enabled = uiState.showAuthorityDashboard || uiState.currentTab != ScreenTab.HOME
+  ) {
+    if (uiState.showAuthorityDashboard) viewModel.closeAuthorityDashboard()
+    else viewModel.setTab(ScreenTab.HOME)
+  }
 
   // AUTHORITY CONSOLE (SIH 26191): full-screen operator surface — field
   // registry entry + relocation prioritization dashboard. The citizen tabs
@@ -505,6 +515,18 @@ fun VippattiAppRoot(
             // Screen Content
             Box(modifier = Modifier.weight(1f)) {
                 when (tab) {
+          ScreenTab.HOME -> HomeScreen(
+            uiState = uiState,
+            onOpenRadar = { viewModel.setTab(ScreenTab.RADAR_MAP) },
+            onOpenNews = { viewModel.setTab(ScreenTab.NEWS_DISPATCHES) },
+            onOpenGuide = { viewModel.setTab(ScreenTab.INSTRUCTIONS) },
+            onOpenProfile = { viewModel.setTab(ScreenTab.PROFILE) },
+            onAssessTerrain = { viewModel.assessTerrainHere() },
+            onGuidanceGo = { viewModel.acceptEmergencyGuidance() },
+            onSearchTerrainHaven = { viewModel.searchTerrainHaven() },
+            onRouteToTerrainHaven = { viewModel.routeToTerrainHaven() },
+            onGuidanceDismiss = { viewModel.dismissEmergencyGuidance() }
+          )
           ScreenTab.NEWS_DISPATCHES -> DispatchesScreen(
             uiState = uiState,
             onSync = { viewModel.syncData() },
@@ -546,9 +568,7 @@ fun VippattiAppRoot(
             onGuidanceGo = { viewModel.acceptEmergencyGuidance() },
             onGuidanceDismiss = { viewModel.dismissEmergencyGuidance() },
             onSearchTerrainHaven = { viewModel.searchTerrainHaven() },
-            onRouteToTerrainHaven = { viewModel.routeToTerrainHaven() },
-            onAssessTerrain = { viewModel.assessTerrainHere() },
-            onDismissTerrainAssessment = { viewModel.dismissTerrainAssessment() }
+            onRouteToTerrainHaven = { viewModel.routeToTerrainHaven() }
           )
 
           ScreenTab.INSTRUCTIONS -> InstructionsScreen(

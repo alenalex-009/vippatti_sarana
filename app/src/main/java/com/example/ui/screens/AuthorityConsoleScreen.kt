@@ -124,7 +124,7 @@ fun AuthorityConsoleScreen(
         Text("AUTHORITY CONSOLE", fontSize = 14.sp, fontWeight = FontWeight.Black, color = TacticalOnSurface)
         Text(
           "Field registry + relocation prioritization — demo data stays labelled",
-          fontSize = 9.sp, color = TacticalOnSurfaceVariant, maxLines = 2, overflow = TextOverflow.Ellipsis
+          fontSize = 11.sp, color = TacticalOnSurfaceVariant, maxLines = 2, overflow = TextOverflow.Ellipsis
         )
       }
     }
@@ -189,7 +189,7 @@ private fun DashboardTab(uiState: VippattiUiState, onRerank: (Boolean) -> Unit) 
         ) {
           Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text("${counts[tier] ?: 0}", fontSize = 15.sp, fontWeight = FontWeight.Black, color = tierColor(tier))
-            Text(tier.label, fontSize = 7.5.sp, fontWeight = FontWeight.Bold, color = TacticalOnSurfaceVariant)
+            Text(tier.label, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = TacticalOnSurfaceVariant)
           }
         }
       }
@@ -215,13 +215,13 @@ private fun DashboardTab(uiState: VippattiUiState, onRerank: (Boolean) -> Unit) 
           onCheckedChange = { liveScan = it },
           modifier = Modifier.size(22.dp)
         )
-        Text("live terrain scan\n(SRTM + rain per site)", fontSize = 8.5.sp, color = TacticalOnSurfaceVariant)
+        Text("live terrain scan\n(SRTM + rain per site)", fontSize = 11.sp, color = TacticalOnSurfaceVariant)
       }
     }
     Spacer(Modifier.height(6.dp))
     Text(
       "Ranking is transparent multi-criteria: hazard exposure 35%, terrain habitability 30%, vulnerability 20%, EM-DAT history 15% (history escalates at most one band). Every reason is shown per row.",
-      fontSize = 8.5.sp, color = TacticalOnSurfaceVariant
+      fontSize = 11.sp, color = TacticalOnSurfaceVariant
     )
     Spacer(Modifier.height(10.dp))
 
@@ -267,26 +267,26 @@ private fun PriorityRow(p: HabitationPriority) {
             p.habitation.population?.let { append(" • pop ${it.value} (${it.classification.label})") }
             p.nearestSafeZoneDistanceMeters?.let { append(" • nearest zone ${"%.1f".format(it / 1000)} km") }
           },
-          fontSize = 8.5.sp, color = TacticalOnSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis
+          fontSize = 11.sp, color = TacticalOnSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis
         )
       }
       Column(horizontalAlignment = Alignment.End) {
-        Text(p.tier.label, fontSize = 9.sp, fontWeight = FontWeight.Black, color = color)
-        Text("score ${p.score}", fontSize = 9.sp, color = TacticalOnSurfaceVariant)
+        Text(p.tier.label, fontSize = 11.sp, fontWeight = FontWeight.Black, color = color)
+        Text("score ${p.score}", fontSize = 11.sp, color = TacticalOnSurfaceVariant)
       }
     }
     if (p.habitation.population?.classification == DataClassification.SIMULATED) {
       Text(
         "SIMULATED demo record",
-        fontSize = 8.sp, fontWeight = FontWeight.Bold, color = WarningAmber,
+        fontSize = 10.sp, fontWeight = FontWeight.Bold, color = WarningAmber,
         modifier = Modifier.padding(top = 2.dp)
       )
     }
     if (expanded) {
       Spacer(Modifier.height(6.dp))
-      Text(p.tier.actionGuide, fontSize = 9.5.sp, fontWeight = FontWeight.SemiBold, color = color)
+      Text(p.tier.actionGuide, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = color)
       p.reasons.forEach { reason ->
-        Text("• $reason", fontSize = 9.sp, color = TacticalOnSurface, lineHeight = 12.sp)
+        Text("• $reason", fontSize = 11.sp, color = TacticalOnSurface, lineHeight = 12.sp)
       }
     }
   }
@@ -304,7 +304,7 @@ private fun SheltersTab(
   Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 12.dp)) {
     Text(
       "Field-entered shelters join the LIVE shelter network (they are real records, so they are never hidden by the demo switch).",
-      fontSize = 9.sp, color = TacticalOnSurfaceVariant, modifier = Modifier.padding(bottom = 8.dp)
+      fontSize = 11.sp, color = TacticalOnSurfaceVariant, modifier = Modifier.padding(bottom = 8.dp)
     )
     Box(
       modifier = Modifier
@@ -334,7 +334,7 @@ private fun SheltersTab(
           Text(zone.name, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = TacticalOnSurface)
           Text(
             "${zone.lat.fmt()}, ${zone.lon.fmt()} • cap ${zone.capacityTotal - zone.capacityCurrent}/${zone.capacityTotal} open • ${zone.operatingStatus}",
-            fontSize = 8.5.sp, color = TacticalOnSurfaceVariant
+            fontSize = 11.sp, color = TacticalOnSurfaceVariant
           )
         }
         Icon(
@@ -409,7 +409,7 @@ private fun ShelterForm(initial: SafeZone, onSave: (SafeZone) -> Unit, onCancel:
       FormCheck("Sanitation", sanitation) { sanitation = it }
       FormCheck("Medical", medical) { medical = it }
     }
-    error?.let { Text(it, fontSize = 9.5.sp, color = EmergencyRedBright, modifier = Modifier.padding(top = 4.dp)) }
+    error?.let { Text(it, fontSize = 12.sp, color = EmergencyRedBright, modifier = Modifier.padding(top = 4.dp)) }
     FormButtons(onSave = {
       val latV = lat.toDoubleOrNull()
       val lonV = lon.toDoubleOrNull()
@@ -451,7 +451,7 @@ private fun HabitationsTab(
   Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 12.dp)) {
     Text(
       "Surveyed habitations feed the relocation ranking with REAL population figures instead of demo data.",
-      fontSize = 9.sp, color = TacticalOnSurfaceVariant, modifier = Modifier.padding(bottom = 8.dp)
+      fontSize = 11.sp, color = TacticalOnSurfaceVariant, modifier = Modifier.padding(bottom = 8.dp)
     )
     Box(
       modifier = Modifier
@@ -478,7 +478,7 @@ private fun HabitationsTab(
           Text(hab.name, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = TacticalOnSurface)
           Text(
             "${hab.point.lat.fmt()}, ${hab.point.lon.fmt()} • pop ${hab.population?.value ?: "not provided"} • ${hab.historicalEventCount} archive events",
-            fontSize = 8.5.sp, color = TacticalOnSurfaceVariant
+            fontSize = 11.sp, color = TacticalOnSurfaceVariant
           )
         }
         Icon(
@@ -526,7 +526,7 @@ private fun HabitationForm(initial: Habitation, onSave: (Habitation) -> Unit, on
       FormText("Vulnerable %", vulnerable, Modifier.weight(1f)) { vulnerable = it }
       FormText("EM-DAT events", history, Modifier.weight(0.8f)) { history = it }
     }
-    error?.let { Text(it, fontSize = 9.5.sp, color = EmergencyRedBright, modifier = Modifier.padding(top = 4.dp)) }
+    error?.let { Text(it, fontSize = 12.sp, color = EmergencyRedBright, modifier = Modifier.padding(top = 4.dp)) }
     FormButtons(onSave = {
       val trimmed = name.trim()
       val point = lat.toDoubleOrNull()?.let { l -> lon.toDoubleOrNull()?.let { GeoPoint(l, it) } }
@@ -579,7 +579,7 @@ private fun FormCard(title: String, content: @Composable () -> Unit) {
 @Composable
 private fun FormText(label: String, value: String, modifier: Modifier = Modifier, onValueChange: (String) -> Unit) {
   Column(modifier) {
-    Text(label, fontSize = 8.5.sp, color = TacticalOnSurfaceVariant)
+    Text(label, fontSize = 11.sp, color = TacticalOnSurfaceVariant)
     TextField(
       value = value,
       onValueChange = onValueChange,
@@ -600,7 +600,7 @@ private fun FormText(label: String, value: String, modifier: Modifier = Modifier
 private fun FormCheck(label: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
   Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { onCheckedChange(!checked) }) {
     Checkbox(checked = checked, onCheckedChange = onCheckedChange, modifier = Modifier.size(18.dp))
-    Text(label, fontSize = 8.5.sp, color = TacticalOnSurface)
+    Text(label, fontSize = 11.sp, color = TacticalOnSurface)
   }
 }
 

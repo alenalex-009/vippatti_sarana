@@ -112,7 +112,7 @@ internal fun EmergencyGuidanceCard(
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
           CircularProgressIndicator(modifier = Modifier.size(14.dp), strokeWidth = 2.dp, color = TacticalCyan)
           Text(
-            "Probing terrain around you (slope + rain + coast)...",
+            "Probing terrain around you (slope + rain + coast)…",
             fontSize = 10.sp, color = TacticalOnSurfaceVariant
           )
         }
@@ -135,7 +135,7 @@ internal fun EmergencyGuidanceCard(
             Text(h.headline, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = TacticalCyan, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Text(
               "DERIVED open terrain • not a registered shelter • ${h.verdict.reasons.firstOrNull().orEmpty()}",
-              fontSize = 8.5.sp, color = TacticalOnSurfaceVariant, maxLines = 2, overflow = TextOverflow.Ellipsis
+              fontSize = 11.sp, color = TacticalOnSurfaceVariant, maxLines = 2, overflow = TextOverflow.Ellipsis
             )
           }
           Icon(Icons.Default.Navigation, contentDescription = "Route", tint = TacticalCyan, modifier = Modifier.size(16.dp))
@@ -163,7 +163,7 @@ private fun GuidanceRow(
       )
       Text(
         detail,
-        fontSize = 9.5.sp, color = TacticalOnSurface,
+        fontSize = 12.sp, color = TacticalOnSurface,
         maxLines = 3, overflow = TextOverflow.Ellipsis, lineHeight = 12.sp
       )
     }

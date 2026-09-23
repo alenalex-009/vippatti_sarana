@@ -1022,3 +1022,26 @@ unit-tested JVM logic — **none of it is device-verified yet.**
   never a census claim.
 - Coast grid is coarse (~27 km cells): terrain-level coast signal, not a
   parcel claim; storm-surge modelling is NOT implemented.
+
+---
+
+## 20. UX redesign pass (Sep 2026): Home-first journey
+
+Applying Microsoft's 7 UI principles to the citizen experience (all new code
+unit-tested; nothing in the data layer changed):
+
+- **New `ScreenTab.HOME`, now the default landing tab** — `ui/screens/HomeScreen.kt`:
+  risk hero ("IS MY AREA SAFE RIGHT NOW?" with honest pending/calm/alert/
+  danger states + one CTA that navigates), terrain self-check chip moved here
+  from the map, guidance card mirrors here so danger is actionable without
+  finding the map tab, four labeled next-step rows, quiet DATA STATUS footer.
+- **5-tab bottom nav** (Home/Map/News/Guide/Profile, journey-ordered) with
+  screen-reader semantics (`label + (current tab)`), AutoMirrored icons.
+- **Radar calmed**: bottom sheet starts collapsed to a one-line destination
+  peek; terrain chip removed (it lives on Home now).
+- **Back behaviour**: system back walks console -> tab -> Home instead of
+  exiting from any screen (BackHandler in VippattiAppRoot).
+- **Typography/accessibility on the new surfaces**: no text below 10 sp
+  (most ≥ 11), line-heights ≥ font size, `…` glyph in progress copy.
+- Verified: full suite 55 suites / 459 tests / 0 failures; assembleDebug
+  green; Home UX contracts in `HomeScreenUxTest` (5).

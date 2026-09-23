@@ -156,12 +156,13 @@ fun RadarMapScreen(
   onGuidanceDismiss: () -> Unit = {},
   onSearchTerrainHaven: () -> Unit = {},
   onRouteToTerrainHaven: () -> Unit = {},
-  /** "Is MY spot a red zone?" explicit terrain check. */
-  onAssessTerrain: () -> Unit = {},
-  onDismissTerrainAssessment: () -> Unit = {},
   modifier: Modifier = Modifier
 ) {
-  var isSheetExpanded by remember { mutableStateOf(true) }
+  // Calm by default (UI principle: simplicity — the map is the point):
+  // the sheet starts COLLAPSED to a one-line destination peek; the guidance
+  // card and risk strip carry the urgent state. The terrain self-check was
+  // moved to Home, where the "what do I do" journey starts.
+  var isSheetExpanded by remember { mutableStateOf(false) }
   val sheetPeekHeight = 88.dp
 
   BoxWithConstraints(
@@ -289,14 +290,7 @@ fun RadarMapScreen(
         modifier = Modifier.padding(top = 6.dp)
       )
 
-      // 2e. TERRAIN SELF-ASSESSMENT — "is MY spot a red zone?" explicit tap.
-      TerrainSelfAssessmentChip(
-        assessment = uiState.terrainSelfAssessment,
-        isAssessing = uiState.isAssessingTerrain,
-        onAssess = onAssessTerrain,
-        onDismiss = onDismissTerrainAssessment,
-        modifier = Modifier.padding(top = 4.dp)
-      )
+      // 2e. (Terrain self-assessment lives on Home — this surface stays the map.)
 
 
       // 3. Live turn-by-turn HUD — directly under the risk strip while

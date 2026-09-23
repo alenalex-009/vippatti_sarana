@@ -80,6 +80,8 @@ private const val REROUTE_MIN_MOVEMENT_METERS = 50.0
 /** Cap on locally-held citizen reports (device memory guard). */
 
 enum class ScreenTab {
+  /** Quiet landing screen: "am I safe / what do I do" — the default entry. */
+  HOME,
   RADAR_MAP,
   NEWS_DISPATCHES,
   INSTRUCTIONS,
@@ -126,7 +128,7 @@ enum class RouteStatus {
  */
 data class VippattiUiState(
   // --- App chrome ---
-  val currentTab: ScreenTab = ScreenTab.RADAR_MAP,
+  val currentTab: ScreenTab = ScreenTab.HOME,
   val isDarkTheme: Boolean = true,
   /**
    * Offline-first display preference. There is NO bulk offline download in this
