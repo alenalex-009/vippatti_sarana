@@ -39,3 +39,17 @@ t2_out.txt
 ci_err.txt
 ci_out.txt
 jstack.txt
+
+# local build/test debug dumps (both branches littered these)
+*.log
+jstack.txt
+c_err.txt
+c_out.txt
+c2_err.txt
+c2_out.txt
+t_err.txt
+t_out.txt
+t2_err.txt
+t2_out.txt
+ci_err.txt
+ci_out.txt

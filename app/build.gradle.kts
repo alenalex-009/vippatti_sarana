@@ -108,11 +108,16 @@ testOptions {
         // roomy heap — prevents Java heap space OOM in the responsive layout tests.
         all {
             it.maxHeapSize = "3g"
-            // Cap Gradle's default fork-every-class parallelism: resource-heavy
-            // Robolectric compose tests are faster and stabler when they run in
-            // a single forked JVM (they share the sandbox classloaders).
+            // Robolectric NATIVE-Graphics Compose tests must each get a FRESH
+            // JVM: with a shared fork, one class's never-idle composition
+            // (LazyColumn prefetch spinning in the main looper) leaks into the
+            // next class and trips AppNotIdleException — verified on both
+            // origin/main (t_out.txt) and the merged branch: the same
+            // Dispatches suite passes when run alone and fails in the full
+            // suite under forkEvery=0. One fork per class keeps suites
+            // isolated; maxParallelForks stays 1 for memory (8 GB dev boxes).
             it.maxParallelForks = 1
-            it.forkEvery = 0
+            it.forkEvery = 1
         }
     }
 }
