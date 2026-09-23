@@ -101,7 +101,7 @@ internal fun PersonalRiskStrip(
           maxLines = 1
         )
         Text(
-          text = if (isFallbackLocation) "• INDIA FALLBACK" else "• DEVICE GPS",
+          text = if (isFallbackLocation) "• location approximate" else "• your GPS",
           fontSize = 8.sp,
           fontWeight = FontWeight.Bold,
           color = if (isFallbackLocation) TacticalCyan else NeonEmerald,
@@ -109,7 +109,7 @@ internal fun PersonalRiskStrip(
         )
       }
       Text(
-        text = risk?.explanation ?: "Analyzing hazards around your location...",
+        text = risk?.explanation ?: "Checking hazards around your location…",
         fontSize = 9.sp,
         color = TacticalOnSurface,
         maxLines = 2,

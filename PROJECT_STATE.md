@@ -1045,3 +1045,32 @@ unit-tested; nothing in the data layer changed):
   (most ≥ 11), line-heights ≥ font size, `…` glyph in progress copy.
 - Verified: full suite 55 suites / 459 tests / 0 failures; assembleDebug
   green; Home UX contracts in `HomeScreenUxTest` (5).
+
+---
+
+## 21. Google-style map redesign (Sep 2026): light canvas, pins, nearby-first
+
+The map was the "wtf is this" surface. It now behaves like Google Maps /
+Google Flood Hub:
+
+- **Light basemap** — CARTO Positron (free, OSM data; attribution updated to
+  "© OpenStreetMap contributors © CARTO · routing OSRM"). Muted grey canvas,
+  colored pins carry ALL the signal. The old dark Mapnik stays one tap away.
+- **Pin-or-area markers** (`PinOrAreaOverlay` + `data/disaster/MapFocus`):
+  below city zoom every hazard/event is a small solid DOT with a white ring
+  (intensity grows the dot; severe items get a soft halo). The honest
+  real-radius pulsing AREA only appears from zoom 9 up — exactly like a flood
+  gauge dot becoming its polygon when you zoom in. Historical EM-DAT dots are
+  dot-only forever (area would over-claim archive precision).
+- **NEARBY FIRST**: at city scale the map shows only what is within 50 km of
+  YOUR location; distant events fold into one honest chip — "214 more alerts
+  farther away — SEE ALL" (tap to unfold). No focus = no filtering (never
+  pretend). Crossing the city-scale threshold re-deploys automatically.
+- **Calm controls**: 6 always-visible floating buttons -> 3 (zoom +/, recentre,
+  route-clear ONLY while a route exists). Chip row de-jargoned: per-provider
+  "USGS Earthquake Hazards Program • LIVE" carpet replaced by one plain chip
+  "Live: 2 of 3 sources" (full per-source provenance remains in detail sheets
+  + Home footer); "SIMULATED DEMO • ON" -> "Demo data: ON"; risk strip
+  "DEVICE GPS / INDIA FALLBACK" -> "your GPS / location approximate".
+- Map opens at CITY zoom (9.5), not country zoom 5.
+- Contracts: `MapFocusTest` (7). Full suite: 56 suites / 465 tests / 0 failures.

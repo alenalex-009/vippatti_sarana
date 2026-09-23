@@ -13,6 +13,7 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -56,6 +57,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.preference.PreferenceManager
+import com.example.data.disaster.MapFocus
 import com.example.data.disaster.PilotRegionData
 import com.example.data.disaster.DisasterEvent
 import com.example.data.disaster.DisasterLayer
@@ -71,6 +73,7 @@ import com.example.data.routing.GeoPoint
 import com.example.data.routing.RouteResult
 import com.example.ui.theme.EmergencyRed
 import com.example.ui.theme.NeonEmerald
+import com.example.ui.theme.TacticalCyan
 import com.example.ui.theme.ObsidianContainer
 import com.example.ui.theme.TacticalOnSurface
 import com.example.ui.theme.TacticalOnSurfaceVariant
@@ -99,6 +102,23 @@ data class LiveNavStatus(
   val totalDurationMins: Int = 0,
   val travelProfileLabel: String = "FOOT EVAC",
   val isArrived: Boolean = false
+)
+
+/**
+ * CARTO Positron light basemap (free, OSM data) — the muted Google-style
+ * canvas the pins draw on. Attribution lives in the map's copyright banner
+ * component (© OpenStreetMap contributors © CARTO).
+ */
+private val LightBasemap = org.osmdroid.tileprovider.tilesource.XYTileSource(
+  "Carto Light",
+  0, 20, 256, ".png",
+  arrayOf(
+    "https://a.basemaps.cartocdn.com/light_all/",
+    "https://b.basemaps.cartocdn.com/light_all/",
+    "https://c.basemaps.cartocdn.com/light_all/",
+    "https://d.basemaps.cartocdn.com/light_all/"
+  ),
+  "\u00a9 OpenStreetMap contributors \u00a9 CARTO"
 )
 
 private const val ROUTE_COLOR = 0xFF00E297.toInt()     // High-visibility emergency green
@@ -158,6 +178,8 @@ fun OsmDroidRadarMapView(
   historicalEvents: List<com.example.data.historical.HistoricalDisasterEvent> = emptyList(),
   /** Tap on a historical marker — opens the historical sheet, not a hazard one. */
   onHistoricalEventTapped: (com.example.data.historical.HistoricalDisasterEvent) -> Unit = {},
+  /** NEARBY-FIRST: the user's location; distant data folds away at city zoom. */
+  focusPoint: GeoPoint? = null,
   modifier: Modifier = Modifier,
   // Overlay-aware spacing so the floating map controls / attribution banner
   // never sit underneath the screen's risk strip, HUD or bottom sheet on any
@@ -231,6 +253,15 @@ fun OsmDroidRadarMapView(
   LaunchedEffect(selectedSafeZone) {
     if (selectedSafeZone != null) mapState.focusOnSafeZone(selectedSafeZone)
   }
+
+  // NEARBY-FIRST focus: the map folds distant data while the camera is at
+  // city scale; the user's real location is the focus. The "see everything"
+  // choice is local map state, not app state — it is a viewing preference.
+  var showAllRegion by remember { mutableStateOf(false) }
+  LaunchedEffect(focusPoint?.lat, focusPoint?.lon) {
+    mapState.setFocus(focusPoint?.let { GeoPoint(it.lat, it.lon) })
+  }
+  LaunchedEffect(showAllRegion) { mapState.setShowAllRegion(showAllRegion) }
 
   // REDEPLOY ZONE OVERLAYS WHEN STATE CHANGES (audit item 4). The factory runs
   // exactly once, so hazard/safe-zone lists that arrive after first composition
@@ -390,16 +421,16 @@ fun OsmDroidRadarMapView(
       }
     }
 
-    // ---------------- Floating map controls (right edge, one-hand reachable) --
+    // ---------------- Floating map controls (Google-style: few, right edge) --
+    // Layer cycling + route-clearing were moved OUT of the always-visible
+    // stack: the light basemap is the design language now, and "clear route"
+    // appears only while a route actually exists (context-sensitive control).
     Column(
       modifier = Modifier
         .align(Alignment.TopEnd)
         .padding(top = topOverlayPadding + 12.dp, end = 10.dp),
       verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-      MapControlButton(Icons.Default.Layers, "Cycle Tile Layer", NeonEmerald, "osmdroid_layer_toggle_button") {
-        mapState.cycleTileSource()
-      }
       MapControlButton(Icons.Default.Add, "Zoom In", TacticalOnSurface, "osmdroid_zoom_in_button") {
         mapState.zoomIn()
       }
@@ -441,11 +472,34 @@ fun OsmDroidRadarMapView(
           onFix = onRealGpsFix
         )
       }
-      MapControlButton(Icons.Default.DeleteSweep, "Clear Route", EmergencyRed, "osmdroid_clear_route_button") {
-        // Route clearing flows through the ViewModel (single source of
-        // truth): state resets, then this map removes its polyline because
-        // activeRoute becomes null. Map-only removal would desync UI state.
-        onClearRoute()
+      if (activeRoute != null) {
+        MapControlButton(Icons.Default.Close, "Clear Route", EmergencyRed, "osmdroid_clear_route_button") {
+          // Route clearing flows through the ViewModel (single source of
+          // truth): state resets, then this map removes its polyline because
+          // activeRoute becomes null.
+          onClearRoute()
+        }
+      }
+    }
+
+    // ---------------- NEARBY-FIRST chip: distant data folded, honestly ------
+    if (mapState.nearbyHiddenCount > 0) {
+      Box(
+        modifier = Modifier
+          .align(Alignment.BottomCenter)
+          .padding(bottom = bottomOverlayPadding + 8.dp)
+          .clip(RoundedCornerShape(999.dp))
+          .background(ObsidianContainer.copy(alpha = 0.95f))
+          .border(1.dp, TacticalCyan.copy(alpha = 0.6f), RoundedCornerShape(999.dp))
+          .clickable { showAllRegion = !showAllRegion }
+          .padding(horizontal = 14.dp, vertical = 8.dp)
+          .testTag("map_see_all_chip")
+      ) {
+        Text(
+          if (showAllRegion) "Showing all of India — tap for NEARBY ONLY"
+          else "${mapState.nearbyHiddenCount} more alerts farther away — SEE ALL",
+          fontSize = 11.sp, fontWeight = FontWeight.Bold, color = TacticalCyan
+        )
       }
     }
 
@@ -460,7 +514,7 @@ fun OsmDroidRadarMapView(
         .padding(horizontal = 6.dp, vertical = 3.dp)
     ) {
       Text(
-        text = "India ? osmdroid / OpenStreetMap / OSRM",
+        text = "© OpenStreetMap contributors © CARTO · routing OSRM",
         fontSize = 9.sp,
         fontWeight = FontWeight.Medium,
         color = TacticalOnSurfaceVariant
@@ -516,18 +570,58 @@ class OsmMapControllerHolder(
   private var currentRoutePolyline: Polyline? = null
 
   /** Archived (EM-DAT) markers — kept separate from every live overlay list. */
-  private val historicalEventOverlays = mutableListOf<PulsingZoneOverlay>()
+  private val historicalEventOverlays = mutableListOf<MarkerOverlay>()
 
-  // Large pulsing zone overlays (hazards + safe zones + disaster events).
-  private val hazardZoneOverlays = mutableListOf<PulsingZoneOverlay>()
-  private val safeZoneOverlays = mutableListOf<PulsingZoneOverlay>()
-  private val disasterEventOverlays = mutableListOf<PulsingZoneOverlay>()
+  // Marker lists (pin-or-dot and classic overlays share the MarkerOverlay base).
+  private val hazardZoneOverlays = mutableListOf<MarkerOverlay>()
+  private val safeZoneOverlays = mutableListOf<MarkerOverlay>()
+  private val disasterEventOverlays = mutableListOf<MarkerOverlay>()
+
+  // Last-deployed data so a zoom/focus change can redeploy without the caller.
+  private var lastHazardZones: List<HazardZone> = emptyList()
+  private var lastHazardTap: (HazardZone) -> Unit = {}
+  private var lastSafeTap: (SafeZone) -> Unit = {}
+  private var lastEventTap: (com.example.data.disaster.DisasterEvent) -> Unit = {}
+  private var lastHistoricalTap: (com.example.data.historical.HistoricalDisasterEvent) -> Unit = {}
+  private var lastSafeZones: List<SafeZone> = emptyList()
+  private var lastDisasterEvents: List<com.example.data.disaster.DisasterEvent> = emptyList()
+  private var lastEnabledLayers: Set<com.example.data.disaster.DisasterLayer> =
+    com.example.data.disaster.DisasterLayer.entries.toSet()
+  private var lastHistoricalEvents: List<com.example.data.historical.HistoricalDisasterEvent> =
+    emptyList()
+
+  /** Re-deploy every overlay layer (zoom crossed a detail threshold, focus moved, ...). */
+  fun redeployAll() {
+    // Each deploy* call stops + removes its own stale overlays and keeps the
+    // previously registered tap handlers via default arguments.
+    deployHazardZones(lastHazardZones)
+    deploySafeZones(lastSafeZones)
+    deployDisasterEvents(lastDisasterEvents, lastEnabledLayers)
+    deployHistoricalEvents(lastHistoricalEvents)
+  }
+
+  /**
+   * NEARBY-FIRST state (Google Maps behaviour): while the camera is at city
+   * scale, only data around [focusPoint] is drawn unless [showAllRegion] was
+   * explicitly requested via the "see all" chip. The ViewModel owns focus
+   * changes; the holder just reads them at deploy time + on zoom.
+   */
+  var focusPoint: GeoPoint? = null
+  var showAllRegion: Boolean = false
+    private set
+  private var zoomRedeploy: (() -> Unit)? = null
+  private var zoomWasCity: Boolean? = null
 
   private var tileSourceIndex = 0
-  private val tileSources = listOf(
-    TileSourceFactory.MAPNIK,
-    TileSourceFactory.OpenTopo
-  )
+  private val tileSources by lazy {
+    listOf(
+      // Google-style light basemap (CARTO Positron on OSM data) — muted grey
+      // canvas so hazard pins carry ALL the colour, the way Flood Hub works.
+      LightBasemap,
+      TileSourceFactory.MAPNIK,
+      TileSourceFactory.OpenTopo
+    )
+  }
 
   fun initMapView(
     context: Context,
@@ -559,7 +653,10 @@ class OsmMapControllerHolder(
       setTileSource(tileSources[0])
       setMultiTouchControls(true)
       zoomController.setVisibility(CustomZoomButtonsController.Visibility.NEVER)
-      controller.setZoom(PilotRegionData.DEFAULT_MAP_ZOOM)
+      // Google-style entry: start at CITY scale, not a whole-continent view.
+      // With no GPS yet the camera sits on the labeled India fallback centre;
+      // the first real fix re-centres it (enableFollowLocation is active).
+      controller.setZoom(MapFocus.RADIUS_CIRCLE_MIN_ZOOM + 0.5)
       controller.setCenter(
         OsmGeoPoint(PilotRegionData.DEFAULT_MAP_CENTER.lat, PilotRegionData.DEFAULT_MAP_CENTER.lon)
       )
@@ -576,6 +673,23 @@ class OsmMapControllerHolder(
       }
     }
     mapView = view
+
+    // NEARBY-FIRST re-deploy when the camera crosses the city-scale threshold:
+    // zooming into a district pulls in that area's events, zooming out folds
+    // them away again. Re-deploy only fires on THRESHOLD CROSSINGS (not on
+    // every frame) so panning stays cheap.
+    zoomWasCity = MapFocus.isCityScale(view.zoomLevelDouble)
+    view.setMapListener(object : org.osmdroid.events.MapListener {
+      override fun onZoom(event: org.osmdroid.events.ZoomEvent): Boolean {
+        val nowCity = MapFocus.isCityScale(event.zoomLevel)
+        if (nowCity != zoomWasCity) {
+          zoomWasCity = nowCity
+          redeployAll()
+        }
+        return false
+      }
+      override fun onScroll(event: org.osmdroid.events.ScrollEvent): Boolean = false
+    })
 
     // 3. Hardware GPS location overlay ? REAL fixes reported to the ViewModel.
     val myLoc = object : MyLocationNewOverlay(GpsMyLocationProvider(context), view) {
@@ -603,32 +717,97 @@ class OsmMapControllerHolder(
     return view
   }
 
-  /** Disaster-colored large faded danger circles (idempotent: stale overlays removed first). */
+  /** Disaster-colored hazard marks: small pin dots at overview zoom, honest
+   * real-radius pulsing areas once the zoom can show them (Google-style).
+   * NEARBY FIRST: at city scale only zones within 50 km of the focus render,
+   * unless showAllRegion was requested. */
   fun deployHazardZones(
     hazardZones: List<HazardZone>,
-    onHazardZoneTapped: (HazardZone) -> Unit
+    onHazardZoneTapped: (HazardZone) -> Unit = lastHazardTap
   ) {
     val view = mapView ?: return
+    lastHazardZones = hazardZones
+    lastHazardTap = onHazardZoneTapped
     hazardZoneOverlays.forEach { overlay ->
       overlay.stop()
       view.overlays.remove(overlay)
     }
     hazardZoneOverlays.clear()
 
-    hazardZones.forEach { zone ->
-      val color = hazardColor(zone)
-      val overlay = PulsingZoneOverlay(
+    val zoom = view.zoomLevelDouble
+    val visible = nearbyFilter(hazardZones, zoom) { it.center }
+    visible.forEach { zone ->
+      val overlay = PinOrAreaOverlay(
         center = OsmGeoPoint(zone.center.lat, zone.center.lon),
         radiusMeters = zone.radiusMeters,
-        baseColorArgb = color,
+        colorArgb = hazardColor(zone),
         pulsePeriodMs = HAZARD_PULSE_MS,
-        onZoneTapped = { onHazardZoneTapped(zone) }
+        // The overlay reads the LIVE zoom on every draw: dots at country
+        // scale morph into honest real-radius areas once zoomed in enough.
+        areaFromZoom = MapFocus.RADIUS_CIRCLE_MIN_ZOOM,
+        showHalo = zone.severity.weight >= 3,
+        onTapped = { onHazardZoneTapped(zone) }
       )
       hazardZoneOverlays.add(overlay)
       // Insert UNDER the location overlay so the user dot stays visible.
       view.overlays.add(0, overlay)
     }
+    refreshNearbyUi()
     view.invalidate()
+  }
+
+  /**
+   * NEARBY-FIRST rule shared by every layer: while the camera is at city
+   * scale AND the user has not pressed "show all", only data within 50 km of
+   * the focus point is drawn. At country scale, or when zoomed in with the
+   * focus unknown, everything the layer normally shows renders.
+   */
+  private fun <T> nearbyFilter(
+    items: List<T>,
+    zoom: Double,
+    pointOf: (T) -> GeoPoint
+  ): List<T> = when {
+    focusPoint == null -> items
+    !MapFocus.isCityScale(zoom) -> items      // country view: see everything
+    showAllRegion -> items                     // user asked for the whole view
+    else -> items.filter { MapFocus.isNear(focusPoint, pointOf(it)) }
+  }
+
+  private fun nearbyActive(zoom: Double): Boolean =
+    focusPoint != null && MapFocus.isCityScale(zoom) && !showAllRegion
+
+  /** True while the NEARBY-FIRST window is active (city zoom + focus known). */
+  var nearbyHiddenCount by mutableStateOf(0)
+    private set
+
+  private fun refreshNearbyUi() {
+    val view = mapView ?: return
+    nearbyHiddenCount = distantEventCount()
+  }
+
+  /** How many of the last-deployed events live OUTSIDE the nearby window (for the chip). */
+  fun distantEventCount(): Int {
+    val view = mapView ?: return 0
+    val zoom = view.zoomLevelDouble
+    if (nearbyActive(zoom)) {
+      return lastDisasterEvents.count { e ->
+        val p = com.example.data.disaster.MapFocus.eventPoint(e)
+        p != null && !MapFocus.isNear(focusPoint, p)
+      }
+    }
+    return 0
+  }
+
+  fun setFocus(point: GeoPoint?) {
+    if (focusPoint?.lat == point?.lat && focusPoint?.lon == point?.lon) return
+    focusPoint = point
+    redeployAll()
+  }
+
+  fun setShowAllRegion(value: Boolean) {
+    if (showAllRegion == value) return
+    showAllRegion = value
+    redeployAll()
   }
 
   /**
@@ -643,26 +822,32 @@ class OsmMapControllerHolder(
    */
   fun deploySafeZones(
     safeZones: List<SafeZone>,
-    onSafeZoneTapped: (SafeZone) -> Unit
+    onSafeZoneTapped: (SafeZone) -> Unit = lastSafeTap
   ) {
     val view = mapView ?: return
+    lastSafeZones = safeZones
+    lastSafeTap = onSafeZoneTapped
     safeZoneOverlays.forEach { overlay ->
       overlay.stop()
       view.overlays.remove(overlay)
     }
     safeZoneOverlays.clear()
 
+    val zoom = view.zoomLevelDouble
     safeZones.forEach { zone ->
       val color = when {
         zone.capacityStatus == com.example.data.model.CapacityStatus.FULL -> 0xFFF59E0B.toInt() // amber = full
         else -> 0xFF00E297.toInt() // emerald = available
       }
-      val overlay = PulsingZoneOverlay(
+      val overlay = PinOrAreaOverlay(
         center = OsmGeoPoint(zone.lat, zone.lon),
         radiusMeters = SAFE_ZONE_RADIUS_METERS,
-        baseColorArgb = color,
+        colorArgb = color,
         pulsePeriodMs = SAFE_ZONE_PULSE_MS,
-        onZoneTapped = { onSafeZoneTapped(zone) }
+        // Shelters matter at walking scale: show their (small, honest) area
+        // from city zoom up, dots beyond that.
+        areaFromZoom = MapFocus.SAFE_DOT_MIN_ZOOM,
+        onTapped = { onSafeZoneTapped(zone) }
       )
       safeZoneOverlays.add(overlay)
       view.overlays.add(0, overlay)
@@ -680,9 +865,12 @@ class OsmMapControllerHolder(
   fun deployDisasterEvents(
     events: List<DisasterEvent>,
     enabledLayers: Set<DisasterLayer>,
-    onEventTapped: (DisasterEvent) -> Unit
+    onEventTapped: (DisasterEvent) -> Unit = lastEventTap
   ) {
     val view = mapView ?: return
+    lastDisasterEvents = events
+    lastEnabledLayers = enabledLayers
+    lastEventTap = onEventTapped
     disasterEventOverlays.forEach { overlay ->
       overlay.stop()
       view.overlays.remove(overlay)
@@ -703,7 +891,7 @@ class OsmMapControllerHolder(
       return
     }
 
-    val renderable = events.mapNotNull { event ->
+    val renderable0 = events.mapNotNull { event ->
       val layer = when (event.disasterType) {
         DisasterType.EARTHQUAKE -> DisasterLayer.EARTHQUAKES
         DisasterType.WILDFIRE -> DisasterLayer.ACTIVE_FIRES
@@ -718,6 +906,10 @@ class OsmMapControllerHolder(
       }
       // Zoom-based level-of-detail rule comes from the layer itself.
       if (layer in selected && layer.isVisibleAt(zoom, enabled = true)) event else null
+    }
+    // NEARBY FIRST at city scale (distant events fold into the "see all" chip).
+    val renderable = nearbyFilter(renderable0, zoom) { e ->
+      com.example.data.disaster.MapFocus.eventPoint(e) ?: GeoPoint(0.0, 0.0)
     }
     // Overview clustering — collapses dense fire detections at national zoom
     // and reports, per marker, how many detections it stands for and the
@@ -739,16 +931,22 @@ class OsmMapControllerHolder(
       // number of detections this marker represents, both bounded by
       // FireIntensityScale.MAX_MARKER_SCALE. No measurement -> base size.
       val scale = FireIntensityScale.markerScale(cluster.maxFrpMegawatts, cluster.memberCount)
-      val overlay = PulsingZoneOverlay(
+      val overlay = PinOrAreaOverlay(
         center = OsmGeoPoint(point.lat, point.lon),
         radiusMeters = DISASTER_MARKER_RADIUS_METERS * scale,
-        baseColorArgb = disasterMarkerColor(event),
+        colorArgb = disasterMarkerColor(event),
         pulsePeriodMs = DISASTER_PULSE_MS,
-        onZoneTapped = { onEventTapped(event) }
+        // Alert points are exact source coordinates: a crisp dot pin at any
+        // zoom, its small honest area only at street level.
+        areaFromZoom = 13.0,
+        dotRadiusPx = 10f + (scale.toFloat() - 1f) * 4f,
+        showHalo = event.severity.weight >= 3,
+        onTapped = { onEventTapped(event) }
       )
       disasterEventOverlays.add(overlay)
       view.overlays.add(0, overlay)
     }
+    refreshNearbyUi()
     view.invalidate()
   }
 
@@ -763,9 +961,11 @@ class OsmMapControllerHolder(
    */
   fun deployHistoricalEvents(
     events: List<com.example.data.historical.HistoricalDisasterEvent>,
-    onEventTapped: (com.example.data.historical.HistoricalDisasterEvent) -> Unit
+    onEventTapped: (com.example.data.historical.HistoricalDisasterEvent) -> Unit = lastHistoricalTap
   ) {
     val view = mapView ?: return
+    lastHistoricalEvents = events
+    lastHistoricalTap = onEventTapped
     historicalEventOverlays.forEach { overlay ->
       overlay.stop()
       view.overlays.remove(overlay)
@@ -775,13 +975,15 @@ class OsmMapControllerHolder(
     events.filter { it.isMappable }.forEach { event ->
       val lat = event.latitude ?: return@forEach
       val lon = event.longitude ?: return@forEach
-      val overlay = PulsingZoneOverlay(
+      val overlay = PinOrAreaOverlay(
         center = OsmGeoPoint(lat, lon),
         radiusMeters = HISTORICAL_MARKER_RADIUS_METERS,
-        baseColorArgb = HISTORICAL_MARKER_COLOR,
+        colorArgb = HISTORICAL_MARKER_COLOR,
         // A deliberately slow pulse keeps it visually distinct from live alerts.
         pulsePeriodMs = HISTORICAL_PULSE_MS,
-        onZoneTapped = { onEventTapped(event) }
+        areaFromZoom = 99.0, // history is NEVER an area claim: dot only
+        dotRadiusPx = 9f,
+        onTapped = { onEventTapped(event) }
       )
       historicalEventOverlays.add(overlay)
       view.overlays.add(0, overlay)

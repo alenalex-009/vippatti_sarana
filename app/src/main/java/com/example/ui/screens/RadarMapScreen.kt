@@ -81,6 +81,7 @@ import com.example.data.disaster.DisasterLayer
 import com.example.data.disaster.DisasterSource
 import com.example.data.disaster.IncidentCategory
 import com.example.data.model.SafeZone
+import com.example.data.routing.GeoPoint
 import com.example.data.routing.OsrmRoutingService
 import com.example.data.routing.RouteSafetyStatus
 import com.example.data.risk.RiskLevel
@@ -216,6 +217,9 @@ fun RadarMapScreen(
       disasterEvents = uiState.disasterEvents,
       enabledLayers = uiState.enabledLayers,
       onDisasterEventTapped = onOpenDisasterEventDetail,
+      // NEARBY-FIRST: fold distant data while the camera is at city scale.
+      focusPoint = if (uiState.isUserLocationFallback) null
+      else GeoPoint(uiState.userLocation.lat, uiState.userLocation.lon),
       // HISTORICAL (EM-DAT): only when the operator enables the layer, and only
       // records with the dataset's own coordinates. Never a current hazard.
       historicalEvents = uiState.historicalMappableEvents,

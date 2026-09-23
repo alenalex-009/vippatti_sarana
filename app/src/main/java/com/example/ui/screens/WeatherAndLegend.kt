@@ -186,6 +186,12 @@ internal fun DisasterStatusLayerRow(
     else -> DataStatus.EMPTY
   }
   val statusColor = dataStatusColor(aggregateStatus)
+  // Plain-language data summary instead of per-provider jargon chips: normal
+  // people read "Live: 2 of 3 sources" — the full per-source provenance stays
+  // available where it belongs (event detail sheets, Home DATA STATUS footer).
+  val liveCount = providerStatuses.count { (_, status) ->
+    status == DataStatus.SUCCESS || status == DataStatus.STALE
+  }
   LazyRow(
     modifier = Modifier
       .fillMaxWidth()
@@ -193,41 +199,22 @@ internal fun DisasterStatusLayerRow(
     contentPadding = PaddingValues(horizontal = 10.dp),
     horizontalArrangement = Arrangement.spacedBy(6.dp)
   ) {
-    // Simulated-demo toggle: the SIMULATED DEMO chip.
-    // ON  -> every labelled mock danger + safe zone appears.
-    // OFF -> the simulated network is hidden; LIVE provider events and citizen
-    //        reports keep reaching the map.
     item {
       StatusChip(
-        text = if (uiState.isMockDataVisible) "SIMULATED DEMO • ON" else "SIMULATED DEMO • OFF",
-        color = if (uiState.isMockDataVisible) TacticalCyan else TacticalOnSurfaceVariant,
-        testTag = "disaster_data_status_chip",
-        onClick = onToggleMockData
+        text = if (providerStatuses.isEmpty()) "No data yet"
+        else "Live: $liveCount of ${providerStatuses.size} sources",
+        color = statusColor,
+        testTag = "disaster_data_status_chip"
       )
     }
-    // Per-provider provenance: one badge per real source, with its own status
-    // (LIVE / STALE / ERROR) and the provider's own reason text. Rendered only
-    // for sources that actually reported state - nothing is invented here.
-    items(providerStatuses, key = { (state, _) -> state.source.name }) { (state, status) ->
-      Row(
-        modifier = Modifier
-          .clip(RoundedCornerShape(999.dp))
-          .background(ObsidianContainer.copy(alpha = 0.9f))
-          .padding(horizontal = 6.dp, vertical = 2.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(5.dp)
-      ) {
-        StatusBadge(status)
-        Text(
-          // Provider name plus, when it did not answer, the exact failure kind
-          // (not configured / authentication failed / failed).
-          text = state.failureKind?.let { "${state.source.label} • ${it.label}" }
-            ?: state.source.label,
-          fontSize = 9.sp,
-          color = TacticalOnSurfaceVariant,
-          maxLines = 1
-        )
-      }
+    // Simulated-demo toggle, plainly worded.
+    item {
+      StatusChip(
+        text = if (uiState.isMockDataVisible) "Demo data: ON" else "Demo data: OFF",
+        color = if (uiState.isMockDataVisible) TacticalCyan else TacticalOnSurfaceVariant,
+        testTag = "mock_data_toggle_chip",
+        onClick = onToggleMockData
+      )
     }
     // Layer toggles — only layers the providers/data model actually support.
     listOf(
@@ -266,7 +253,7 @@ internal fun DisasterStatusLayerRow(
     // directly under the risk strip. A stray tap while panning/zooming could open
     // the report form (the app's only text-input popup), which is what made map
     // taps feel like an unwanted comment box. Reporting now lives behind the
-    // explicit "REPORT AN INCIDENT…" action in the bottom sheet.
+    // explicit "REPORT AN INCIDENT..." action in the bottom sheet.
   }
 }
 
