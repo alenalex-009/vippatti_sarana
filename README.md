@@ -20,6 +20,9 @@ Vippatti Sarana is an **all-India** disaster-management and relocation decision-
 - 🔊 **Audio Bulletin** — Provides spoken updates about risk, recommended actions, and relevant news.
 - 📝 **Incident Reporting** — Report incidents and provide situation information.
 - 📦 **Offline Support** — Caches selected data for use during limited connectivity.
+- ⛰️ **Dynamic Red-Zone Check** — "Is my spot unsafe for habitation?" Probes SRTM 30 m slope + live 24 h rainfall + coast exposure at your location and returns a transparent score with reasons (decision-support heuristic, not an official notification).
+- 🧭 **Emergency Guidance** — When danger is detected near you, the radar shows the nearest eligible safe zone with one-tap GO routing; with no registered shelter in range it says exactly that, points at 112, and offers a last-resort terrain-safe haven search (labelled DERIVED open terrain).
+- 🏛️ **Authority Console** — Field shelter & habitation entry for survey operators (stored on device) feeding the **relocation prioritization dashboard**: habitations ranked IMMEDIATE / SHORT-TERM / MEDIUM-TERM with per-row scoring reasons (SIH 26191).
 
 ---
 
@@ -33,9 +36,10 @@ Vippatti Sarana is an **all-India** disaster-management and relocation decision-
 | Architecture     | MVVM                                 |
 | Maps             | OSMDroid + OpenStreetMap             |
 | Routing          | OSRM                                 |
+| Terrain          | SRTM 30 m (Open-Meteo Elevation API) + Natural Earth coast grid (offline) |
 | Networking       | OkHttp                               |
 | Local Storage    | File Cache                           |
-| Backend Services | Firebase                             |
+| Backend Services | Firebase Remote Config (OTA config; no app backend — by design) |
 | News             | GNews API                            |
 | Disaster Data    | USGS, NASA FIRMS, IMD CAP            |
 | Testing          | JUnit, Robolectric, Compose UI Tests |
