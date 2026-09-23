@@ -156,6 +156,9 @@ fun RadarMapScreen(
   onGuidanceDismiss: () -> Unit = {},
   onSearchTerrainHaven: () -> Unit = {},
   onRouteToTerrainHaven: () -> Unit = {},
+  /** "Is MY spot a red zone?" explicit terrain check. */
+  onAssessTerrain: () -> Unit = {},
+  onDismissTerrainAssessment: () -> Unit = {},
   modifier: Modifier = Modifier
 ) {
   var isSheetExpanded by remember { mutableStateOf(true) }
@@ -283,6 +286,15 @@ fun RadarMapScreen(
         onRouteToHaven = onRouteToTerrainHaven,
         onDismiss = onGuidanceDismiss,
         modifier = Modifier.padding(top = 6.dp)
+      )
+
+      // 2e. TERRAIN SELF-ASSESSMENT — "is MY spot a red zone?" explicit tap.
+      TerrainSelfAssessmentChip(
+        assessment = uiState.terrainSelfAssessment,
+        isAssessing = uiState.isAssessingTerrain,
+        onAssess = onAssessTerrain,
+        onDismiss = onDismissTerrainAssessment,
+        modifier = Modifier.padding(top = 4.dp)
       )
 
 
