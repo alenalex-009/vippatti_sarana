@@ -1298,7 +1298,7 @@ class OsmMapControllerHolder(
     // FIT THE WHOLE CORRIDOR: without this, longer routes run off-screen and
     // read as "the route stops halfway" (reported bug). Refit only when the
     // route actually changed (id), never on every recompute/GPS nudge.
-    if (route.routeId != lastFittedRouteId && points.size >= 2) {
+    if (route.routeId != lastFittedRouteId && points.size >= 2 && mv.width > 0 && mv.height > 0) {
       lastFittedRouteId = route.routeId
       val box = org.osmdroid.util.BoundingBox(
         points.maxOf { it.latitude }, points.minOf { it.longitude },

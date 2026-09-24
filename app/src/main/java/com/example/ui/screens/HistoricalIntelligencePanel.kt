@@ -474,24 +474,7 @@ private fun HistoricalChartsBlock(events: List<HistoricalDisasterEvent>) {
       color = TacticalOnSurfaceVariant, letterSpacing = 0.6.sp
     )
 
-    // Headline totals as two stat tiles (counts of records stating a figure
-    // stay visible so an EM-DAT null can never read as zero).
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-      HistStatTile(
-        value = summary.deathsTotal?.let { formatCount(it) } ?: "—",
-        caption = "deaths reported" + (if (summary.deathsRecords > 0) " (${summary.deathsRecords} records)" else ""),
-        tint = EmergencyRedBright,
-        tag = "hist_tile_deaths"
-      )
-      HistStatTile(
-        value = summary.affectedTotal?.let { formatCount(it) } ?: "—",
-        caption = "people affected" + (if (summary.affectedRecords > 0) " (${summary.affectedRecords} records)" else ""),
-        tint = WarningAmber,
-        tag = "hist_tile_affected"
-      )
-    }
-
-    if (summary.typeBars.isNotEmpty()) {
+if (summary.typeBars.isNotEmpty()) {
       Text("MOST RECORDED TYPES", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = TacticalOnSurfaceVariant)
       summary.typeBars.forEach { row ->
         HistBarRow(
@@ -535,21 +518,6 @@ private fun HistoricalChartsBlock(events: List<HistoricalDisasterEvent>) {
       text = "Charts count the SAME filtered records listed below — historical data, not current risk.",
       fontSize = 10.sp, color = TacticalOnSurfaceVariant, lineHeight = 13.sp
     )
-  }
-}
-
-@Composable
-private fun androidx.compose.foundation.layout.RowScope.HistStatTile(value: String, caption: String, tint: androidx.compose.ui.graphics.Color, tag: String) {
-  Column(
-    modifier = Modifier
-      .weight(1f)
-      .clip(RoundedCornerShape(10.dp))
-      .background(ObsidianContainer)
-      .padding(horizontal = 10.dp, vertical = 8.dp)
-      .testTag(tag)
-  ) {
-    Text(value, fontSize = 18.sp, fontWeight = FontWeight.Black, color = tint)
-    Text(caption, fontSize = 10.sp, color = TacticalOnSurfaceVariant, lineHeight = 12.sp)
   }
 }
 

@@ -43,7 +43,7 @@ object DemoNetworkAroundUser {
 
   const val DEMO_HAZARD_DISTANCE_KM = 3.0
   const val DEMO_SHELTER_DISTANCE_KM = 5.0
-  const val DEMO_HAZARD_RADIUS_M = 4_050.0
+  const val DEMO_HAZARD_RADIUS_M = 4_000.0
   const val DEMO_SHELTER_CAPACITY = 240
   const val DEMO_SHELTER_OCCUPIED = 30
 
@@ -96,8 +96,9 @@ object DemoNetworkAroundUser {
 
   /**
    * The demo safe shelter, opposite the hazard bearing ~5 km away: outside
-   * every hazard circle (8 km from its center > 4.05 km radius), OPEN, with
-   * free capacity — so the evaluator ranks it and the GO card can route.
+   * the hazard circle (5 km from focus AND 8 km from hazard center, both >
+   * 4 km radius), OPEN, with free capacity — so the evaluator ranks it and
+   * the GO card can route.
    */
   fun shelterNear(focus: GeoPoint): SafeZone {
     val p = offset(focus, DEMO_SHELTER_DISTANCE_KM, (bearingFor(focus) + 180.0) % 360.0)

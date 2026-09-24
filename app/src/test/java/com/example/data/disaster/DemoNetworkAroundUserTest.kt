@@ -82,4 +82,13 @@ class DemoNetworkAroundUserTest {
     )
     types.forEach { assertTrue(it.label.isNotBlank()) }
   }
+
+  @Test
+  fun `shelter is outside the hazard circle measured from BOTH user and hazard center`() {
+    // Regression: r=4.05km let the circle reach 7.05km past the focus and
+    // swallowed the 5km shelter -> no feasible shelter -> routing dead.
+    val (hazard, shelter) = DemoNetworkAroundUser.around(GeoPoint(21.5, 80.0))!!
+    assertTrue(GeoMath.distanceMeters(GeoPoint(21.5, 80.0), shelter.point) > hazard.radiusMeters)
+    assertTrue(GeoMath.distanceMeters(hazard.center, shelter.point) > hazard.radiusMeters)
+  }
 }
