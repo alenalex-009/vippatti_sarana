@@ -47,6 +47,8 @@
     <string name="profile_relocation_description">à¦†à¦ªà¦¨à¦¾à¦° à¦ªà¦°à¦¿à¦¬à¦¾à¦°à§‡à¦° à¦¤à¦¥à§à¦¯ à¦¥à§‡à¦•à§‡ à¦¸à¦°à¦¾à¦¨à§‹à¦° à¦°â€à§à¦¯à¦¾à¦™à§à¦•à¦¿à¦‚</string>
     <string name="profile_relocation_assigned_shelter">à¦¬à¦°à¦¾à¦¦à§à¦¦ à¦¶à¦¿à¦¬à¦¿à¦°: %1$s</string>
     <string name="profile_relocation_shelter_capacity">%1$dà¦Ÿà¦¿ à¦¸à§à¦¥à¦¾à¦¨ à¦–à¦¾à¦²à¦¿</string>
+    <string name="profile_relocation_priority_note">বৃদ্ধ, শিশু, প্রতিবন্ধী, গর্ভবতী নারী এবং চিকিৎসানির্ভরতা — এগুলি সবই আপনার পরিবারের অগ্রাধিকার বাড়ায়। শুধুমাত্র আপনি যে তথ্য লিখেছেন তা-ই ব্যবহৃত হয় — জনসংখ্যার কোনো পরিসংখ্যান বানানো হয় না।</string>
+
     <string name="profile_section_contacts">à¦œà¦°à§à¦°à¦¿ à¦¯à§‹à¦—à¦¾à¦¯à§‹à¦—</string>
     <string name="profile_add_contact">à¦¯à§‹à¦—à¦¾à¦¯à§‹à¦— à¦¯à§‹à¦— à¦•à¦°à§à¦¨</string>
     <string name="profile_contact_role">%1$s (%2$s)</string>

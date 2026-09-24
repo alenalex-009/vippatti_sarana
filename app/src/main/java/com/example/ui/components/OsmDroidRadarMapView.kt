@@ -1063,13 +1063,21 @@ class OsmMapControllerHolder(
     // 3. Stop every pulsing overlay BEFORE removing it, so no queued
     //    postInvalidate() can reach the detached MapView (each overlay used to
     //    schedule a redraw every 66 ms forever).
-    (hazardZoneOverlays + safeZoneOverlays + disasterEventOverlays).forEach { it.stop() }
+    //
+    // The HISTORICAL (EM-DAT) markers are part of "every pulsing overlay" too:
+    // they were left out of this teardown, so a released map kept animating them
+    // (a redraw scheduled every 66 ms against a detached MapView, which is
+    // exactly the leak this block exists to prevent).
+    (hazardZoneOverlays + safeZoneOverlays + disasterEventOverlays + historicalEventOverlays)
+      .forEach { it.stop() }
     hazardZoneOverlays.forEach { view.overlays.remove(it) }
     hazardZoneOverlays.clear()
     safeZoneOverlays.forEach { view.overlays.remove(it) }
     safeZoneOverlays.clear()
     disasterEventOverlays.forEach { view.overlays.remove(it) }
     disasterEventOverlays.clear()
+    historicalEventOverlays.forEach { view.overlays.remove(it) }
+    historicalEventOverlays.clear()
     currentRoutePolyline = null
     // 4. Detach exactly once — destroy-mode is off, so the framework will not
     //    also detach from onDetachedFromWindow.
