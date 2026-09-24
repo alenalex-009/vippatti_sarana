@@ -186,6 +186,13 @@ fun OsmDroidRadarMapView(
   onHistoricalEventTapped: (com.example.data.historical.HistoricalDisasterEvent) -> Unit = {},
   /** NEARBY-FIRST: the user's location; distant data folds away at city zoom. */
   focusPoint: GeoPoint? = null,
+  /** One-shot camera fly-to when the user picks a place to view. */
+  cameraJumpTarget: GeoPoint? = null,
+  /** Non-null while a CHOSEN place is being viewed instead of the GPS. */
+  viewingPlaceLabel: String? = null,
+  onExitPlaceView: () -> Unit = {},
+  /** Called once after the place-view camera fly-to has been executed. */
+  onCameraJumpConsumed: () -> Unit = {},
   modifier: Modifier = Modifier,
   // Overlay-aware spacing so the floating map controls / attribution banner
   // never sit underneath the screen's risk strip, HUD or bottom sheet on any
@@ -268,6 +275,15 @@ fun OsmDroidRadarMapView(
     mapState.setFocus(focusPoint?.let { GeoPoint(it.lat, it.lon) })
   }
   LaunchedEffect(showAllRegion) { mapState.setShowAllRegion(showAllRegion) }
+
+  // Place-view camera: fly to a chosen place (and stop following GPS while the
+  // user is looking somewhere else). Consumed by the parent after firing.
+  LaunchedEffect(cameraJumpTarget) {
+    cameraJumpTarget?.let {
+      mapState.stopFollowingAndCenter(GeoPoint(it.lat, it.lon))
+      onCameraJumpConsumed()
+    }
+  }
 
   // REDEPLOY ZONE OVERLAYS WHEN STATE CHANGES (audit item 4). The factory runs
   // exactly once, so hazard/safe-zone lists that arrive after first composition
@@ -1189,6 +1205,19 @@ class OsmMapControllerHolder(
 
   fun focusOnSafeZone(zone: SafeZone) {
     mapView?.controller?.animateTo(OsmGeoPoint(zone.lat, zone.lon))
+  }
+
+  /** Fly to a chosen place and stop GPS-following while viewing elsewhere. */
+  fun stopFollowingAndCenter(point: GeoPoint) {
+    val view = mapView ?: return
+    locationOverlay?.disableFollowLocation()
+    view.controller.animateTo(OsmGeoPoint(point.lat, point.lon))
+    view.invalidate()
+  }
+
+  /** Re-enable GPS following (when leaving place-view). */
+  fun resumeGpsFollowing() {
+    locationOverlay?.enableFollowLocation()
   }
 
   /** Removes the route polyline (called when ViewModel state clears the corridor). */

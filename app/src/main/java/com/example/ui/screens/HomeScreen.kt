@@ -75,6 +75,8 @@ fun HomeScreen(
   onSearchTerrainHaven: () -> Unit,
   onRouteToTerrainHaven: () -> Unit,
   onGuidanceDismiss: () -> Unit,
+  /** "Look at another state/city" (place picker). */
+  onOpenPlacePicker: () -> Unit = {},
   modifier: Modifier = Modifier
 ) {
   val risk = uiState.personalRisk
@@ -101,9 +103,18 @@ fun HomeScreen(
       )
       Spacer(Modifier.weight(1f))
       Text(
-        if (uiState.isUserLocationFallback) "LOCATION: INDIA FALLBACK" else "LOCATION: DEVICE GPS",
+        when {
+          uiState.isViewingChosenPlace -> "VIEWING: ${uiState.viewedPlaceLabel?.substringBefore(',') ?: "chosen place"}"
+          uiState.isUserLocationFallback -> "LOCATION: INDIA FALLBACK"
+          else -> "LOCATION: DEVICE GPS"
+        },
         fontSize = 10.sp, fontWeight = FontWeight.Bold,
-        color = if (uiState.isUserLocationFallback) TacticalCyan else NeonEmerald
+        color = when {
+          uiState.isViewingChosenPlace -> WarningAmber
+          uiState.isUserLocationFallback -> TacticalCyan
+          else -> NeonEmerald
+        },
+        modifier = Modifier.testTag("home_location_line").clickable(onClick = onOpenPlacePicker)
       )
     }
 

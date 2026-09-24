@@ -42,6 +42,7 @@ import androidx.compose.material.icons.filled.NearMe
 import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material.icons.filled.Opacity
 import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Sensors
 import androidx.compose.material.icons.filled.Thermostat
 import androidx.compose.material.icons.filled.TrendingDown
@@ -89,6 +90,7 @@ import com.example.data.shelters.SafeZoneEvaluation
 import com.example.data.shelters.SafeZoneEvaluator
 import com.example.ui.components.DisasterEventDetailDialog
 import com.example.ui.components.OsmDroidRadarMapView
+import com.example.ui.components.PlaceViewBanner
 import com.example.ui.theme.EmergencyRed
 import com.example.ui.theme.EmergencyRedBright
 import com.example.ui.theme.EmergencyRedContainer
@@ -160,6 +162,10 @@ fun RadarMapScreen(
   /** "Is MY spot a red zone?" — available on the map too (lives on Home as well). */
   onAssessTerrain: () -> Unit = {},
   onDismissTerrainAssessment: () -> Unit = {},
+  /** "Look at another place" picker + chosen-place banner. */
+  onOpenPlacePicker: () -> Unit = {},
+  onExitPlaceView: () -> Unit = {},
+  onCameraJumpConsumed: () -> Unit = {},
   modifier: Modifier = Modifier
 ) {
   // The decision stack (risk -> safe zones -> weather -> route) opens
@@ -223,6 +229,11 @@ fun RadarMapScreen(
       // NEARBY-FIRST: fold distant data while the camera is at city scale.
       focusPoint = if (uiState.isUserLocationFallback) null
       else GeoPoint(uiState.userLocation.lat, uiState.userLocation.lon),
+      // PLACE VIEW: chosen place flies the camera; banner labels the mode.
+      cameraJumpTarget = uiState.cameraJumpTarget,
+      viewingPlaceLabel = if (uiState.isViewingChosenPlace) uiState.viewedPlaceLabel else null,
+      onExitPlaceView = onExitPlaceView,
+      onCameraJumpConsumed = { onCameraJumpConsumed() },
       // HISTORICAL (EM-DAT): only when the operator enables the layer, and only
       // records with the dataset's own coordinates. Never a current hazard.
       historicalEvents = uiState.historicalMappableEvents,
@@ -242,6 +253,14 @@ fun RadarMapScreen(
         .fillMaxWidth()
         .onSizeChanged { size -> topOverlayHeightPx = size.height }
     ) {
+      // Place-view banner: shown while a CHOSEN place is being viewed.
+      if (uiState.isViewingChosenPlace && uiState.viewedPlaceLabel != null) {
+        PlaceViewBanner(
+          label = uiState.viewedPlaceLabel,
+          onExit = onExitPlaceView,
+          modifier = Modifier.padding(top = 8.dp)
+        )
+      }
       Row(
         modifier = Modifier
           .fillMaxWidth()
@@ -254,6 +273,23 @@ fun RadarMapScreen(
           isFallbackLocation = uiState.isUserLocationFallback,
           modifier = Modifier.weight(1f)
         )
+        // "Look at another place" — Google-Maps-style search affordance.
+        IconButton(
+          onClick = onOpenPlacePicker,
+          modifier = Modifier
+            .size(40.dp)
+            .clip(RoundedCornerShape(10.dp))
+            .background(ObsidianContainerLowest.copy(alpha = 0.94f))
+            .border(1.dp, TacticalCyan.copy(alpha = 0.55f), RoundedCornerShape(10.dp))
+            .testTag("place_picker_button")
+        ) {
+          Icon(
+            imageVector = Icons.Default.Search,
+            contentDescription = "Look at another place",
+            tint = TacticalCyan,
+            modifier = Modifier.size(20.dp)
+          )
+        }
         IconButton(
           onClick = onOpenSensorBroadcast,
           modifier = Modifier

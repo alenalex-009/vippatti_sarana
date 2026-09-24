@@ -286,6 +286,20 @@ data class VippattiUiState(
   val isRankingPriorities: Boolean = false,
   val showAuthorityDashboard: Boolean = false,
 
+  // --- PLACE VIEW MODE ("look at a state/city without GPS") ---
+  /** True while the map/risk reflect a CHOSEN place, not the device GPS. */
+  val isViewingChosenPlace: Boolean = false,
+  /** The chosen place's honest label, e.g. "Visakhapatnam, Andhra Pradesh". */
+  val viewedPlaceLabel: String? = null,
+  /** Set once per explicit pick so the map animates the camera exactly then. */
+  val cameraJumpTarget: com.example.data.routing.GeoPoint? = null,
+  /** Live place-search state for the picker sheet. */
+  val placeSearchQuery: String = "",
+  val isSearchingPlace: Boolean = false,
+  val placeCandidates: List<com.example.data.location.PlaceCandidate> = emptyList(),
+  val placeSearchError: String? = null,
+  val showPlacePicker: Boolean = false,
+
   // --- Carrying capacity (SIH milestone) ---
   /** How many people need relocation here; null = no population figure. */
   val capacityDemand: com.example.data.capacity.RelocationDemand? = null,

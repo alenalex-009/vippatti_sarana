@@ -170,6 +170,12 @@ class VippattiViewModel(
    */
   private val placeResolver: PlaceResolver = UnresolvedPlaceResolver,
   /**
+   * Forward place search for "look at a chosen state/city" (picker on Home +
+   * Map). Production uses Nominatim; tests inject a fake searcher.
+   */
+  private val placeSearcher: com.example.data.location.PlaceSearcher =
+    com.example.data.location.NominatimPlaceSearcher(),
+  /**
    * EMERGENCY GUIDANCE wiring (SIH 26191): live terrain probe + offline coast
    * grid for the terrain-derived safe-haven finder. Production MainActivity
    * injects the asset-backed grid; tests inject a fake finder. Null finder =
@@ -668,6 +674,9 @@ class VippattiViewModel(
    * re-routing is movement-guarded so 1 Hz fixes never starve the OSRM request.
    */
   fun applyRealGpsFix(latitude: Double, longitude: Double) {
+    // While the user is deliberately viewing a CHOSEN place, hardware fixes
+    // must not yank the app back — the banner says "not your GPS location".
+    if (_uiState.value.isViewingChosenPlace) return
     val state = _uiState.value
     if (state.isUserLocationFallback || state.userLocation.lat != latitude || state.userLocation.lon != longitude) {
       _uiState.update {
@@ -715,6 +724,129 @@ class VippattiViewModel(
 
   private fun scopeKey(place: ResolvedPlace?): String =
     listOf(place?.district, place?.state).joinToString("|")
+
+  // =============================================== PLACE VIEW MODE (picker) ==
+
+  fun openPlacePicker() {
+    _uiState.update {
+      it.copy(
+        showPlacePicker = true,
+        placeCandidates = emptyList(),
+        placeSearchError = null,
+        placeSearchQuery = ""
+      )
+    }
+  }
+
+  fun closePlacePicker() {
+    placeSearchJob?.cancel()
+    _uiState.update {
+      it.copy(showPlacePicker = false, isSearchingPlace = false, placeCandidates = emptyList())
+    }
+  }
+
+  private var placeSearchJob: Job? = null
+
+  /** Type-ahead place search; results are India-filtered by the searcher. */
+  fun setPlaceQuery(query: String) {
+    _uiState.update { it.copy(placeSearchQuery = query, placeSearchError = null) }
+    placeSearchJob?.cancel()
+    val q = query.trim()
+    if (q.length < 2) {
+      _uiState.update { it.copy(placeCandidates = emptyList(), isSearchingPlace = false) }
+      return
+    }
+    placeSearchJob = viewModelScope.launch {
+      _uiState.update { it.copy(isSearchingPlace = true) }
+      val result = try {
+        placeSearcher.search(q)
+      } catch (cancelled: kotlinx.coroutines.CancellationException) {
+        throw cancelled
+      } catch (error: Exception) {
+        com.example.data.location.PlaceSearchResult.Failure(
+          "Place search failed (${error.javaClass.simpleName})."
+        )
+      }
+      when (result) {
+        is com.example.data.location.PlaceSearchResult.Found ->
+          _uiState.update {
+            it.copy(isSearchingPlace = false, placeCandidates = result.candidates, placeSearchError = null)
+          }
+        is com.example.data.location.PlaceSearchResult.Failure ->
+          _uiState.update {
+            it.copy(isSearchingPlace = false, placeCandidates = emptyList(), placeSearchError = result.reason)
+          }
+      }
+    }
+  }
+
+  /**
+   * Points the whole app at a chosen place: the map flies there, risk/news/
+   * weather/historical re-scope to it, and the header shows it is a CHOSEN
+   * PLACE, never the user's real position. GPS fixes are ignored while in
+   * view mode (they are remembered and restored on exit).
+   */
+  private var savedGpsLocation: GeoPoint? = null
+  private var savedWasFallback: Boolean = true
+
+  fun viewChosenPlace(candidate: com.example.data.location.PlaceCandidate) {
+    val state = _uiState.value
+    if (!state.isViewingChosenPlace) {
+      savedGpsLocation = state.userLocation
+      savedWasFallback = state.isUserLocationFallback
+    }
+    _uiState.update {
+      it.copy(
+        showPlacePicker = false,
+        isViewingChosenPlace = true,
+        viewedPlaceLabel = candidate.displayName,
+        userLocation = candidate.point,
+        isUserLocationFallback = false,
+        cameraJumpTarget = candidate.point,
+        // A new view invalidates per-location derived state until refreshed.
+        terrainSelfAssessment = null,
+        terrainHaven = null
+      )
+    }
+    recomputeIntelligence()
+    refreshWeather(force = true)
+    refreshResolvedPlace(candidate.point, force = true)
+    syncDisasterData()
+    _uiState.update {
+      it.copy(snackbarMessage = "Now showing ${candidate.name} — not your GPS location.")
+    }
+  }
+
+  /** The map fired the fly-to; clear the one-shot so it never re-animates. */
+  fun consumeCameraJump() {
+    if (_uiState.value.cameraJumpTarget != null) {
+      _uiState.update { it.copy(cameraJumpTarget = null) }
+    }
+  }
+
+  fun exitPlaceView() {
+    if (!_uiState.value.isViewingChosenPlace) return
+    _uiState.update {
+      it.copy(
+        isViewingChosenPlace = false,
+        viewedPlaceLabel = null,
+        userLocation = savedGpsLocation ?: PilotRegionData.FALLBACK_USER_LOCATION,
+        isUserLocationFallback = savedWasFallback,
+        cameraJumpTarget = null,
+        terrainSelfAssessment = null,
+        terrainHaven = null
+      )
+    }
+    recomputeIntelligence()
+    refreshWeather(force = true)
+    refreshResolvedPlace(
+      savedGpsLocation ?: PilotRegionData.FALLBACK_USER_LOCATION,
+      force = true
+    )
+    _uiState.update {
+      it.copy(snackbarMessage = "Back to your own location view.")
+    }
+  }
 
   /** Search rings for the place resolved RIGHT NOW (national ring always). */
   private fun currentNewsQueries(): List<NewsQueryFactory.ScopedNewsQuery> =

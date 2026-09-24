@@ -64,6 +64,8 @@ import com.example.data.disaster.ZoneDetailMapper
 import com.example.data.location.AndroidGeocoderPlaceResolver
 import com.example.data.news.NewsFileCache
 import com.example.ui.components.AddContactDialog
+import com.example.ui.components.PlacePickerDialog
+import com.example.ui.components.PlaceViewBanner
 import com.example.ui.components.DisasterEventDetailDialog
 import com.example.ui.components.IncidentReportDialog
 import com.example.ui.components.EditProfileDialog
@@ -525,7 +527,8 @@ fun VippattiAppRoot(
             onGuidanceGo = { viewModel.acceptEmergencyGuidance() },
             onSearchTerrainHaven = { viewModel.searchTerrainHaven() },
             onRouteToTerrainHaven = { viewModel.routeToTerrainHaven() },
-            onGuidanceDismiss = { viewModel.dismissEmergencyGuidance() }
+            onGuidanceDismiss = { viewModel.dismissEmergencyGuidance() },
+            onOpenPlacePicker = { viewModel.openPlacePicker() }
           )
           ScreenTab.NEWS_DISPATCHES -> DispatchesScreen(
             uiState = uiState,
@@ -570,7 +573,10 @@ fun VippattiAppRoot(
             onSearchTerrainHaven = { viewModel.searchTerrainHaven() },
             onRouteToTerrainHaven = { viewModel.routeToTerrainHaven() },
             onAssessTerrain = { viewModel.assessTerrainHere() },
-            onDismissTerrainAssessment = { viewModel.dismissTerrainAssessment() }
+            onDismissTerrainAssessment = { viewModel.dismissTerrainAssessment() },
+            onOpenPlacePicker = { viewModel.openPlacePicker() },
+            onExitPlaceView = { viewModel.exitPlaceView() },
+            onCameraJumpConsumed = { viewModel.consumeCameraJump() }
           )
 
           ScreenTab.INSTRUCTIONS -> InstructionsScreen(
@@ -602,6 +608,17 @@ fun VippattiAppRoot(
 
       // Modal Dialogs
       // Modal Dialogs
+      // PLACE PICKER — "look at another state/city" (Home + Map entry points).
+      PlacePickerDialog(
+        show = uiState.showPlacePicker,
+        query = uiState.placeSearchQuery,
+        isSearching = uiState.isSearchingPlace,
+        candidates = uiState.placeCandidates,
+        error = uiState.placeSearchError,
+        onQueryChange = { viewModel.setPlaceQuery(it) },
+        onPick = { viewModel.viewChosenPlace(it) },
+        onDismiss = { viewModel.closePlacePicker() }
+      )
       // SOS confirmation gate — nothing is broadcast before an explicit YES.
       if (uiState.showSosConfirmDialog) {
         SosConfirmDialog(
