@@ -576,7 +576,8 @@ fun VippattiAppRoot(
             onDismissTerrainAssessment = { viewModel.dismissTerrainAssessment() },
             onOpenPlacePicker = { viewModel.openPlacePicker() },
             onExitPlaceView = { viewModel.exitPlaceView() },
-            onCameraJumpConsumed = { viewModel.consumeCameraJump() }
+            onCameraJumpConsumed = { viewModel.consumeCameraJump() },
+            onSelectAlternativeRoute = { viewModel.selectAlternativeRoute(it) }
           )
 
           ScreenTab.INSTRUCTIONS -> InstructionsScreen(

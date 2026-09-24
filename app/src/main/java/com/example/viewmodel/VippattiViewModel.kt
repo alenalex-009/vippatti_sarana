@@ -69,6 +69,7 @@ import com.example.data.disaster.ProviderState
 import com.example.data.disaster.providers.UsgsEarthquakeProvider
 import com.example.data.disaster.defaultSeverity
 import com.example.data.disaster.dedupeBySourceEventId
+import com.example.data.disaster.DemoNetworkAroundUser
 import com.example.data.disaster.toHazardZones
 import com.example.data.disaster.isValid
 import kotlinx.coroutines.Job
@@ -538,13 +539,22 @@ class VippattiViewModel(
     } else {
       emptyList()
     }
-    val hazards = (liveZones + reportZones + mockZones).distinctBy { it.id }
+    // DEMO-AROUND-YOU: the India-wide demo set is 14 far-apart districts, so
+    // anywhere else in the country the DEMO switch ON still showed nothing
+    // near the user. With demo on, ONE clearly-SIMULATED hazard circle is
+    // generated around the current focus (GPS or chosen place), guaranteeing
+    // the demo demonstrates the full journey: danger -> safe zone -> route.
+    val demoAroundUser = if (state.isMockDataVisible) {
+      listOfNotNull(DemoNetworkAroundUser.around(location)?.first)
+    } else emptyList()
+    val hazards = (liveZones + reportZones + mockZones + demoAroundUser).distinctBy { it.id }
 
     // The shelter network today: SIMULATED demo zones (only while the demo
     // switch is on) PLUS any REAL operator-entered field registry records,
     // which stay in scope in every mode — they are field data, not demo data.
     val demoZones = if (state.isMockDataVisible) {
-      state.safeZones.filter { IndiaGeo.contains(it.point) }
+      val nearby = listOfNotNull(DemoNetworkAroundUser.around(location)?.second)
+      state.safeZones.filter { IndiaGeo.contains(it.point) } + nearby
     } else {
       emptyList()
     }
@@ -1417,6 +1427,26 @@ class VippattiViewModel(
    * it auto-selects the best-ranked shelter first, and with no feasible
    * shelter at all it says so instead of doing nothing.
    */
+  /**
+   * Swaps a listed alternative corridor IN as the active route (chip tap).
+   * Pure state operation — no network — so it is instant.
+   */
+  fun selectAlternativeRoute(routeId: String) {
+    val state = _uiState.value
+    val target = state.alternativeRoutes.firstOrNull { it.routeId == routeId } ?: return
+    if (state.activeRoute?.routeId == routeId) return
+    _uiState.update {
+      it.copy(
+        activeRoute = target,
+        routeStatus = RouteStatus.READY,
+        routeStatusMessage = "Switched to ${target.summary} (${
+          com.example.data.routing.OsrmRoutingService.formatDistance(target.distanceMeters)
+        }). $ROUTE_LIMITATIONS_NOTE",
+        currentNavigationStepIndex = 0
+      )
+    }
+  }
+
   fun loadAlternativeRoutes() {
     var zone = _uiState.value.selectedSafeZone
     if (zone == null) {
@@ -1436,16 +1466,15 @@ class VippattiViewModel(
     val mode = _uiState.value.travelMode
     val hazards = _uiState.value.hazardZones
     lastRouteOrigin = origin
-    // Nothing is drawn until verified road corridors arrive (no straight-line
-    // placeholder). Synthetic offline detours are filtered out below.
+    // The corridor the user ALREADY has stays on screen while the extra
+    // options load — failing to find MORE routes must never destroy the
+    // working one (previous behaviour blanked the map line on every tap).
+    val existingRoute = _uiState.value.activeRoute
     _uiState.update {
       it.copy(
-        activeRoute = null,
-        alternativeRoutes = emptyList(),
         isCalculatingRoute = true,
         routeStatus = RouteStatus.REQUESTING,
-        routeStatusMessage = "Requesting alternative road corridors to ${target.name}…",
-        currentNavigationStepIndex = 0
+        routeStatusMessage = "Checking for other verified roads to ${target.name}..."
       )
     }
     routingJob = viewModelScope.launch {
@@ -1465,13 +1494,20 @@ class VippattiViewModel(
       // detour variants are not roads, so they are never presented as options.
       val roadAlternatives = alternatives.filter { it.isLiveOsrm }
       if (roadAlternatives.isEmpty()) {
+        // Keep whatever corridor the user ALREADY has on screen — failing to
+        // find EXTRA options must never destroy the working route (previous
+        // behaviour nulled activeRoute, i.e. the map line vanished on tap).
+        val existing = existingRoute
         _uiState.update {
           it.copy(
-            activeRoute = null,
-            alternativeRoutes = emptyList(),
             isCalculatingRoute = false,
-            routeStatus = RouteStatus.NETWORK_ERROR,
-            routeStatusMessage = "No verified road alternatives available. Nothing is drawn."
+            alternativeRoutes = existing?.let { r -> listOf(r) } ?: emptyList(),
+            routeStatus = if (existing != null) it.routeStatus else RouteStatus.NETWORK_ERROR,
+            routeStatusMessage = if (existing != null) {
+              "No different road alternative found — the current route is the only verified one."
+            } else {
+              "No verified road alternatives available. Nothing is drawn."
+            }
           )
         }
         return@launch

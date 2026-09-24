@@ -117,6 +117,7 @@ internal fun ExpandedSheetContent(
   onOpenIncidentReport: () -> Unit = {},
   /** Explicit opt-in for the unverified offline straight-line estimate. */
   onRequestFallbackRoute: () -> Unit = {},
+  onSelectAlternativeRoute: (String) -> Unit = {},
   /** Retries the live weather reading (used by the provenance panel). */
   onRetryWeather: () -> Unit = {},
   modifier: Modifier = Modifier
@@ -179,7 +180,8 @@ internal fun ExpandedSheetContent(
       onSetTravelMode = onSetTravelMode,
       onLoadAlternativeRoutes = onLoadAlternativeRoutes,
       onSelectBestSafeZone = onSelectBestSafeZone,
-      onRequestFallbackRoute = onRequestFallbackRoute
+      onRequestFallbackRoute = onRequestFallbackRoute,
+      onSelectAlternativeRoute = onSelectAlternativeRoute
     )
 
     // 5. Large one-hand evacuation CTA.

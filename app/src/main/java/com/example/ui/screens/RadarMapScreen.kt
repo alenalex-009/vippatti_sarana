@@ -164,6 +164,8 @@ fun RadarMapScreen(
   onDismissTerrainAssessment: () -> Unit = {},
   /** "Look at another place" picker + chosen-place banner. */
   onOpenPlacePicker: () -> Unit = {},
+  /** Chip tap on an alternative corridor — swaps it into the active route. */
+  onSelectAlternativeRoute: (String) -> Unit = {},
   onExitPlaceView: () -> Unit = {},
   onCameraJumpConsumed: () -> Unit = {},
   modifier: Modifier = Modifier
@@ -234,6 +236,7 @@ fun RadarMapScreen(
       viewingPlaceLabel = if (uiState.isViewingChosenPlace) uiState.viewedPlaceLabel else null,
       onExitPlaceView = onExitPlaceView,
       onCameraJumpConsumed = { onCameraJumpConsumed() },
+      alternativeRoutes = uiState.alternativeRoutes,
       // HISTORICAL (EM-DAT): only when the operator enables the layer, and only
       // records with the dataset's own coordinates. Never a current hazard.
       historicalEvents = uiState.historicalMappableEvents,
@@ -428,6 +431,7 @@ fun RadarMapScreen(
           onLoadAlternativeRoutes = onLoadAlternativeRoutes,
           onOpenIncidentReport = onOpenIncidentReport,
           onRequestFallbackRoute = onRequestFallbackRoute,
+      onSelectAlternativeRoute = onSelectAlternativeRoute,
           onRetryWeather = onRetryWeather,
           modifier = Modifier.weight(1f)
         )

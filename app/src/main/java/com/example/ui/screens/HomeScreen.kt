@@ -20,7 +20,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.NotificationsActive
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Terrain
 import androidx.compose.material.icons.filled.WaterDrop
@@ -40,8 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.model.DataStatus
 import com.example.data.risk.RiskLevel
-import com.example.data.shelters.EmergencyGuidance
-import com.example.ui.components.StatusBadge
+import com.example.data.shelters.EmergencyGuidance
 import com.example.ui.theme.EmergencyRedBright
 import com.example.ui.theme.NeonEmerald
 import com.example.ui.theme.ObsidianContainerLow
@@ -94,27 +95,48 @@ fun HomeScreen(
   ) {
     Spacer(Modifier.height(6.dp))
 
-    // Where am I (honest location line, same vocabulary as the radar).
-    Row(verticalAlignment = Alignment.CenterVertically) {
-      Text(
-        "VIPATTI SARANA",
-        fontSize = 12.sp, fontWeight = FontWeight.Black,
-        color = TacticalOnSurfaceVariant, letterSpacing = 1.2.sp
+    // Search-style location bar (Google-Maps familiar): shows WHERE the app
+    // is looking right now; tapping it opens the place picker. Replaces the
+    // old tiny header text AND keeps Home free of provider-health detail.
+    Row(
+      modifier = Modifier
+        .fillMaxWidth()
+        .clip(RoundedCornerShape(14.dp))
+        .background(ObsidianContainerLow)
+        .border(1.dp, TacticalOnSurfaceVariant.copy(alpha = 0.3f), RoundedCornerShape(14.dp))
+        .clickable(onClick = onOpenPlacePicker)
+        .padding(horizontal = 14.dp, vertical = 12.dp),
+      verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+      Icon(
+        imageVector = Icons.Default.Search,
+        contentDescription = null,
+        tint = TacticalOnSurfaceVariant,
+        modifier = Modifier.size(18.dp)
       )
-      Spacer(Modifier.weight(1f))
-      Text(
-        when {
-          uiState.isViewingChosenPlace -> "VIEWING: ${uiState.viewedPlaceLabel?.substringBefore(',') ?: "chosen place"}"
-          uiState.isUserLocationFallback -> "LOCATION: INDIA FALLBACK"
-          else -> "LOCATION: DEVICE GPS"
-        },
-        fontSize = 10.sp, fontWeight = FontWeight.Bold,
-        color = when {
-          uiState.isViewingChosenPlace -> WarningAmber
-          uiState.isUserLocationFallback -> TacticalCyan
-          else -> NeonEmerald
-        },
-        modifier = Modifier.testTag("home_location_line").clickable(onClick = onOpenPlacePicker)
+      Column(Modifier.weight(1f)) {
+        Text(
+          when {
+            uiState.isViewingChosenPlace ->
+              (uiState.viewedPlaceLabel?.substringBefore(',') ?: "Chosen place") + "  •  VIEWING"
+            uiState.isUserLocationFallback -> "All-India view — no GPS yet"
+            else -> "Your area (device GPS)"
+          },
+          fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TacticalOnSurface,
+          maxLines = 1, overflow = TextOverflow.Ellipsis,
+          modifier = Modifier.testTag("home_location_bar")
+        )
+        Text(
+          "Tap to choose a state, city or district",
+          fontSize = 11.sp, color = TacticalOnSurfaceVariant
+        )
+      }
+      Icon(
+        imageVector = Icons.Default.ExpandMore,
+        contentDescription = null,
+        tint = TacticalOnSurfaceVariant,
+        modifier = Modifier.size(18.dp)
       )
     }
 
@@ -181,12 +203,9 @@ fun HomeScreen(
       ) { onOpenNews() }
     }
 
-    // 4. Quiet status footer: does the data actually work today.
-    DataHealthStrip(
-      disasterOk = uiState.disasterDataStatusLabel,
-      weatherStatus = uiState.weatherStatus,
-      newsOk = uiState.newsConnectionStateLabel
-    )
+    // 4. DATA STATUS deliberately removed from Home: citizens do not read
+    //    provider-health strips (user feedback). The same detail lives one tap
+    //    deep in the map sheet + Profile.
     Spacer(Modifier.height(20.dp))
   }
 }
@@ -325,33 +344,3 @@ private fun HomeDivider() {
 }
 
 /** Honest, low-prominence data health: what worked, what did not, today. */
-@Composable
-private fun DataHealthStrip(
-  disasterOk: String,
-  weatherStatus: DataStatus,
-  newsOk: String
-) {
-  Row(
-    modifier = Modifier
-      .fillMaxWidth()
-      .clip(RoundedCornerShape(12.dp))
-      .background(ObsidianContainerLow)
-      .padding(horizontal = 12.dp, vertical = 10.dp),
-    horizontalArrangement = Arrangement.spacedBy(10.dp),
-    verticalAlignment = Alignment.CenterVertically
-  ) {
-    Text(
-      "DATA STATUS",
-      fontSize = 10.sp, fontWeight = FontWeight.Black,
-      color = TacticalOnSurfaceVariant, letterSpacing = 0.8.sp
-    )
-    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-      Text(disasterOk, fontSize = 11.sp, color = TacticalOnSurface, maxLines = 1, overflow = TextOverflow.Ellipsis)
-      Text(newsOk, fontSize = 11.sp, color = TacticalOnSurface, maxLines = 1, overflow = TextOverflow.Ellipsis)
-    }
-    StatusBadge(
-      status = weatherStatus,
-      modifier = Modifier
-    )
-  }
-}

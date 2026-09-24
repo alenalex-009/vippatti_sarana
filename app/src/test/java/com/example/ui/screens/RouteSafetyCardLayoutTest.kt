@@ -163,7 +163,8 @@ class RouteSafetyCardLayoutTest {
     composeTestRule.onNodeWithText("ROUTE TO").assertExists()
     composeTestRule.onNodeWithText("Munnar Higher Ground Relief Camp").assertExists()
     composeTestRule.onNodeWithTag("osrm_validation_badge").assertExists()
-    composeTestRule.onNodeWithText("Safety 25/100").assertExists()
+    composeTestRule.onNodeWithText("25/100").assertExists()
+    composeTestRule.onNodeWithText("Route safety: Danger — Route Enters Hazard Zone").assertExists()
     composeTestRule.onNodeWithTag("route_details_toggle").assertExists()
 
     val collapsedHeightPx = composeTestRule.onNodeWithTag("route_intelligence_panel")

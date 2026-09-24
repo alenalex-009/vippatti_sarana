@@ -55,3 +55,6 @@ ci_err.txt
 ci_out.txt
 
 /pr_body.md
+
+# key backups must never be tracked
+app/.env.bak*

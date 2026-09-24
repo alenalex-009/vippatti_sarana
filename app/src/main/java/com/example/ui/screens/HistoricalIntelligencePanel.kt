@@ -24,6 +24,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.width
+import com.example.ui.theme.EmergencyRedBright
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -266,6 +271,9 @@ fun HistoricalIntelligencePanel(
       }
     }
 
+    // ---- Charts FIRST: what people scan before they ever read a row ----
+    HistoricalChartsBlock(uiState.historicalFilteredEvents)
+
     HistoricalImpactSummaryBlock(uiState)
     HistoricalTrendBlock(uiState)
 
@@ -438,6 +446,144 @@ private fun HistoricalTrendBlock(uiState: VippattiUiState) {
     )
   }
 }
+
+/**
+ * Compact bar charts over the SAME filtered record list the rows below show:
+ * top disaster types + events per decade + headline totals. Pure aggregation
+ * (HistoricalVisuals) — every number is a count of the records already
+ * present, so chart and list can never disagree. Replaces a wall of text
+ * (user feedback: "historical is filled with matter nobody likes to read").
+ */
+@Composable
+private fun HistoricalChartsBlock(events: List<HistoricalDisasterEvent>) {
+  if (events.isEmpty()) return
+  val summary = com.example.data.historical.HistoricalVisuals.summarize(events)
+  Column(
+    modifier = Modifier
+      .fillMaxWidth()
+      .clip(RoundedCornerShape(12.dp))
+      .background(ObsidianContainerHigh.copy(alpha = 0.5f))
+      .border(1.dp, TacticalOutlineVariant.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
+      .padding(12.dp)
+      .testTag("historical_charts"),
+    verticalArrangement = Arrangement.spacedBy(10.dp)
+  ) {
+    Text(
+      text = "THE PICTURE AT A GLANCE — ${summary.recordCount} ARCHIVED EVENTS",
+      fontSize = 10.sp, fontWeight = FontWeight.Black,
+      color = TacticalOnSurfaceVariant, letterSpacing = 0.6.sp
+    )
+
+    // Headline totals as two stat tiles (counts of records stating a figure
+    // stay visible so an EM-DAT null can never read as zero).
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+      HistStatTile(
+        value = summary.deathsTotal?.let { formatCount(it) } ?: "—",
+        caption = "deaths reported" + (if (summary.deathsRecords > 0) " (${summary.deathsRecords} records)" else ""),
+        tint = EmergencyRedBright,
+        tag = "hist_tile_deaths"
+      )
+      HistStatTile(
+        value = summary.affectedTotal?.let { formatCount(it) } ?: "—",
+        caption = "people affected" + (if (summary.affectedRecords > 0) " (${summary.affectedRecords} records)" else ""),
+        tint = WarningAmber,
+        tag = "hist_tile_affected"
+      )
+    }
+
+    if (summary.typeBars.isNotEmpty()) {
+      Text("MOST RECORDED TYPES", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = TacticalOnSurfaceVariant)
+      summary.typeBars.forEach { row ->
+        HistBarRow(
+          label = row.label,
+          count = row.count,
+          fraction = row.fraction,
+          tint = TacticalCyan,
+          tag = "hist_type_bar_${row.label.lowercase().replace(' ', '_')}"
+        )
+      }
+    }
+
+    if (summary.decadeBars.size > 1) {
+      Text("EVENTS PER DECADE", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = TacticalOnSurfaceVariant)
+      Row(
+        modifier = Modifier.fillMaxWidth().height(56.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalAlignment = Alignment.Bottom
+      ) {
+        summary.decadeBars.forEach { row ->
+          Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+              .weight(1f)
+              .testTag("hist_decade_${row.label}")
+          ) {
+            Text("${row.count}", fontSize = 10.sp, color = TacticalOnSurfaceVariant)
+            Box(
+              modifier = Modifier
+                .fillMaxWidth()
+                .height((6 + 30 * row.fraction).dp)
+                .clip(RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp))
+                .background(NeonEmerald.copy(alpha = 0.85f))
+            )
+            Text(row.label, fontSize = 10.sp, color = TacticalOnSurfaceVariant)
+          }
+        }
+      }
+    }
+    Text(
+      text = "Charts count the SAME filtered records listed below — historical data, not current risk.",
+      fontSize = 10.sp, color = TacticalOnSurfaceVariant, lineHeight = 13.sp
+    )
+  }
+}
+
+@Composable
+private fun androidx.compose.foundation.layout.RowScope.HistStatTile(value: String, caption: String, tint: androidx.compose.ui.graphics.Color, tag: String) {
+  Column(
+    modifier = Modifier
+      .weight(1f)
+      .clip(RoundedCornerShape(10.dp))
+      .background(ObsidianContainer)
+      .padding(horizontal = 10.dp, vertical = 8.dp)
+      .testTag(tag)
+  ) {
+    Text(value, fontSize = 18.sp, fontWeight = FontWeight.Black, color = tint)
+    Text(caption, fontSize = 10.sp, color = TacticalOnSurfaceVariant, lineHeight = 12.sp)
+  }
+}
+
+@Composable
+private fun HistBarRow(label: String, count: Int, fraction: Float, tint: androidx.compose.ui.graphics.Color, tag: String) {
+  Row(
+    modifier = Modifier.fillMaxWidth().testTag(tag),
+    verticalAlignment = Alignment.CenterVertically,
+    horizontalArrangement = Arrangement.spacedBy(6.dp)
+  ) {
+    Text(
+      label, fontSize = 11.sp, color = TacticalOnSurface,
+      maxLines = 1, overflow = TextOverflow.Ellipsis,
+      modifier = Modifier.weight(0.34f)
+    )
+    Box(
+      modifier = Modifier
+        .weight(1f)
+        .height(10.dp)
+        .clip(RoundedCornerShape(5.dp))
+        .background(ObsidianContainer)
+    ) {
+      Box(
+        modifier = Modifier
+          .fillMaxWidth(fraction.coerceIn(0.06f, 1f))
+          .height(10.dp)
+          .clip(RoundedCornerShape(5.dp))
+          .background(tint)
+      )
+    }
+    Text("$count", fontSize = 11.sp, color = TacticalOnSurfaceVariant, modifier = Modifier.width(30.dp))
+  }
+}
+
 
 @Composable
 private fun HistoricalRecordRow(event: HistoricalDisasterEvent, onClick: () -> Unit) {

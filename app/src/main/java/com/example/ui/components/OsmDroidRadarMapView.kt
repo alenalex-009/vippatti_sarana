@@ -188,6 +188,8 @@ fun OsmDroidRadarMapView(
   focusPoint: GeoPoint? = null,
   /** One-shot camera fly-to when the user picks a place to view. */
   cameraJumpTarget: GeoPoint? = null,
+  /** Alternative corridors (index 0 is the active route) drawn as grey ghosts. */
+  alternativeRoutes: List<com.example.data.routing.RouteResult> = emptyList(),
   /** Non-null while a CHOSEN place is being viewed instead of the GPS. */
   viewingPlaceLabel: String? = null,
   onExitPlaceView: () -> Unit = {},
@@ -312,6 +314,11 @@ fun OsmDroidRadarMapView(
   LaunchedEffect(activeRoute) {
     if (activeRoute != null) mapState.displayRoute(activeRoute)
     else mapState.clearRouteOverlay()
+  }
+
+  // Alternatives as faint ghost lines (user report: chips had no map visual).
+  LaunchedEffect(alternativeRoutes, activeRoute?.routeId) {
+    mapState.displayAlternativeRoutes(alternativeRoutes, activeRoute?.routeId)
   }
 
   DisposableEffect(lifecycleOwner) {
@@ -637,13 +644,23 @@ class OsmMapControllerHolder(
   private var tileSourceIndex = 0
   private val tileSources by lazy {
     listOf(
-      // Google-style light basemap (CARTO Positron on OSM data) — muted grey
-      // canvas so hazard pins carry ALL the colour, the way Flood Hub works.
-      LightBasemap,
+      // DEFAULT: standard osmdroid OSM (MAPNIK) — streets, labels, buildings,
+      // full zoom depth to z19. The user asked for the classic OSM look; it
+      // is also the only one of our sources with real data at deep zoom.
       TileSourceFactory.MAPNIK,
+      // Muted light-grey overview layer (Esri, keyless): great for seeing the
+      // hazard pins, but its server LITERALLY returns "Map data not yet
+      // available" placeholder tiles beyond zoom 16 — so when it is active the
+      // map's max zoom is CAPPED to 16 instead of showing dead tiles (the
+      // exact complaint fixed here).
+      LightBasemap,
       TileSourceFactory.OpenTopo
     )
   }
+
+  /** Maximum meaningful zoom of the CURRENT basemap (Esri light dies at 16). */
+  private fun maxZoomFor(source: org.osmdroid.tileprovider.tilesource.ITileSource): Double =
+    if (source === LightBasemap) 16.0 else 19.0
 
   fun initMapView(
     context: Context,
@@ -673,6 +690,7 @@ class OsmMapControllerHolder(
       // rotation/tab-switch crashes seen here before this fix).
       setDestroyMode(false)
       setTileSource(tileSources[0])
+      setMaxZoomLevel(maxZoomFor(tileSources[0]))
       setMultiTouchControls(true)
       zoomController.setVisibility(CustomZoomButtonsController.Visibility.NEVER)
       // Google-style entry: start at CITY scale, not a whole-continent view.
@@ -1200,6 +1218,12 @@ class OsmMapControllerHolder(
     val mv = mapView ?: return
     tileSourceIndex = (tileSourceIndex + 1) % tileSources.size
     mv.setTileSource(tileSources[tileSourceIndex])
+    // Cap zoom to the SOURCE's real data depth so deep-zoom users never see
+    // "Map data not yet available" placeholders (Esri light layer = z16).
+    mv.setMaxZoomLevel(maxZoomFor(tileSources[tileSourceIndex]))
+    if (mv.zoomLevelDouble > maxZoomFor(tileSources[tileSourceIndex])) {
+      mv.controller.setZoom(maxZoomFor(tileSources[tileSourceIndex]))
+    }
     Toast.makeText(appContext, "Map Layer: ${tileSources[tileSourceIndex].name()}", Toast.LENGTH_SHORT).show()
   }
 
@@ -1224,6 +1248,9 @@ class OsmMapControllerHolder(
   fun clearRouteOverlay() {
     currentRoutePolyline?.let { mapView?.overlays?.remove(it) }
     currentRoutePolyline = null
+    alternativePolylines.forEach { mv -> mapView?.overlays?.remove(mv) }
+    alternativePolylines.clear()
+    lastFittedRouteId = null
     mapView?.invalidate()
     onLiveNavStatusChanged(LiveNavStatus(isActive = false))
   }
@@ -1268,8 +1295,45 @@ class OsmMapControllerHolder(
     currentRoutePolyline = polyline
     // Insert above zones, below the user location overlay.
     mv.overlays.add(polyline)
+    // FIT THE WHOLE CORRIDOR: without this, longer routes run off-screen and
+    // read as "the route stops halfway" (reported bug). Refit only when the
+    // route actually changed (id), never on every recompute/GPS nudge.
+    if (route.routeId != lastFittedRouteId && points.size >= 2) {
+      lastFittedRouteId = route.routeId
+      val box = org.osmdroid.util.BoundingBox(
+        points.maxOf { it.latitude }, points.minOf { it.longitude },
+        points.minOf { it.latitude }, points.maxOf { it.longitude }
+      )
+      mv.zoomToBoundingBox(box, true, 96)
+    }
     mv.invalidate()
   }
+
+  private var lastFittedRouteId: String? = null
+
+  /**
+   * Draws the NON-primary alternative corridors as faint grey ghost lines so
+   * the alternatives list has a visual answer on the map (user report: the
+   * chips "do nothing visible"). The recommended route stays green.
+   */
+  fun displayAlternativeRoutes(routes: List<RouteResult>, primaryRouteId: String?) {
+    val mv = mapView ?: return
+    alternativePolylines.forEach { mv.overlays.remove(it) }
+    alternativePolylines.clear()
+    routes.filter { it.routeId != primaryRouteId && it.pathPoints.size >= 2 }.forEach { alt ->
+      val poly = Polyline(mv).apply {
+        setPoints(alt.pathPoints.map { OsmGeoPoint(it.lat, it.lon) })
+        outlinePaint.color = 0xFF8A93A6.toInt() // neutral grey = an option, not the plan
+        outlinePaint.strokeWidth = 6.0f
+        outlinePaint.pathEffect = android.graphics.DashPathEffect(floatArrayOf(14f, 14f), 0f)
+        setOnClickListener(Polyline.OnClickListener { _, _, _ -> false })
+      }
+      alternativePolylines += poly
+      mv.overlays.add(poly)
+    }
+    mv.invalidate()
+  }
+  private val alternativePolylines = mutableListOf<Polyline>()
 
   /**
    * Releases the map engine (called exactly once per MapView from
@@ -1308,6 +1372,9 @@ class OsmMapControllerHolder(
     disasterEventOverlays.forEach { view.overlays.remove(it) }
     disasterEventOverlays.clear()
     currentRoutePolyline = null
+    alternativePolylines.forEach { view.overlays.remove(it) }
+    alternativePolylines.clear()
+    lastFittedRouteId = null
     // 4. Detach exactly once — destroy-mode is off, so the framework will not
     //    also detach from onDetachedFromWindow.
     view.onDetach()

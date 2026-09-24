@@ -233,7 +233,8 @@ object OsrmRoutingService {
     mode: String,
     hazards: List<HazardZone>,
     destinationName: String,
-    wantAlternatives: Int
+    wantAlternatives: Int,
+    overview: String = "full"
   ): List<RouteResult> {
     // Profile-matched endpoints: the router.project-osrm.org reference server hosts
     // only the car profile — a /foot/ request there silently returns car
@@ -241,17 +242,22 @@ object OsrmRoutingService {
     // instances, so each travel mode queries its own profile.
     val endpoint = if (mode == "driving") "https://routing.openstreetmap.de/routed-car/route/v1/driving" else "https://routing.openstreetmap.de/routed-foot/route/v1/foot"
 
-    // First attempt: full road geometry (exact route lines, never a straight
-    // origin-destination collapse).
-    val fullUrl = buildRouteUrl(endpoint, origin, destination, wantAlternatives)
-    val fullRoutes = tryRequestRoutes(fullUrl, mode, hazards, destinationName, wantAlternatives)
-    if (fullRoutes != null && fullRoutes.isNotEmpty()) return fullRoutes
+    // First attempt honours the requested overview. ACTIVE corridors ask for
+    // full road geometry (exact route lines); the ALTERNATIVES button asks for
+    // "simplified" — genuinely fewer bytes from the shared FOSSGIS server,
+    // which is what made it feel dead/laggy (reported bug). Simplified lines
+    // STILL follow the road network.
+    val primaryUrl = buildRouteUrl(endpoint, origin, destination, wantAlternatives, overview = overview)
+    val primaryRoutes = tryRequestRoutes(primaryUrl, mode, hazards, destinationName, wantAlternatives)
+    if (primaryRoutes != null && primaryRoutes.isNotEmpty()) return primaryRoutes
 
-    // Retry once with simplified geometry: very long trips can exceed the
-    // full-geometry payload limits on shared servers. A simplified polyline
-    // STILL follows the road network — far better than the offline straight
-    // corridor, and the only fallback for exact lines on long evacuations.
-    val retryUrl = buildRouteUrl(endpoint, origin, destination, wantAlternatives, overview = "simplified")
+    // Retry once with the OTHER overview: very long trips can exceed the
+    // full-geometry payload limits on shared servers, and a simplified
+    // endpoint hiccup is worth retrying exactly.
+    val retryUrl = buildRouteUrl(
+      endpoint, origin, destination, wantAlternatives,
+      overview = if (overview == "simplified") "full" else "simplified"
+    )
     return tryRequestRoutes(retryUrl, mode, hazards, destinationName, wantAlternatives) ?: emptyList()
   }
 
@@ -481,57 +487,22 @@ object OsrmRoutingService {
     destinationName: String = "Safe Zone",
     maxAlternatives: Int = 2
   ): List<RouteResult> = withContext(Dispatchers.IO) {
-    // Prefer REAL alternative road corridors from OSRM (exact road pathways,
-    // not straight lines). Offline, or when the server returns a single
-    // corridor, synthesize left/right skirting variants so the button always
-    // answers with comparable options.
-    val live = fetchLiveRoutes(origin, destination, mode, hazards, destinationName, wantAlternatives = 3)
-    val alternatives = mutableListOf<RouteResult>()
-    if (live.size >= 2) {
-      alternatives += live
-    } else {
-      // Primary corridor (live single, or offline fallback when unreachable).
-      alternatives += live.firstOrNull()
-        ?: calculateRoute(origin, destination, mode, hazards, destinationName)
-      // Additional offline detour variants (left/right skirting directions).
-      for (k in 1..maxAlternatives) {
-        val dir = if (k % 2 == 1) 1.0 else -1.0
-        alternatives += offlineDetourVariant(origin, destination, mode, hazards, destinationName, dir)
-      }
-    }
-    alternatives.distinctBy { it.routeId }.sortedByDescending { it.routeSafetyScore }
-  }
-
-  private fun offlineDetourVariant(
-    origin: GeoPoint,
-    destination: GeoPoint,
-    mode: String,
-    hazards: List<HazardZone>,
-    destinationName: String,
-    direction: Double
-  ): RouteResult {
-    val midLat = (origin.lat + destination.lat) / 2 + direction * 0.004
-    val midLon = (origin.lon + destination.lon) / 2 + direction * 0.005
-    val path = listOf(origin, GeoPoint(midLat, midLon), destination)
-    var totalMeters = 0.0
-    for (i in 0 until path.size - 1) {
-      totalMeters += GeoMath.distanceMeters(path[i], path[i + 1])
-    }
-    val speedMps = if (mode == "driving") 8.33 else 1.35
-    val penalty = HazardRoutingPolicy.computePenaltyFor(path, hazards)
-    return RouteResult(
-      distanceMeters = totalMeters,
-      durationSeconds = totalMeters / speedMps,
-      pathPoints = path,
-      steps = listOf(RouteStep("Detour corridor variant via offset waypoint", totalMeters, totalMeters / speedMps)),
-      isLiveOsrm = false,
-      summary = "Alternative Detour Corridor ${if (direction > 0) "A" else "B"}",
-      travelMode = mode,
-      hazardWarnings = penalty.warnings,
-      routeSafetyStatus = penalty.status,
-      routeSafetyScore = penalty.safetyScore,
-      destinationName = destinationName
+    // ONE fast request for genuinely different OSRM road corridors.
+    // (The old version fired a second full-route request and then SYNTHESIZED
+    // straight-line "detour variants" the UI filtered out as non-live — two
+    // slow network calls + fake data, every single tap. That was the
+    // "Alternatives lags and does nothing" report.)
+    //
+    // overview=simplified: alternatives render as ghost lines + a distance/
+    // safety comparison; simplified road geometry is the honest fast answer
+    // and still follows real roads. Offline, an empty list means "no
+    // verified alternatives" — said out loud, never papered over.
+    val live = fetchLiveRoutes(
+      origin, destination, mode, hazards, destinationName,
+      wantAlternatives = (maxAlternatives + 1).coerceIn(2, 3),
+      overview = "simplified"
     )
+    live.distinctBy { it.routeId }.sortedByDescending { it.routeSafetyScore }
   }
 
   /**
