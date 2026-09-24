@@ -157,13 +157,16 @@ fun RadarMapScreen(
   onGuidanceDismiss: () -> Unit = {},
   onSearchTerrainHaven: () -> Unit = {},
   onRouteToTerrainHaven: () -> Unit = {},
+  /** "Is MY spot a red zone?" — available on the map too (lives on Home as well). */
+  onAssessTerrain: () -> Unit = {},
+  onDismissTerrainAssessment: () -> Unit = {},
   modifier: Modifier = Modifier
 ) {
-  // Calm by default (UI principle: simplicity — the map is the point):
-  // the sheet starts COLLAPSED to a one-line destination peek; the guidance
-  // card and risk strip carry the urgent state. The terrain self-check was
-  // moved to Home, where the "what do I do" journey starts.
-  var isSheetExpanded by remember { mutableStateOf(false) }
+  // The decision stack (risk -> safe zones -> weather -> route) opens
+  // EXPANDED: production testing showed a collapsed sheet reads as "the
+  // features are gone". Calm comes from the light map + plain chips, not
+  // from hiding the tools.
+  var isSheetExpanded by remember { mutableStateOf(true) }
   val sheetPeekHeight = 88.dp
 
   BoxWithConstraints(
@@ -294,7 +297,15 @@ fun RadarMapScreen(
         modifier = Modifier.padding(top = 6.dp)
       )
 
-      // 2e. (Terrain self-assessment lives on Home — this surface stays the map.)
+      // 2e. TERRAIN SELF-ASSESSMENT — "is MY spot a red zone?" also lives on
+      //     the map (it is on Home too): removing it read as "feature gone".
+      TerrainSelfAssessmentChip(
+        assessment = uiState.terrainSelfAssessment,
+        isAssessing = uiState.isAssessingTerrain,
+        onAssess = onAssessTerrain,
+        onDismiss = onDismissTerrainAssessment,
+        modifier = Modifier.padding(top = 4.dp)
+      )
 
 
       // 3. Live turn-by-turn HUD — directly under the risk strip while

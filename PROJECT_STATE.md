@@ -1073,6 +1073,9 @@ Google Flood Hub:
   + Home footer); "SIMULATED DEMO • ON" -> "Demo data: ON"; risk strip
   "DEVICE GPS / INDIA FALLBACK" -> "your GPS / location approximate".
 - Map opens at CITY zoom (9.5), not country zoom 5.
+- REVERTED after production feedback: the sheet collapsed-by-default made the
+  decision stack look removed. RadarSheetVisibilityTest now pins it EXPANDED.
+  The terrain self-check chip lives on BOTH Home and the map.
 - Contracts: `MapFocusTest` (7). Full suite: 56 suites / 465 tests / 0 failures.
 
 ---

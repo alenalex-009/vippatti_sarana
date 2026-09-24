@@ -568,7 +568,9 @@ fun VippattiAppRoot(
             onGuidanceGo = { viewModel.acceptEmergencyGuidance() },
             onGuidanceDismiss = { viewModel.dismissEmergencyGuidance() },
             onSearchTerrainHaven = { viewModel.searchTerrainHaven() },
-            onRouteToTerrainHaven = { viewModel.routeToTerrainHaven() }
+            onRouteToTerrainHaven = { viewModel.routeToTerrainHaven() },
+            onAssessTerrain = { viewModel.assessTerrainHere() },
+            onDismissTerrainAssessment = { viewModel.dismissTerrainAssessment() }
           )
 
           ScreenTab.INSTRUCTIONS -> InstructionsScreen(
