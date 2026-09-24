@@ -63,7 +63,7 @@ internal fun CollapsedSheetContent(uiState: VippattiUiState) {
     Column(modifier = Modifier.weight(1f)) {
       Text(
         text = "DESTINATION",
-        fontSize = 8.sp,
+        fontSize = 10.sp,
         fontWeight = FontWeight.Black,
         color = TacticalOnSurfaceVariant,
         letterSpacing = 0.8.sp
@@ -94,7 +94,7 @@ internal fun CollapsedSheetContent(uiState: VippattiUiState) {
         )
         Text(
           text = route?.let { OsrmRoutingService.formatDuration(it.durationSeconds) } ?: "no route",
-          fontSize = 9.sp,
+          fontSize = 11.sp,
           color = TacticalOnSurfaceVariant,
           maxLines = 1
         )

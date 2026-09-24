@@ -1074,3 +1074,26 @@ Google Flood Hub:
   "DEVICE GPS / INDIA FALLBACK" -> "your GPS / location approximate".
 - Map opens at CITY zoom (9.5), not country zoom 5.
 - Contracts: `MapFocusTest` (7). Full suite: 56 suites / 465 tests / 0 failures.
+
+---
+
+## 22. App-wide daylight redesign + basemap reliability fix (Sep 2026)
+
+- **Map fix (device-reported):** CARTO Positron tiles came back watermarked
+  "API KEY REQUIRED" once the shared anonymous quota was hit (and osmdroid
+  cached those tiles forever). Basemap switched to **Esri World Light Grey
+  Base** (keyless, no watermark games; z/y/x URL order handled by an explicit
+  getTileURLString override; attribution updated in code + banner). Esri
+  endpoints verified live from this machine during this pass.
+- **Whole app now opens in the LIGHT palette** (`isDarkTheme = false`,
+  VippattiTheme default flipped). The friend's light onboarding and the light
+  map are one coherent Google-like identity; the tactical dark theme remains
+  a working one-tap switch (Profile > Appearance).
+- **Typography floor app-wide:** every Compose Text under 10 sp raised to
+  10-11.5 sp across all screens (13 files), line-heights kept >= font size.
+- **Jargon sweep on user-facing chrome:** "OSRM VALIDATED" -> "REAL ROADS
+  VERIFIED", "FOOT EVAC" -> "ON FOOT", "CHECKING HAZARDS..." -> "Checking
+  hazards…". Provider provenance stays where it belongs (detail sheets,
+  Home DATA STATUS), not on the map.
+- Verified: full suite re-run (--rerun) 56 suites / 465 tests / 0 failures;
+  assembleDebug green.

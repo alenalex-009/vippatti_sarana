@@ -241,7 +241,7 @@ private fun InstructionDetailCard(
         if (stepLabel != null) {
           Text(
             text = stepLabel,
-            fontSize = 9.sp,
+            fontSize = 11.sp,
             color = TacticalOnSurfaceVariant,
             letterSpacing = 0.4.sp
           )
@@ -250,7 +250,7 @@ private fun InstructionDetailCard(
       if (item.isCritical) {
         Text(
           text = stringResource(R.string.instructions_critical_badge),
-          fontSize = 8.sp,
+          fontSize = 10.sp,
           fontWeight = FontWeight.Black,
           color = EmergencyRedBright,
           letterSpacing = 0.5.sp
@@ -266,7 +266,7 @@ private fun InstructionDetailCard(
     if (item.region != null) {
       Text(
         text = stringResource(R.string.instructions_region_format, item.region),
-        fontSize = 9.sp,
+        fontSize = 11.sp,
         color = TacticalCyan
       )
     }

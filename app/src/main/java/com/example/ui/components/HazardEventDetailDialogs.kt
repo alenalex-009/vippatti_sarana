@@ -192,7 +192,7 @@ fun HazardZoneDetailDialog(
         )
         Text(
           text = "Source: ${zone.provenance.source} ? Status: ${zone.provenance.status} ? Classification: ${zone.provenance.classification.label}",
-          fontSize = 9.sp,
+          fontSize = 11.sp,
           color = TacticalCyan,
           lineHeight = 12.sp
         )
@@ -210,7 +210,7 @@ private fun InfoPill(label: String, value: String, accent: Color) {
       .border(1.dp, TacticalOutlineVariant.copy(alpha = 0.4f), RoundedCornerShape(10.dp))
       .padding(horizontal = 10.dp, vertical = 6.dp)
   ) {
-    Text(label, fontSize = 8.sp, fontWeight = FontWeight.Bold, color = TacticalOnSurfaceVariant)
+    Text(label, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = TacticalOnSurfaceVariant)
     Text(value, fontSize = 12.sp, fontWeight = FontWeight.Black, color = accent)
   }
 }

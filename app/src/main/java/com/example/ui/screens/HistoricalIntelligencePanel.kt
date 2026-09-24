@@ -115,7 +115,7 @@ fun HistoricalIntelligencePanel(
     catalog?.info?.let { info ->
       Text(
         text = info.attributionLine,
-        fontSize = 9.sp,
+        fontSize = 11.sp,
         color = TacticalOnSurfaceVariant,
         lineHeight = 12.sp
       )
@@ -124,7 +124,7 @@ fun HistoricalIntelligencePanel(
           info.accessLine.ifBlank { null },
           info.sourceUrl
         ).joinToString(" • "),
-        fontSize = 9.sp,
+        fontSize = 11.sp,
         color = TacticalOnSurfaceVariant,
         lineHeight = 12.sp
       )
@@ -175,7 +175,7 @@ fun HistoricalIntelligencePanel(
         Text(
           text = "Off by default. Only records with EM-DAT's own coordinates are " +
             "drawn, as past events — never as current hazard zones.",
-          fontSize = 9.sp,
+          fontSize = 11.sp,
           color = TacticalOnSurfaceVariant,
           lineHeight = 12.sp
         )
@@ -196,7 +196,7 @@ fun HistoricalIntelligencePanel(
     )
     Text(
       text = active.description,
-      fontSize = 9.sp,
+      fontSize = 11.sp,
       color = TacticalOnSurfaceVariant
     )
 
@@ -288,7 +288,7 @@ fun HistoricalIntelligencePanel(
       if (events.size > 12) {
         Text(
           text = "Showing the 12 most recent of ${events.size} matching records.",
-          fontSize = 9.sp,
+          fontSize = 11.sp,
           color = TacticalOnSurfaceVariant
         )
       }
@@ -312,7 +312,7 @@ private fun HistoricalEvidenceBlock(context: HistoricalContext) {
       fontWeight = FontWeight.Bold,
       color = TacticalOnSurface
     )
-    Text(text = context.matchMethod, fontSize = 9.sp, color = TacticalOnSurfaceVariant, lineHeight = 12.sp)
+    Text(text = context.matchMethod, fontSize = 11.sp, color = TacticalOnSurfaceVariant, lineHeight = 12.sp)
     context.mostRecent?.let { recent ->
       Text(
         text = "Most recent: ${recent.startYear} — ${recent.type}" +
@@ -325,14 +325,14 @@ private fun HistoricalEvidenceBlock(context: HistoricalContext) {
       Text(
         text = "Evidence based on ${context.eventCount} matched records; " +
           "counts are limited to the loaded dataset.",
-        fontSize = 9.sp,
+        fontSize = 11.sp,
         color = TacticalOnSurfaceVariant
       )
     }
     // The disclaimer is mandatory and never truncated.
     Text(
       text = HistoricalContextService.DISCLAIMER,
-      fontSize = 9.sp,
+      fontSize = 11.sp,
       color = WarningAmber,
       lineHeight = 12.sp
     )
@@ -389,7 +389,7 @@ private fun ImpactLine(label: String, value: String?, coverage: String) {
       )
     }
   }
-  Text(text = coverage, fontSize = 8.sp, color = TacticalOnSurfaceVariant)
+  Text(text = coverage, fontSize = 10.sp, color = TacticalOnSurfaceVariant)
 }
 
 /** Decade bars — the long-range trend of the current selection. */
@@ -418,21 +418,21 @@ private fun HistoricalTrendBlock(uiState: VippattiUiState) {
           horizontalAlignment = Alignment.CenterHorizontally,
           verticalArrangement = Arrangement.Bottom
         ) {
-          Text(text = "${point.eventCount}", fontSize = 8.sp, color = TacticalOnSurfaceVariant)
+          Text(text = "${point.eventCount}", fontSize = 10.sp, color = TacticalOnSurfaceVariant)
           Box(
             modifier = Modifier
               .width(14.dp)
               .height((6 + (34 * point.eventCount / peak)).dp)
               .background(TacticalCyan.copy(alpha = 0.55f), RoundedCornerShape(2.dp))
           )
-          Text(text = "${point.year}s", fontSize = 7.sp, color = TacticalOnSurfaceVariant)
+          Text(text = "${point.year}s", fontSize = 10.sp, color = TacticalOnSurfaceVariant)
         }
       }
     }
     Text(
       text = "Counts come from the loaded dataset and its classification rules; " +
         "they are not a frequency estimate for any single location.",
-      fontSize = 8.sp,
+      fontSize = 10.sp,
       color = TacticalOnSurfaceVariant,
       lineHeight = 11.sp
     )
@@ -466,7 +466,7 @@ private fun HistoricalRecordRow(event: HistoricalDisasterEvent, onClick: () -> U
         event.impacts.totalAffected?.let { "${formatCount(it)} affected" }
       ).joinToString(" • ").ifBlank { "Impact figures: Not available" } +
         " • ${event.spatialPrecision.label} • HISTORICAL",
-      fontSize = 9.sp,
+      fontSize = 11.sp,
       color = TacticalOnSurfaceVariant
     )
   }
@@ -576,7 +576,7 @@ fun HistoricalEventDetailDialog(
         )
         Text(
           text = event.spatialPrecision.explanation,
-          fontSize = 9.sp,
+          fontSize = 11.sp,
           color = TacticalOnSurfaceVariant,
           lineHeight = 12.sp
         )
@@ -584,17 +584,17 @@ fun HistoricalEventDetailDialog(
           Text(
             text = "This record is not mapped: EM-DAT provides no coordinates for it. " +
               "Its location text is kept exactly as the source states it.",
-            fontSize = 9.sp,
+            fontSize = 11.sp,
             color = WarningAmber,
             lineHeight = 12.sp
           )
         }
         event.notes.forEach { note ->
-          Text(text = note, fontSize = 9.sp, color = TacticalOnSurfaceVariant)
+          Text(text = note, fontSize = 11.sp, color = TacticalOnSurfaceVariant)
         }
         Text(
           text = HistoricalContextService.DISCLAIMER,
-          fontSize = 9.sp,
+          fontSize = 11.sp,
           color = WarningAmber,
           lineHeight = 12.sp
         )

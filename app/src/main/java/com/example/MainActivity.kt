@@ -158,7 +158,7 @@ class MainActivity : ComponentActivity() {
               newsCache = NewsFileCache(File(cacheDir, "news_cache")),
               disasterCache = DisasterFileCache(File(cacheDir, "disaster_cache")),
               registryDirProvider = { File(cacheDir, "field_registry") },
-              tileCacheDirProvider = { File(cacheDir, "osmdroid/tiles") },
+              tileCacheDirProvider = { File(cacheDir, "osmdroid/tiles-v2") },
               // Dynamic-data rule: district/state names for news scoping are
               // resolved from the device's own coordinates at runtime.
               placeResolver = AndroidGeocoderPlaceResolver(applicationContext),

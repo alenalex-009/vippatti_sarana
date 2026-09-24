@@ -129,7 +129,7 @@ enum class RouteStatus {
 data class VippattiUiState(
   // --- App chrome ---
   val currentTab: ScreenTab = ScreenTab.HOME,
-  val isDarkTheme: Boolean = true,
+  val isDarkTheme: Boolean = false,
   /**
    * Offline-first display preference. There is NO bulk offline download in this
    * build, so this flag only says "I intend to work offline"; the Profile pack

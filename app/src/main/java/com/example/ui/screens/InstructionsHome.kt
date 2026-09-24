@@ -527,7 +527,7 @@ private fun DisasterRiskBadge(riskLevel: RiskLevel?) {
   ) {
     Text(
       text = label,
-      fontSize = 9.sp,
+      fontSize = 11.sp,
       fontWeight = FontWeight.Black,
       color = when (riskLevel) {
         RiskLevel.RED, RiskLevel.ORANGE -> Color.White

@@ -272,7 +272,7 @@ fun SafeZoneDetailDialog(
                   }
                 )
               }
-              Text(resource.basis, fontSize = 9.sp, color = TacticalOnSurfaceVariant)
+              Text(resource.basis, fontSize = 11.sp, color = TacticalOnSurfaceVariant)
             }
             val assumptions = capacityAssessment.assumptions + capacityAssessment.demand.notes
             if (assumptions.isNotEmpty()) {
@@ -323,7 +323,7 @@ fun SafeZoneDetailDialog(
 
         Text(
           text = "Verification: ${zone.verificationStatus}",
-          fontSize = 9.sp,
+          fontSize = 11.sp,
           color = TacticalCyan
         )
 
@@ -378,7 +378,7 @@ private fun ResourceRow(label: String, available: Boolean) {
 @Composable
 private fun InfoLine(label: String, value: String) {
   Column {
-    Text(label.uppercase(), fontSize = 8.sp, fontWeight = FontWeight.Bold, color = TacticalOnSurfaceVariant, letterSpacing = 0.5.sp)
+    Text(label.uppercase(), fontSize = 10.sp, fontWeight = FontWeight.Bold, color = TacticalOnSurfaceVariant, letterSpacing = 0.5.sp)
     Text(value, fontSize = 11.sp, color = TacticalOnSurface)
   }
 }

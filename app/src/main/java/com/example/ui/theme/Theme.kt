@@ -69,7 +69,7 @@ private fun vippattiLightScheme(p: VippattiColors) = lightColorScheme(
 
 @Composable
 fun VippattiTheme(
-  darkTheme: Boolean = true, // Default to tactical night mode matching the screens
+  darkTheme: Boolean = false, // Daylight-first: the light palette matches the light map
   content: @Composable () -> Unit,
 ) {
   val remoteConfig by ConfigRegistry.manager.configState.collectAsStateWithLifecycle()

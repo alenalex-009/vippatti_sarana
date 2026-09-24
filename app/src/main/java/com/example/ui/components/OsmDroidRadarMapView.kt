@@ -100,26 +100,32 @@ data class LiveNavStatus(
   val isOffRoute: Boolean = false,
   val totalDistanceKm: Double = 0.0,
   val totalDurationMins: Int = 0,
-  val travelProfileLabel: String = "FOOT EVAC",
+  val travelProfileLabel: String = "ON FOOT",
   val isArrived: Boolean = false
 )
 
 /**
- * CARTO Positron light basemap (free, OSM data) — the muted Google-style
- * canvas the pins draw on. Attribution lives in the map's copyright banner
- * component (© OpenStreetMap contributors © CARTO).
+ * Google-style light basemap: Esri World Light Grey Base. Keyless + no
+ * watermark/rate-limit games (the reason we dropped CARTO Positron: its
+ * anonymous tiles come back stamped "API KEY REQUIRED" once the shared
+ * quota is hit, and osmdroid happily caches those forever). Esri's URL
+ * order is z/y/x (NOT osmdroid's XYTileSource z/x/y), so getTileURLString
+ * is overridden. Tiles (c) Esri — used under Esri's free attribution terms;
+ * OSM data attribution stays in the banner below.
  */
-private val LightBasemap = org.osmdroid.tileprovider.tilesource.XYTileSource(
-  "Carto Light",
-  0, 20, 256, ".png",
-  arrayOf(
-    "https://a.basemaps.cartocdn.com/light_all/",
-    "https://b.basemaps.cartocdn.com/light_all/",
-    "https://c.basemaps.cartocdn.com/light_all/",
-    "https://d.basemaps.cartocdn.com/light_all/"
-  ),
-  "\u00a9 OpenStreetMap contributors \u00a9 CARTO"
-)
+private val LightBasemap = object : org.osmdroid.tileprovider.tilesource.OnlineTileSourceBase(
+  "Esri Light Gray",
+  0, 19, 256, "",
+  arrayOf("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/"),
+  "Tiles (c) Esri and the GIS User Community; boundaries © OpenStreetMap"
+) {
+  override fun getTileURLString(pMapTileIndex: Long): String =
+    baseUrl +
+      org.osmdroid.util.MapTileIndex.getZoom(pMapTileIndex) + "/" +
+      org.osmdroid.util.MapTileIndex.getY(pMapTileIndex) + "/" +
+      org.osmdroid.util.MapTileIndex.getX(pMapTileIndex) +
+      mImageFilenameEnding
+}
 
 private const val ROUTE_COLOR = 0xFF00E297.toInt()     // High-visibility emergency green
 private const val ROUTE_WIDTH = 10.0f
@@ -514,8 +520,8 @@ fun OsmDroidRadarMapView(
         .padding(horizontal = 6.dp, vertical = 3.dp)
     ) {
       Text(
-        text = "© OpenStreetMap contributors © CARTO · routing OSRM",
-        fontSize = 9.sp,
+        text = "Tiles (c) Esri · data (c) OpenStreetMap · routing OSRM",
+        fontSize = 11.sp,
         fontWeight = FontWeight.Medium,
         color = TacticalOnSurfaceVariant
       )
@@ -637,7 +643,7 @@ class OsmMapControllerHolder(
     osmConfig.load(context, sharedPrefs)
     osmConfig.userAgentValue = "${context.packageName}-DisasterRelief/2.0 (Android; OSMDroid)"
     val basePath = File(context.cacheDir, "osmdroid")
-    val tilePath = File(basePath, "tiles")
+    val tilePath = File(basePath, "tiles-v2") // v2: stale CARTO-watermark tiles under "tiles" must never serve the Esri switch
     osmConfig.osmdroidBasePath = basePath
     osmConfig.osmdroidTileCache = tilePath
 

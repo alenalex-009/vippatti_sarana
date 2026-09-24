@@ -117,7 +117,7 @@ internal fun RouteIntelligencePanel(
       Column(modifier = Modifier.weight(1f)) {
         Text(
           text = "ROUTE TO",
-          fontSize = 9.sp,
+          fontSize = 11.sp,
           fontWeight = FontWeight.Black,
           color = TacticalOnSurfaceVariant,
           letterSpacing = 0.8.sp
@@ -161,7 +161,7 @@ internal fun RouteIntelligencePanel(
             RouteStatus.REQUESTING -> "REQUESTING…"
             RouteStatus.RECEIVED -> "ROUTE RECEIVED"
             RouteStatus.VALIDATING_HAZARDS -> "CHECKING HAZARDS…"
-            RouteStatus.READY -> "OSRM VALIDATED"
+            RouteStatus.READY -> "REAL ROADS VERIFIED"
             RouteStatus.NO_ROUTE -> "NO ROUTE FOUND"
             RouteStatus.NETWORK_ERROR -> "ROUTER UNREACHABLE"
             RouteStatus.FALLBACK_UNVERIFIED -> "UNVERIFIED ESTIMATE"
@@ -479,7 +479,7 @@ internal fun RouteIntelligencePanel(
           ) {
             Text(
               text = "${alt.summary} • ${OsrmRoutingService.formatDistance(alt.distanceMeters)} • Safety ${alt.routeSafetyScore}",
-              fontSize = 9.sp,
+              fontSize = 11.sp,
               color = if (isPrimary) NeonEmerald else TacticalOnSurfaceVariant,
               fontWeight = if (isPrimary) FontWeight.Bold else FontWeight.Normal,
               maxLines = 1
@@ -502,7 +502,7 @@ private fun androidx.compose.foundation.layout.RowScope.RouteMetric(label: Strin
       .padding(vertical = 4.dp),
     horizontalAlignment = Alignment.CenterHorizontally
   ) {
-    Text(label, fontSize = 8.sp, fontWeight = FontWeight.SemiBold, color = TacticalOnSurfaceVariant, maxLines = 1)
+    Text(label, fontSize = 10.sp, fontWeight = FontWeight.SemiBold, color = TacticalOnSurfaceVariant, maxLines = 1)
     Text(value, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = accent, maxLines = 1)
   }
 }

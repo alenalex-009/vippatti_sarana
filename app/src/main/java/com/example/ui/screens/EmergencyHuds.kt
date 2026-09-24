@@ -163,7 +163,7 @@ internal fun LiveNavigationHud(
         Column {
           Text(
             text = "STEP ${uiState.currentNavigationStepIndex + 1} OF $totalSteps",
-            fontSize = 9.sp,
+            fontSize = 11.sp,
             fontWeight = FontWeight.Black,
             color = NeonEmerald,
             letterSpacing = 0.5.sp

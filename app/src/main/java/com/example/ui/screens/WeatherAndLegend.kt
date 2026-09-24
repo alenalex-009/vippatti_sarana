@@ -84,14 +84,14 @@ internal fun CompactWeatherRow(weather: WeatherMetrics, status: DataStatus) {
           isStale -> "STALE"
           else -> "NO"
         },
-        fontSize = 8.sp,
+        fontSize = 10.sp,
         fontWeight = FontWeight.Black,
         color = tagColor,
         letterSpacing = 0.5.sp
       )
       Text(
         text = if (isLive || isStale) "WX" else "FEED",
-        fontSize = 8.sp,
+        fontSize = 10.sp,
         fontWeight = FontWeight.Black,
         color = tagColor,
         letterSpacing = 0.5.sp
@@ -146,7 +146,7 @@ internal fun CompactWeatherRow(weather: WeatherMetrics, status: DataStatus) {
       Column {
         Text(
           text = "3-HR TREND",
-          fontSize = 8.sp,
+          fontSize = 10.sp,
           fontWeight = FontWeight.Black,
           color = TacticalOnSurfaceVariant,
           letterSpacing = 0.5.sp
@@ -287,7 +287,7 @@ internal fun DisasterTypeLegend(types: List<com.example.data.model.HazardType>) 
         )
         Text(
           text = type.label,
-          fontSize = 9.sp,
+          fontSize = 11.sp,
           fontWeight = FontWeight.Bold,
           color = TacticalOnSurface,
           maxLines = 1
@@ -343,7 +343,7 @@ private fun WeatherCell(
     Column {
       Text(
         text = label,
-        fontSize = 8.sp,
+        fontSize = 10.sp,
         fontWeight = FontWeight.Black,
         color = TacticalOnSurfaceVariant,
         letterSpacing = 0.5.sp
