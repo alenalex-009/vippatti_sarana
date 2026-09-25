@@ -137,7 +137,8 @@ internal fun GroupDetailScreen(
 
   Column(modifier = Modifier.fillMaxWidth()) {
     val (icon, accent) = groupVisual(group.id)
-    val (groupTitle, groupSubtitle) = groupLabels(group.id, category.title)
+    val (disasterName, _) = disasterCategoryLabels(category.id, category.title)
+    val (groupTitle, groupSubtitle) = groupLabels(group.id, disasterName)
     DetailHeader(
       icon = icon,
       iconTint = accent,
@@ -170,16 +171,17 @@ internal fun GroupDetailScreen(
  */
 @Composable
 internal fun ModuleDetailScreen(module: CommonModule, onBack: () -> Unit) {
+  val (moduleTitle, moduleSubtitle) = commonModuleLabels(module.id, module.title, module.subtitle)
   Column(modifier = Modifier.fillMaxWidth()) {
     DetailHeader(
       icon = Icons.Default.DirectionsWalk,
       iconTint = NeonEmerald,
-      title = module.title,
-      subtitle = module.subtitle,
+      title = moduleTitle,
+      subtitle = moduleSubtitle,
       onBack = onBack
     )
     Text(
-      text = "Your safety comes first. Follow these instructions to reduce risk.",
+      text = stringResource(R.string.instructions_module_intro),
       fontSize = 11.sp,
       color = TacticalOnSurfaceVariant,
       modifier = Modifier.padding(horizontal = 14.dp, vertical = 4.dp)

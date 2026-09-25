@@ -45,11 +45,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.data.model.UserProfile
+import com.example.R
 import com.example.data.risk.RelocationPlanner
 import com.example.ui.theme.EmergencyRedBright
 import com.example.ui.theme.NeonEmerald
@@ -113,27 +115,27 @@ fun EditProfileDialog(
         ) {
           Column {
             Text(
-              text = "Edit Citizen Profile",
+              text = stringResource(R.string.edit_profile_title),
               fontSize = 16.sp,
               fontWeight = FontWeight.Bold,
               color = TacticalOnSurface
             )
             Text(
               // STAGE 7 — local-only honesty: reports stay on this device.
-              text = "Saved with every SOS & situation report on this device",
+              text = stringResource(R.string.edit_profile_local_note),
               fontSize = 11.sp,
               color = TacticalOnSurfaceVariant
             )
           }
           IconButton(onClick = onDismiss) {
-            Icon(Icons.Default.Close, contentDescription = "Close", tint = TacticalOnSurfaceVariant)
+            Icon(Icons.Default.Close, contentDescription = stringResource(R.string.dialog_close_content_desc), tint = TacticalOnSurfaceVariant)
           }
         }
 
         OutlinedTextField(
           value = fullName,
           onValueChange = { fullName = it },
-          label = { Text("Full Name", fontSize = 12.sp) },
+          label = { Text(stringResource(R.string.edit_profile_full_name), fontSize = 12.sp) },
           leadingIcon = { Icon(Icons.Default.Person, contentDescription = null, tint = TacticalOnSurfaceVariant, modifier = Modifier.size(18.dp)) },
           colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = NeonEmerald,
@@ -149,7 +151,7 @@ fun EditProfileDialog(
         OutlinedTextField(
           value = citizenId,
           onValueChange = { citizenId = it },
-          label = { Text("Citizen ID", fontSize = 12.sp) },
+          label = { Text(stringResource(R.string.edit_profile_citizen_id), fontSize = 12.sp) },
           colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = NeonEmerald,
             unfocusedBorderColor = TacticalOutlineVariant,
@@ -162,9 +164,9 @@ fun EditProfileDialog(
         )
 
         // Blood group chip selector
-        // FlowRow wraps chips naturally — no overflow at 360dp or large font scales.
+        // FlowRow wraps chips naturally â€” no overflow at 360dp or large font scales.
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-          Text("BLOOD GROUP", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = EmergencyRedBright, letterSpacing = 0.5.sp)
+          Text(stringResource(R.string.edit_profile_blood_group), fontSize = 10.sp, fontWeight = FontWeight.Bold, color = EmergencyRedBright, letterSpacing = 0.5.sp)
           FlowRow(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -183,7 +185,7 @@ fun EditProfileDialog(
         OutlinedTextField(
           value = medicalTag,
           onValueChange = { medicalTag = it },
-          label = { Text("Medical Attention Tag (e.g. Asthma / Inhaler)", fontSize = 12.sp) },
+          label = { Text(stringResource(R.string.edit_profile_medical_tag), fontSize = 12.sp) },
           colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = NeonEmerald,
             unfocusedBorderColor = TacticalOutlineVariant,
@@ -198,7 +200,7 @@ fun EditProfileDialog(
         OutlinedTextField(
           value = medicalNotes,
           onValueChange = { medicalNotes = it },
-          label = { Text("Medical Notes (e.g. Requires Mobility Support)", fontSize = 12.sp) },
+          label = { Text(stringResource(R.string.edit_profile_medical_notes), fontSize = 12.sp) },
           colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = NeonEmerald,
             unfocusedBorderColor = TacticalOutlineVariant,
@@ -212,7 +214,7 @@ fun EditProfileDialog(
 
         // Dependents stepper
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-          Text("FAMILY DEPENDENTS", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = TacticalOnSurfaceVariant, letterSpacing = 0.5.sp)
+          Text(stringResource(R.string.edit_profile_dependents), fontSize = 10.sp, fontWeight = FontWeight.Bold, color = TacticalOnSurfaceVariant, letterSpacing = 0.5.sp)
           Row(
             modifier = Modifier
               .fillMaxWidth()
@@ -230,7 +232,7 @@ fun EditProfileDialog(
                 .clip(CircleShape)
                 .testTag("dependents_decrease_button")
             ) {
-              Icon(Icons.Default.Remove, contentDescription = "Remove dependent", tint = EmergencyRedBright, modifier = Modifier.size(18.dp))
+              Icon(Icons.Default.Remove, contentDescription = stringResource(R.string.edit_profile_remove_dependent), tint = EmergencyRedBright, modifier = Modifier.size(18.dp))
             }
             Text(
               text = "$dependentsCount Dependents",
@@ -245,7 +247,7 @@ fun EditProfileDialog(
                 .clip(CircleShape)
                 .testTag("dependents_increase_button")
             ) {
-              Icon(Icons.Default.Add, contentDescription = "Add dependent", tint = NeonEmerald, modifier = Modifier.size(18.dp))
+              Icon(Icons.Default.Add, contentDescription = stringResource(R.string.edit_profile_add_dependent), tint = NeonEmerald, modifier = Modifier.size(18.dp))
             }
           }
         }
@@ -253,7 +255,7 @@ fun EditProfileDialog(
         OutlinedTextField(
           value = dependentsDetail,
           onValueChange = { dependentsDetail = it },
-          label = { Text("Dependents Detail (e.g. 1 Elder, 1 Child (4yo), Spouse)", fontSize = 12.sp) },
+          label = { Text(stringResource(R.string.edit_profile_dependents_detail), fontSize = 12.sp) },
           colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = NeonEmerald,
             unfocusedBorderColor = TacticalOutlineVariant,
@@ -265,7 +267,7 @@ fun EditProfileDialog(
             .testTag("edit_profile_dependents_detail_input")
         )
 
-        // Vulnerable categories — feed shelter ranking & relocation priority
+        // Vulnerable categories â€” feed shelter ranking & relocation priority
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
           Text(
             "VULNERABLE MEMBERS (drives shelter priority)",
@@ -326,8 +328,8 @@ fun EditProfileDialog(
               )
             )
             Column(modifier = Modifier.padding(vertical = 8.dp)) {
-              Text("Household needs shelter with medical support", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = TacticalOnSurface)
-              Text("Prioritizes on-site medical facilities", fontSize = 10.sp, color = TacticalOnSurfaceVariant)
+              Text(stringResource(R.string.edit_profile_need_medical), fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = TacticalOnSurface)
+              Text(stringResource(R.string.edit_profile_need_medical_sub), fontSize = 10.sp, color = TacticalOnSurfaceVariant)
             }
           }
         }
@@ -358,7 +360,7 @@ fun EditProfileDialog(
             .height(44.dp)
             .testTag("save_profile_button")
         ) {
-          Text("Save Profile", fontWeight = FontWeight.Bold, color = OnNeonEmerald)
+          Text(stringResource(R.string.edit_profile_save_button), fontWeight = FontWeight.Bold, color = OnNeonEmerald)
         }
       }
     }
@@ -387,5 +389,4 @@ private fun BloodGroupChip(label: String, selected: Boolean, onClick: () -> Unit
     )
   }
 }
-
 

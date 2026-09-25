@@ -1,99 +1,99 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!--
-  Bengali (bn) profile strings â€” same keys as values/strings.xml.
+  Bengali (bn) profile strings — same keys as values/strings.xml.
   Missing keys fall back to the English resource automatically.
 -->
 <resources>
-    <string name="profile_header_title">à¦†à¦®à¦¾à¦° à¦ªà§à¦°à§‹à¦«à¦¾à¦‡à¦²</string>
-    <string name="profile_avatar_content_description">à¦ªà§à¦°à§‹à¦«à¦¾à¦‡à¦² à¦›à¦¬à¦¿</string>
-    <string name="profile_verified_content_description">à¦¯à¦¾à¦šà¦¾à¦‡ à¦•à¦°à¦¾ à¦¨à¦¾à¦—à¦°à¦¿à¦• à¦†à¦‡à¦¡à¦¿</string>
-    <string name="profile_id_label">à¦†à¦‡à¦¡à¦¿: %1$s</string>
-    <string name="profile_edit_content_description">à¦ªà§à¦°à§‹à¦«à¦¾à¦‡à¦² à¦¸à¦®à§à¦ªà¦¾à¦¦à¦¨à¦¾ à¦•à¦°à§à¦¨</string>
+    <string name="profile_header_title">আমার প্রোফাইল</string>
+    <string name="profile_avatar_content_description">প্রোফাইল ছবি</string>
+    <string name="profile_verified_content_description">যাচাই করা নাগরিক আইডি</string>
+    <string name="profile_id_label">আইডি: %1$s</string>
+    <string name="profile_edit_content_description">প্রোফাইল সম্পাদনা করুন</string>
 
-    <string name="profile_section_safety_status">à¦†à¦®à¦¾à¦° à¦¨à¦¿à¦°à¦¾à¦ªà¦¤à§à¦¤à¦¾ à¦…à¦¬à¦¸à§à¦¥à¦¾</string>
-    <string name="profile_safety_safe">à¦†à¦®à¦¿ à¦¨à¦¿à¦°à¦¾à¦ªà¦¦</string>
-    <string name="profile_safety_needs_help">à¦¸à¦¹à¦¾à¦¯à¦¼à¦¤à¦¾ à¦ªà§à¦°à¦¯à¦¼à§‹à¦œà¦¨</string>
-    <string name="profile_safety_safe_description">à¦¤à§à¦°à¦¾à¦£ à¦¨à§‡à¦Ÿà¦“à¦¯à¦¼à¦¾à¦°à§à¦•à§‡ à¦†à¦ªà¦¨à¦¾à¦•à§‡ à¦¨à¦¿à¦°à¦¾à¦ªà¦¦ à¦¹à¦¿à¦¸à§‡à¦¬à§‡ à¦¨à¦¥à¦¿à¦­à§à¦•à§à¦¤ à¦•à¦°à§‡</string>
-    <string name="profile_safety_needs_help_description">à¦†à¦ªà¦¨à¦¾à¦° à¦ªà¦°à¦¿à¦¬à¦¾à¦°à¦•à§‡ à¦…à¦—à§à¦°à¦¾à¦§à¦¿à¦•à¦¾à¦° à¦¸à¦¹à¦¾à¦¯à¦¼à¦¤à¦¾à¦¯à¦¼ à¦¯à§à¦•à§à¦¤ à¦•à¦°à§‡</string>
+    <string name="profile_section_safety_status">আমার নিরাপত্তা অবস্থা</string>
+    <string name="profile_safety_safe">আমি নিরাপদ</string>
+    <string name="profile_safety_needs_help">সহায়তা প্রয়োজন</string>
+    <string name="profile_safety_safe_description">ত্রাণ নেটওয়ার্কে আপনাকে নিরাপদ হিসেবে নথিভুক্ত করে</string>
+    <string name="profile_safety_needs_help_description">আপনার পরিবারকে অগ্রাধিকার সহায়তায় যুক্ত করে</string>
 
-    <string name="profile_sos_title">à¦à¦¸à¦“à¦à¦¸ à¦•à§‡à¦¨à§à¦¦à§à¦°</string>
-    <string name="profile_sos_subtitle">à¦²à¦¾à¦‡à¦­ à¦œà¦¿à¦ªà¦¿à¦à¦¸, à¦¬à§à¦¯à¦¾à¦Ÿà¦¾à¦°à¦¿ à¦¸à§à¦¤à¦° à¦“ à¦®à§‡à¦¡à¦¿à¦•à§‡à¦² à¦Ÿà§à¦¯à¦¾à¦— à¦ªà¦¾à¦ à¦¾à¦¯à¦¼</string>
-    <string name="profile_sos_broadcast">à¦à¦¸à¦“à¦à¦¸ à¦¸à¦®à§à¦ªà§à¦°à¦šà¦¾à¦°</string>
-    <string name="profile_sos_report_situation">à¦†à¦®à¦¾à¦° à¦…à¦¬à¦¸à§à¦¥à¦¾ à¦œà¦¾à¦¨à¦¾à¦¨</string>
+    <string name="profile_sos_title">এসওএস কেন্দ্র</string>
+    <string name="profile_sos_subtitle">লাইভ জিপিএস, ব্যাটারি স্তর ও মেডিকেল ট্যাগ পাঠায়</string>
+    <string name="profile_sos_broadcast">এসওএস সম্প্রচার</string>
+    <string name="profile_sos_report_situation">আমার অবস্থা জানান</string>
 
-    <string name="profile_section_helplines">à¦œà¦°à§à¦°à¦¿ à¦¹à§‡à¦²à§à¦ªà¦²à¦¾à¦‡à¦¨</string>
-    <string name="profile_section_helplines_caption">à¦Ÿà§‹à¦²-à¦«à§à¦°à¦¿ à¦…à¦—à§à¦°à¦¾à¦§à¦¿à¦•à¦¾à¦° à¦²à¦¾à¦‡à¦¨</string>
-    <string name="profile_helpline_ndrf">à¦à¦¨à¦¡à¦¿à¦†à¦°à¦à¦« 112</string>
-    <string name="profile_helpline_ndrf_description">à¦¦à§à¦°à§à¦¯à§‹à¦— à¦¬à¦¾à¦¹à¦¿à¦¨à§€</string>
-    <string name="profile_helpline_ambulance">à¦…à§à¦¯à¦¾à¦®à§à¦¬à§à¦²à§‡à¦¨à§à¦¸</string>
-    <string name="profile_helpline_ambulance_description">à¦¡à¦¾à¦¯à¦¼à¦¾à¦² 108</string>
-    <string name="profile_helpline_fire">à¦«à¦¾à¦¯à¦¼à¦¾à¦° 101</string>
-    <string name="profile_helpline_fire_description">à¦‰à¦¦à§à¦§à¦¾à¦° à¦¦à¦²</string>
-    <string name="profile_dial_error">%1$s à¦ à¦•à¦² à¦•à¦°à¦¾ à¦¯à¦¾à¦¯à¦¼à¦¨à¦¿: %2$s</string>
+    <string name="profile_section_helplines">জরুরি হেল্পলাইন</string>
+    <string name="profile_section_helplines_caption">টোল-ফ্রি অগ্রাধিকার লাইন</string>
+    <string name="profile_helpline_ndrf">এনডিআরএফ 112</string>
+    <string name="profile_helpline_ndrf_description">দুর্যোগ বাহিনী</string>
+    <string name="profile_helpline_ambulance">অ্যাম্বুলেন্স</string>
+    <string name="profile_helpline_ambulance_description">ডায়াল 108</string>
+    <string name="profile_helpline_fire">ফায়ার 101</string>
+    <string name="profile_helpline_fire_description">উদ্ধার দল</string>
+    <string name="profile_dial_error">%1$s এ কল করা যায়নি: %2$s</string>
 
-    <string name="profile_section_details">à¦†à¦®à¦¾à¦° à¦¤à¦¥à§à¦¯</string>
-    <string name="profile_household_label">à¦ªà¦°à¦¿à¦¬à¦¾à¦°</string>
-    <string name="profile_household_description">à¦†à¦ªà¦¨à¦¾à¦° à¦˜à¦°à§‡à¦° à¦¨à¦¿à¦°à§à¦­à¦°à¦¶à§€à¦² à¦¸à¦¦à¦¸à§à¦¯</string>
-    <string name="profile_medical_label">à¦®à§‡à¦¡à¦¿à¦•à§‡à¦² à¦Ÿà§à¦¯à¦¾à¦—</string>
-    <string name="profile_medical_description">à¦‰à¦¦à§à¦§à¦¾à¦°à¦•à¦¾à¦°à§€à¦¦à§‡à¦° à¦¸à¦™à§à¦—à§‡ à¦¶à§‡à¦¯à¦¼à¦¾à¦° à¦•à¦°à¦¾ à¦¹à¦¯à¦¼</string>
-    <string name="profile_evacuation_needs_label">à¦¸à¦°à¦¿à¦¯à¦¼à§‡ à¦¨à§‡à¦“à¦¯à¦¼à¦¾à¦° à¦¶à¦¿à¦¬à¦¿à¦° à¦ªà§à¦°à¦¯à¦¼à§‹à¦œà¦¨</string>
-    <string name="profile_evacuation_needs_description">à¦¬à¦°à¦¾à¦¦à§à¦¦ à¦¶à¦¿à¦¬à¦¿à¦°à¦—à§à¦²à¦¿ à¦à¦‡ à¦ªà§à¦°à¦¯à¦¼à§‹à¦œà¦¨à¦—à§à¦²à¦¿ à¦¸à§à¦¬à¦¯à¦¼à¦‚à¦•à§à¦°à¦¿à¦¯à¦¼à¦­à¦¾à¦¬à§‡ à¦®à§‡à¦¨à§‡ à¦šà¦²à§‡</string>
-    <string name="profile_need_elderly_mobility">à¦¬à¦¯à¦¼à¦¸à§à¦• / à¦šà¦²à¦¾à¦šà¦²</string>
-    <string name="profile_need_disability">à¦ªà§à¦°à¦¤à¦¿à¦¬à¦¨à§à¦§à§€ à¦¸à¦¹à¦¾à¦¯à¦¼à¦¤à¦¾</string>
-    <string name="profile_need_medical_dependency">à¦šà¦¿à¦•à¦¿à§Žà¦¸à¦¾ à¦¨à¦¿à¦°à§à¦­à¦°à¦¤à¦¾</string>
-    <string name="profile_need_pet_friendly">à¦ªà§‹à¦·à¦¾ à¦ªà§à¦°à¦¾à¦£à§€ à¦‰à¦ªà¦¯à§‹à¦—à§€</string>
-    <string name="profile_need_oxygen_meds">à¦…à¦•à§à¦¸à¦¿à¦œà§‡à¦¨ / à¦“à¦·à§à¦§</string>
-    <string name="profile_relocation_label">à¦¸à§à¦¥à¦¾à¦¨à¦¾à¦¨à§à¦¤à¦° à¦…à¦—à§à¦°à¦¾à¦§à¦¿à¦•à¦¾à¦°</string>
-    <string name="profile_relocation_description">à¦†à¦ªà¦¨à¦¾à¦° à¦ªà¦°à¦¿à¦¬à¦¾à¦°à§‡à¦° à¦¤à¦¥à§à¦¯ à¦¥à§‡à¦•à§‡ à¦¸à¦°à¦¾à¦¨à§‹à¦° à¦°â€à§à¦¯à¦¾à¦™à§à¦•à¦¿à¦‚</string>
-    <string name="profile_relocation_assigned_shelter">à¦¬à¦°à¦¾à¦¦à§à¦¦ à¦¶à¦¿à¦¬à¦¿à¦°: %1$s</string>
-    <string name="profile_relocation_shelter_capacity">%1$dà¦Ÿà¦¿ à¦¸à§à¦¥à¦¾à¦¨ à¦–à¦¾à¦²à¦¿</string>
+    <string name="profile_section_details">আমার তথ্য</string>
+    <string name="profile_household_label">পরিবার</string>
+    <string name="profile_household_description">আপনার ঘরের নির্ভরশীল সদস্য</string>
+    <string name="profile_medical_label">মেডিকেল ট্যাগ</string>
+    <string name="profile_medical_description">উদ্ধারকারীদের সঙ্গে শেয়ার করা হয়</string>
+    <string name="profile_evacuation_needs_label">সরিয়ে নেওয়ার শিবির প্রয়োজন</string>
+    <string name="profile_evacuation_needs_description">বরাদ্দ শিবিরগুলি এই প্রয়োজনগুলি স্বয়ংক্রিয়ভাবে মেনে চলে</string>
+    <string name="profile_need_elderly_mobility">বয়স্ক / চলাচল</string>
+    <string name="profile_need_disability">প্রতিবন্ধী সহায়তা</string>
+    <string name="profile_need_medical_dependency">চিকিৎসা নির্ভরতা</string>
+    <string name="profile_need_pet_friendly">পোষা প্রাণী উপযোগী</string>
+    <string name="profile_need_oxygen_meds">অক্সিজেন / ওষুধ</string>
+    <string name="profile_relocation_label">স্থানান্তর অগ্রাধিকার</string>
+    <string name="profile_relocation_description">আপনার পরিবারের তথ্য থেকে সরানোর র‍্যাঙ্কিং</string>
+    <string name="profile_relocation_assigned_shelter">বরাদ্দ শিবির: %1$s</string>
+    <string name="profile_relocation_shelter_capacity">%1$dটি স্থান খালি</string>
     <string name="profile_relocation_priority_note">বৃদ্ধ, শিশু, প্রতিবন্ধী, গর্ভবতী নারী এবং চিকিৎসানির্ভরতা — এগুলি সবই আপনার পরিবারের অগ্রাধিকার বাড়ায়। শুধুমাত্র আপনি যে তথ্য লিখেছেন তা-ই ব্যবহৃত হয় — জনসংখ্যার কোনো পরিসংখ্যান বানানো হয় না।</string>
 
-    <string name="profile_section_contacts">à¦œà¦°à§à¦°à¦¿ à¦¯à§‹à¦—à¦¾à¦¯à§‹à¦—</string>
-    <string name="profile_add_contact">à¦¯à§‹à¦—à¦¾à¦¯à§‹à¦— à¦¯à§‹à¦— à¦•à¦°à§à¦¨</string>
+    <string name="profile_section_contacts">জরুরি যোগাযোগ</string>
+    <string name="profile_add_contact">যোগাযোগ যোগ করুন</string>
     <string name="profile_contact_role">%1$s (%2$s)</string>
-    <string name="profile_contact_details">%1$s â€¢ %2$s</string>
-    <string name="profile_contact_call_content_description">%1$s à¦•à§‡ à¦•à¦² à¦•à¦°à§à¦¨</string>
-    <string name="profile_contact_sos_sms">à¦à¦¸à¦“à¦à¦¸ à¦à¦¸à¦à¦®à¦à¦¸</string>
-    <string name="profile_contact_sos_sms_body">à¦œà¦°à§à¦°à¦¿ à¦à¦¸à¦“à¦à¦¸: à¦†à¦®à¦¾à¦° à¦¸à¦¹à¦¾à¦¯à¦¼à¦¤à¦¾ à¦ªà§à¦°à¦¯à¦¼à§‹à¦œà¦¨! à¦œà¦¿à¦ªà¦¿à¦à¦¸: %1$s à¦‰à¦¤à§à¦¤à¦°, %2$s à¦ªà§‚à¦°à§à¦¬ %3$s. à¦­à¦¿à¦ªà§à¦ªà¦¾à¦Ÿà§à¦Ÿà¦¿ à¦¸à¦¾à¦°à¦¾à¦¨à¦¾ à¦¥à§‡à¦•à§‡ à¦ªà¦¾à¦ à¦¾à¦¨à§‹à¥¤</string>
-    <string name="profile_contact_sos_location_device_gps">(à¦¡à¦¿à¦­à¦¾à¦‡à¦¸ à¦œà¦¿à¦ªà¦¿à¦à¦¸)</string>
-    <string name="profile_contact_sos_location_india_fallback">(à¦­à¦¾à¦°à¦¤ à¦†à¦¨à§à¦®à¦¾à¦¨à¦¿à¦• à¦…à¦¬à¦¸à§à¦¥à¦¾à¦¨)</string>
-    <string name="profile_sms_error">à¦à¦¸à¦à¦®à¦à¦¸ à¦ªà¦¾à¦ à¦¾à¦¨à§‹ à¦¯à¦¾à¦¯à¦¼à¦¨à¦¿: %1$s</string>
+    <string name="profile_contact_details">%1$s • %2$s</string>
+    <string name="profile_contact_call_content_description">%1$s কে কল করুন</string>
+    <string name="profile_contact_sos_sms">এসওএস এসএমএস</string>
+    <string name="profile_contact_sos_sms_body">জরুরি এসওএস: আমার সহায়তা প্রয়োজন! জিপিএস: %1$s উত্তর, %2$s পূর্ব %3$s. ভিপ্পাট্টি সারানা থেকে পাঠানো।</string>
+    <string name="profile_contact_sos_location_device_gps">(ডিভাইস জিপিএস)</string>
+    <string name="profile_contact_sos_location_india_fallback">(ভারত আনুমানিক অবস্থান)</string>
+    <string name="profile_sms_error">এসএমএস পাঠানো যায়নি: %1$s</string>
 
-    <string name="profile_section_app_data">à¦…à§à¦¯à¦¾à¦ª à¦¡à§‡à¦Ÿà¦¾ à¦“ à¦…à¦«à¦²à¦¾à¦‡à¦¨</string>
-    <string name="profile_offline_first_label">à¦…à¦«à¦²à¦¾à¦‡à¦¨-à¦ªà§à¦°à¦¥à¦® à¦®à§‹à¦¡</string>
-    <string name="profile_offline_maps_label">à¦…à¦«à¦²à¦¾à¦‡à¦¨ à¦¤à§à¦°à¦¾à¦£ à¦®à¦¾à¦¨à¦šà¦¿à¦¤à§à¦° à¦•à§à¦¯à¦¾à¦¶à§‡</string>
-    <string name="profile_offline_maps_value">%2$s à¦à¦° à¦®à¦§à§à¦¯à§‡ %1$s</string>
-    <string name="profile_offline_maps_not_measured">à¦à¦–à¦¨à¦“ à¦®à¦¾à¦ªà¦¾ à¦¹à¦¯à¦¼à¦¨à¦¿</string>
-    <string name="profile_disaster_sync_label">à¦¦à§à¦°à§à¦¯à§‹à¦— à¦¡à§‡à¦Ÿà¦¾ à¦¸à¦¿à¦™à§à¦•</string>
-    <string name="profile_disaster_sync_never">à¦à¦–à¦¨à¦“ à¦šà¦¾à¦²à¦¾à¦¨à§‹ à¦¹à¦¯à¦¼à¦¨à¦¿</string>
-    <string name="profile_data_source_label">à¦¡à§‡à¦Ÿà¦¾ à¦¸à§‚à¦¤à§à¦°</string>
+    <string name="profile_section_app_data">অ্যাপ ডেটা ও অফলাইন</string>
+    <string name="profile_offline_first_label">অফলাইন-প্রথম মোড</string>
+    <string name="profile_offline_maps_label">অফলাইন ত্রাণ মানচিত্র ক্যাশে</string>
+    <string name="profile_offline_maps_value">%2$s এর মধ্যে %1$s</string>
+    <string name="profile_offline_maps_not_measured">এখনও মাপা হয়নি</string>
+    <string name="profile_disaster_sync_label">দুর্যোগ ডেটা সিঙ্ক</string>
+    <string name="profile_disaster_sync_never">এখনও চালানো হয়নি</string>
+    <string name="profile_data_source_label">ডেটা সূত্র</string>
 
-    <string name="profile_section_preferences">à¦ªà¦›à¦¨à§à¦¦à¦¸à¦®à§‚à¦¹</string>
-    <string name="profile_theme_label">à¦¡à¦¾à¦°à§à¦• à¦¥à¦¿à¦®</string>
-    <string name="profile_theme_appearance">à¦°à§‚à¦ª</string>
-    <string name="profile_theme_on">à¦šà¦¾à¦²à§</string>
-    <string name="profile_theme_off">à¦¬à¦¨à§à¦§</string>
-    <string name="profile_language_label">à¦­à¦¾à¦·à¦¾</string>
-    <string name="profile_language_description">à¦¡à¦¿à¦­à¦¾à¦‡à¦¸ à¦“ à¦…à§à¦¯à¦¾à¦ªà§‡à¦° à¦­à¦¾à¦·à¦¾</string>
-    <string name="profile_language_open_settings">à¦…à§à¦¯à¦¾à¦ª à¦­à¦¾à¦·à¦¾à¦° à¦¸à§‡à¦Ÿà¦¿à¦‚à¦¸ à¦–à§‹à¦²à§‡</string>
+    <string name="profile_section_preferences">পছন্দসমূহ</string>
+    <string name="profile_theme_label">ডার্ক থিম</string>
+    <string name="profile_theme_appearance">রূপ</string>
+    <string name="profile_theme_on">চালু</string>
+    <string name="profile_theme_off">বন্ধ</string>
+    <string name="profile_language_label">ভাষা</string>
+    <string name="profile_language_description">ডিভাইস ও অ্যাপের ভাষা</string>
+    <string name="profile_language_open_settings">অ্যাপ ভাষার সেটিংস খোলে</string>
 
-    <string name="profile_section_account">à¦…à§à¦¯à¦¾à¦•à¦¾à¦‰à¦¨à§à¦Ÿ</string>
-    <string name="profile_account_email_label">à¦à¦‡ à¦¹à¦¿à¦¸à¦¾à¦¬à§‡ à¦¸à¦¾à¦‡à¦¨ à¦‡à¦¨</string>
-    <string name="profile_account_no_email">à¦¸à§à¦¥à¦¾à¦¨à§€à¦¯à¦¼ à¦¡à¦¿à¦­à¦¾à¦‡à¦¸ à¦ªà§à¦°à§‹à¦«à¦¾à¦‡à¦²</string>
-    <string name="profile_sign_out">à¦¸à¦¾à¦‡à¦¨ à¦†à¦‰à¦Ÿ</string>
-    <string name="profile_sign_out_content_description">à¦à¦‡ à¦…à§à¦¯à¦¾à¦•à¦¾à¦‰à¦¨à§à¦Ÿ à¦¥à§‡à¦•à§‡ à¦¸à¦¾à¦‡à¦¨ à¦†à¦‰à¦Ÿ à¦•à¦°à§à¦¨</string>
+    <string name="profile_section_account">অ্যাকাউন্ট</string>
+    <string name="profile_account_email_label">এই হিসাবে সাইন ইন</string>
+    <string name="profile_account_no_email">স্থানীয় ডিভাইস প্রোফাইল</string>
+    <string name="profile_sign_out">সাইন আউট</string>
+    <string name="profile_sign_out_content_description">এই অ্যাকাউন্ট থেকে সাইন আউট করুন</string>
 
-    <string name="profile_section_about">à¦¸à¦®à§à¦ªà¦°à§à¦•à§‡</string>
-    <string name="profile_about_version_label">à¦…à§à¦¯à¦¾à¦ª à¦¸à¦‚à¦¸à§à¦•à¦°à¦£</string>
-    <string name="profile_about_version_value">%1$s (à¦¬à¦¿à¦²à§à¦¡ %2$d)</string>
-    <string name="profile_about_app_label">à¦­à¦¿à¦ªà§à¦ªà¦¾à¦Ÿà§à¦Ÿà¦¿ à¦¸à¦¾à¦°à¦¾à¦¨à¦¾</string>
-    <string name="profile_about_tagline">à¦¦à§à¦°à§à¦¯à§‹à¦— à¦¤à§à¦°à¦¾à¦£ à¦“ à¦œà¦°à§à¦°à¦¿ à¦¨à§‡à¦Ÿà¦“à¦¯à¦¼à¦¾à¦°à§à¦•</string>
+    <string name="profile_section_about">সম্পর্কে</string>
+    <string name="profile_about_version_label">অ্যাপ সংস্করণ</string>
+    <string name="profile_about_version_value">%1$s (বিল্ড %2$d)</string>
+    <string name="profile_about_app_label">ভিপ্পাট্টি সারানা</string>
+    <string name="profile_about_tagline">দুর্যোগ ত্রাণ ও জরুরি নেটওয়ার্ক</string>
 
-    <string name="action_edit">à¦¸à¦®à§à¦ªà¦¾à¦¦à¦¨à¦¾</string>
-    <string name="action_call">à¦•à¦²</string>
-    <string name="action_save">à¦¸à¦‚à¦°à¦•à§à¦·à¦£</string>
-    <string name="action_cancel">à¦¬à¦¾à¦¤à¦¿à¦²</string>
+    <string name="action_edit">সম্পাদনা</string>
+    <string name="action_call">কল</string>
+    <string name="action_save">সংরক্ষণ</string>
+    <string name="action_cancel">বাতিল</string>
 
     <string-array name="profile_contact_role_keys">
         <item>Spouse</item>
@@ -108,16 +108,16 @@
         <item>Other</item>
     </string-array>
     <string-array name="profile_contact_role_labels">
-        <item>à¦œà§€à¦¬à¦¨à¦¸à¦™à§à¦—à§€</item>
-        <item>à¦­à¦¾à¦‡</item>
-        <item>à¦¬à§à¦²à¦• à¦ªà§à¦°à¦§à¦¾à¦¨ / à¦ªà§à¦°à¦¤à¦¿à¦¬à§‡à¦¶à§€</item>
-        <item>à¦¬à§‹à¦¨</item>
-        <item>à¦ªà¦¿à¦¤à¦¾-à¦®à¦¾à¦¤à¦¾</item>
-        <item>à¦¸à¦¨à§à¦¤à¦¾à¦¨</item>
-        <item>à¦ªà§à¦°à¦¤à¦¿à¦¬à§‡à¦¶à§€</item>
-        <item>à¦¬à¦¨à§à¦§à§</item>
-        <item>à¦¸à§à¦¬à§‡à¦šà§à¦›à¦¾à¦¸à§‡à¦¬à¦•</item>
-        <item>à¦…à¦¨à§à¦¯à¦¾à¦¨à§à¦¯</item>
+        <item>জীবনসঙ্গী</item>
+        <item>ভাই</item>
+        <item>ব্লক প্রধান / প্রতিবেশী</item>
+        <item>বোন</item>
+        <item>পিতা-মাতা</item>
+        <item>সন্তান</item>
+        <item>প্রতিবেশী</item>
+        <item>বন্ধু</item>
+        <item>স্বেচ্ছাসেবক</item>
+        <item>অন্যান্য</item>
     </string-array>
     <!-- ONBOARDING — first-launch carousel (5 cards) -->
     <string name="onboarding_skip">এড়িয়ে যান</string>
@@ -150,4 +150,16 @@
     <string name="onboarding_tools_body">প্রয়োজনে জরুরি সরঞ্জাম, SOS সহায়তা, রিপোর্টিং, সরিয়ে নেওয়ার নির্দেশিকা ও অন্যান্য প্রস্তুতি সুবিধা ব্যবহার করুন।</string>
     <string name="onboarding_tools_illustration_cd">ফোনের চারপাশে জরুরি সরঞ্জামের চিত্র</string>
     <string name="onboarding_ready_status">আপনি বিপত্তি সরণা ব্যবহার করতে প্রস্তুত।</string>
+    <!-- Bottom navigation -->
+    <string name="nav_home">হোম</string>
+    <string name="nav_map">মানচিত্র</string>
+    <string name="nav_news">খবর</string>
+    <string name="nav_guide">নির্দেশিকা</string>
+    <string name="nav_profile">প্রোফাইল</string>
+
+    <!-- Authority console (Profile) -->
+    <string name="profile_section_authority">কর্তৃপক্ষ কেন্দ্র</string>
+    <string name="profile_authority_open">খুলুন</string>
+    <string name="profile_authority_description">ক্ষেত্রীয় আশ্রয় ও বসতির রেকর্ড লিখুন এবং তাৎক্ষণিক / স্বল্পমেয়াদি / মধ্যমেয়াদি স্থানান্তরের জন্য বসতিগুলোকে সরাসরি বিপদ পরিস্থিতির (SIH 26191) ভিত্তিতে সাজান। রেকর্ড এই ডিভাইসেই থাকে; ডেমো সারিগুলো SIMULATED থাকেই।</string>
+    <string name="profile_contacts_empty">এখনও কোনো জরুরি যোগাযোগ নেই — আপনার স্থানীয় SOS রেকর্ড তাদের উল্লেখ করতে পারে, তাই পরিবার বা প্রতিবেশীদের যোগ করুন। যোগাযোগগুলো শুধু এই ডিভাইসেই থাকে।</string>
 </resources>

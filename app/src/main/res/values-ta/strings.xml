@@ -1,99 +1,99 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!--
-  Tamil (ta) profile strings â€” same keys as values/strings.xml.
+  Tamil (ta) profile strings — same keys as values/strings.xml.
   Missing keys fall back to the English resource automatically.
 -->
 <resources>
-    <string name="profile_header_title">à®Žà®©à®¤à¯ à®šà¯à®¯à®µà®¿à®µà®°à®®à¯</string>
-    <string name="profile_avatar_content_description">à®šà¯à®¯à®µà®¿à®µà®°à®ªà¯ à®ªà®Ÿà®®à¯</string>
-    <string name="profile_verified_content_description">à®šà®°à®¿à®ªà®¾à®°à¯à®•à¯à®•à®ªà¯à®ªà®Ÿà¯à®Ÿ à®•à¯à®Ÿà®¿à®®à®•à®©à¯ à®à®Ÿà®¿</string>
-    <string name="profile_id_label">à®à®Ÿà®¿: %1$s</string>
-    <string name="profile_edit_content_description">à®šà¯à®¯à®µà®¿à®µà®°à®¤à¯à®¤à¯ˆà®¤à¯ à®¤à®¿à®°à¯à®¤à¯à®¤à¯</string>
+    <string name="profile_header_title">எனது சுயவிவரம்</string>
+    <string name="profile_avatar_content_description">சுயவிவரப் படம்</string>
+    <string name="profile_verified_content_description">சரிபார்க்கப்பட்ட குடிமகன் ஐடி</string>
+    <string name="profile_id_label">ஐடி: %1$s</string>
+    <string name="profile_edit_content_description">சுயவிவரத்தைத் திருத்து</string>
 
-    <string name="profile_section_safety_status">à®Žà®©à®¤à¯ à®ªà®¾à®¤à¯à®•à®¾à®ªà¯à®ªà¯ à®¨à®¿à®²à¯ˆ</string>
-    <string name="profile_safety_safe">à®¨à®¾à®©à¯ à®ªà®¾à®¤à¯à®•à®¾à®ªà¯à®ªà®¾à®• à®‰à®³à¯à®³à¯‡à®©à¯</string>
-    <string name="profile_safety_needs_help">à®‰à®¤à®µà®¿ à®¤à¯‡à®µà¯ˆ</string>
-    <string name="profile_safety_safe_description">à®¨à®¿à®µà®¾à®°à®£ à®µà®²à¯ˆà®¯à®®à¯ˆà®ªà¯à®ªà®¿à®²à¯ à®‰à®™à¯à®•à®³à¯ˆà®ªà¯ à®ªà®¾à®¤à¯à®•à®¾à®ªà¯à®ªà®¾à®•à®ªà¯ à®ªà®¤à®¿à®µà¯ à®šà¯†à®¯à¯à®•à®¿à®±à®¤à¯</string>
-    <string name="profile_safety_needs_help_description">à®‰à®™à¯à®•à®³à¯ à®•à¯à®Ÿà¯à®®à¯à®ªà®¤à¯à®¤à¯ˆ à®®à¯à®©à¯à®©à¯à®°à®¿à®®à¯ˆ à®‰à®¤à®µà®¿à®•à¯à®•à¯ à®šà¯‡à®°à¯à®•à¯à®•à®¿à®±à®¤à¯</string>
+    <string name="profile_section_safety_status">எனது பாதுகாப்பு நிலை</string>
+    <string name="profile_safety_safe">நான் பாதுகாப்பாக உள்ளேன்</string>
+    <string name="profile_safety_needs_help">உதவி தேவை</string>
+    <string name="profile_safety_safe_description">நிவாரண வலையமைப்பில் உங்களைப் பாதுகாப்பாகப் பதிவு செய்கிறது</string>
+    <string name="profile_safety_needs_help_description">உங்கள் குடும்பத்தை முன்னுரிமை உதவிக்கு சேர்க்கிறது</string>
 
-    <string name="profile_sos_title">à®Žà®¸à¯à®“à®Žà®¸à¯ à®®à¯ˆà®¯à®®à¯</string>
-    <string name="profile_sos_subtitle">à®¨à¯‡à®°à®Ÿà®¿ à®œà®¿à®ªà®¿à®Žà®¸à¯, à®ªà¯‡à®Ÿà¯à®Ÿà®°à®¿ à®…à®³à®µà¯, à®®à®°à¯à®¤à¯à®¤à¯à®µà®•à¯ à®•à¯à®±à®¿ à®†à®•à®¿à®¯à®µà®±à¯à®±à¯ˆ à®…à®©à¯à®ªà¯à®ªà¯à®•à®¿à®±à®¤à¯</string>
-    <string name="profile_sos_broadcast">à®Žà®¸à¯à®“à®Žà®¸à¯ à®’à®³à®¿à®ªà®°à®ªà¯à®ªà¯</string>
-    <string name="profile_sos_report_situation">à®Žà®©à®¤à¯ à®¨à®¿à®²à¯ˆà®¯à¯ˆà®¤à¯ à®¤à¯†à®°à®¿à®µà®¿</string>
+    <string name="profile_sos_title">எஸ்ஓஎஸ் மையம்</string>
+    <string name="profile_sos_subtitle">நேரடி ஜிபிஎஸ், பேட்டரி அளவு, மருத்துவக் குறி ஆகியவற்றை அனுப்புகிறது</string>
+    <string name="profile_sos_broadcast">எஸ்ஓஎஸ் ஒளிபரப்பு</string>
+    <string name="profile_sos_report_situation">எனது நிலையைத் தெரிவி</string>
 
-    <string name="profile_section_helplines">à®…à®µà®šà®° à®‰à®¤à®µà®¿ à®Žà®£à¯à®•à®³à¯</string>
-    <string name="profile_section_helplines_caption">à®•à®Ÿà¯à®Ÿà®£à®®à®¿à®²à¯à®²à®¾ à®®à¯à®©à¯à®©à¯à®°à®¿à®®à¯ˆ à®Žà®£à¯à®•à®³à¯</string>
-    <string name="profile_helpline_ndrf">à®Žà®©à¯à®Ÿà®¿à®†à®°à¯à®Žà®ƒà®ªà¯ 112</string>
-    <string name="profile_helpline_ndrf_description">à®ªà¯‡à®°à®¿à®Ÿà®°à¯ à®ªà®Ÿà¯ˆ</string>
-    <string name="profile_helpline_ambulance">à®†à®®à¯à®ªà¯à®²à®©à¯à®¸à¯</string>
-    <string name="profile_helpline_ambulance_description">à®Ÿà®¯à®²à¯ 108</string>
-    <string name="profile_helpline_fire">à®¤à¯€à®¯à®£à¯ˆà®ªà¯à®ªà¯ 101</string>
-    <string name="profile_helpline_fire_description">à®®à¯€à®Ÿà¯à®ªà¯à®ªà¯ à®ªà®Ÿà¯ˆ</string>
-    <string name="profile_dial_error">%1$s à®•à¯à®•à¯ à®…à®´à¯ˆà®•à¯à®• à®®à¯à®Ÿà®¿à®¯à®µà®¿à®²à¯à®²à¯ˆ: %2$s</string>
+    <string name="profile_section_helplines">அவசர உதவி எண்கள்</string>
+    <string name="profile_section_helplines_caption">கட்டணமில்லா முன்னுரிமை எண்கள்</string>
+    <string name="profile_helpline_ndrf">என்டிஆர்எஃப் 112</string>
+    <string name="profile_helpline_ndrf_description">பேரிடர் படை</string>
+    <string name="profile_helpline_ambulance">ஆம்புலன்ஸ்</string>
+    <string name="profile_helpline_ambulance_description">டயல் 108</string>
+    <string name="profile_helpline_fire">தீயணைப்பு 101</string>
+    <string name="profile_helpline_fire_description">மீட்புப் படை</string>
+    <string name="profile_dial_error">%1$s க்கு அழைக்க முடியவில்லை: %2$s</string>
 
-    <string name="profile_section_details">à®Žà®©à®¤à¯ à®µà®¿à®µà®°à®™à¯à®•à®³à¯</string>
-    <string name="profile_household_label">à®•à¯à®Ÿà¯à®®à¯à®ªà®®à¯</string>
-    <string name="profile_household_description">à®‰à®™à¯à®•à®³à¯ à®µà¯€à®Ÿà¯à®Ÿà®¿à®²à¯ à®šà®¾à®°à¯à®¨à¯à®¤à®¿à®°à¯à®ªà¯à®ªà®µà®°à¯à®•à®³à¯</string>
-    <string name="profile_medical_label">à®®à®°à¯à®¤à¯à®¤à¯à®µà®•à¯ à®•à¯à®±à®¿</string>
-    <string name="profile_medical_description">à®®à¯€à®Ÿà¯à®ªà¯à®•à¯ à®•à¯à®´à¯à®•à¯à®•à®³à¯à®Ÿà®©à¯ à®ªà®•à®¿à®°à®ªà¯à®ªà®Ÿà¯à®•à®¿à®±à®¤à¯</string>
-    <string name="profile_evacuation_needs_label">à®µà¯†à®³à®¿à®¯à¯‡à®±à¯à®± à®®à¯à®•à®¾à®®à¯ à®¤à¯‡à®µà¯ˆà®•à®³à¯</string>
-    <string name="profile_evacuation_needs_description">à®’à®¤à¯à®•à¯à®•à®ªà¯à®ªà®Ÿà¯à®Ÿ à®®à¯à®•à®¾à®®à¯à®•à®³à¯ à®‡à®¨à¯à®¤à®¤à¯ à®¤à¯‡à®µà¯ˆà®•à®³à¯à®Ÿà®©à¯ à®¤à®¾à®©à®¾à®•à®µà¯‡ à®ªà¯Šà®°à¯à®¨à¯à®¤à¯à®®à¯</string>
-    <string name="profile_need_elderly_mobility">à®®à¯à®¤à®¿à®¯à¯‹à®°à¯ / à®‡à®¯à®•à¯à®•à®¤à¯ à®¤à®¿à®±à®©à¯</string>
-    <string name="profile_need_disability">à®®à®¾à®±à¯à®±à¯à®¤à¯à®¤à®¿à®±à®©à®¾à®³à®°à¯ à®‰à®¤à®µà®¿</string>
-    <string name="profile_need_medical_dependency">à®®à®°à¯à®¤à¯à®¤à¯à®µà®šà¯ à®šà®¾à®°à¯à®ªà¯</string>
-    <string name="profile_need_pet_friendly">à®šà¯†à®²à¯à®²à®ªà¯à®ªà®¿à®°à®¾à®£à®¿ à®à®±à¯à®±à®¤à¯</string>
-    <string name="profile_need_oxygen_meds">à®†à®•à¯à®šà®¿à®œà®©à¯ / à®®à®°à¯à®¨à¯à®¤à¯</string>
-    <string name="profile_relocation_label">à®‡à®Ÿà®®à®¾à®±à¯à®± à®®à¯à®©à¯à®©à¯à®°à®¿à®®à¯ˆ</string>
-    <string name="profile_relocation_description">à®‰à®™à¯à®•à®³à¯ à®•à¯à®Ÿà¯à®®à¯à®ª à®µà®¿à®µà®°à®™à¯à®•à®³à®¿à®©à¯ à®…à®Ÿà®¿à®ªà¯à®ªà®Ÿà¯ˆà®¯à®¿à®²à¯ à®µà¯†à®³à®¿à®¯à¯‡à®±à¯à®± à®¤à®°à®µà®°à®¿à®šà¯ˆ</string>
-    <string name="profile_relocation_assigned_shelter">à®’à®¤à¯à®•à¯à®•à®ªà¯à®ªà®Ÿà¯à®Ÿ à®®à¯à®•à®¾à®®à¯: %1$s</string>
-    <string name="profile_relocation_shelter_capacity">%1$d à®‡à®Ÿà®™à¯à®•à®³à¯ à®‰à®³à¯à®³à®©</string>
+    <string name="profile_section_details">எனது விவரங்கள்</string>
+    <string name="profile_household_label">குடும்பம்</string>
+    <string name="profile_household_description">உங்கள் வீட்டில் சார்ந்திருப்பவர்கள்</string>
+    <string name="profile_medical_label">மருத்துவக் குறி</string>
+    <string name="profile_medical_description">மீட்புக் குழுக்களுடன் பகிரப்படுகிறது</string>
+    <string name="profile_evacuation_needs_label">வெளியேற்ற முகாம் தேவைகள்</string>
+    <string name="profile_evacuation_needs_description">ஒதுக்கப்பட்ட முகாம்கள் இந்தத் தேவைகளுடன் தானாகவே பொருந்தும்</string>
+    <string name="profile_need_elderly_mobility">முதியோர் / இயக்கத் திறன்</string>
+    <string name="profile_need_disability">மாற்றுத்திறனாளர் உதவி</string>
+    <string name="profile_need_medical_dependency">மருத்துவச் சார்பு</string>
+    <string name="profile_need_pet_friendly">செல்லப்பிராணி ஏற்றது</string>
+    <string name="profile_need_oxygen_meds">ஆக்சிஜன் / மருந்து</string>
+    <string name="profile_relocation_label">இடமாற்ற முன்னுரிமை</string>
+    <string name="profile_relocation_description">உங்கள் குடும்ப விவரங்களின் அடிப்படையில் வெளியேற்ற தரவரிசை</string>
+    <string name="profile_relocation_assigned_shelter">ஒதுக்கப்பட்ட முகாம்: %1$s</string>
+    <string name="profile_relocation_shelter_capacity">%1$d இடங்கள் உள்ளன</string>
     <string name="profile_relocation_priority_note">முதியோர், குழந்தைகள், மாற்றுத்திறனாளர்கள், கர்ப்பிணிப் பெண்கள், மருத்துவச்சார்பு ஆகியவை அனைத்தும் உங்கள் குடும்பத்தின் முன்னுரிமையை உயர்த்துகின்றன. நீங்கள் உள்ளிட்ட விவரங்கள் மட்டுமே பயன்படுத்தப்படுகின்றன — மக்கள்தொகைப் புள்ளிவிவரங்கள் எதுவும் கற்பனை செய்யப்படுவதில்லை.</string>
 
-    <string name="profile_section_contacts">à®…à®µà®šà®° à®¤à¯Šà®Ÿà®°à¯à®ªà¯à®•à®³à¯</string>
-    <string name="profile_add_contact">à®¤à¯Šà®Ÿà®°à¯à®ªà¯ à®šà¯‡à®°à¯</string>
+    <string name="profile_section_contacts">அவசர தொடர்புகள்</string>
+    <string name="profile_add_contact">தொடர்பு சேர்</string>
     <string name="profile_contact_role">%1$s (%2$s)</string>
-    <string name="profile_contact_details">%1$s â€¢ %2$s</string>
-    <string name="profile_contact_call_content_description">%1$s à®•à¯à®•à¯ à®…à®´à¯ˆ</string>
-    <string name="profile_contact_sos_sms">à®Žà®¸à¯à®“à®Žà®¸à¯ à®Žà®¸à¯à®Žà®®à¯à®Žà®¸à¯</string>
-    <string name="profile_contact_sos_sms_body">à®…à®µà®šà®° à®Žà®¸à¯à®“à®Žà®¸à¯: à®Žà®©à®•à¯à®•à¯ à®‰à®¤à®µà®¿ à®¤à¯‡à®µà¯ˆ! à®œà®¿à®ªà®¿à®Žà®¸à¯: %1$s à®µà®Ÿà®•à¯à®•à¯, %2$s à®•à®¿à®´à®•à¯à®•à¯ %3$s. à®µà®¿à®ªà¯à®ªà®Ÿà¯à®Ÿà®¿ à®šà®¾à®°à®£à®¾ à®µà®´à®¿à®¯à®¾à®• à®…à®©à¯à®ªà¯à®ªà®ªà¯à®ªà®Ÿà¯à®Ÿà®¤à¯.</string>
-    <string name="profile_contact_sos_location_device_gps">(à®šà®¾à®¤à®© à®œà®¿à®ªà®¿à®Žà®¸à¯)</string>
-    <string name="profile_contact_sos_location_india_fallback">(à®‡à®¨à¯à®¤à®¿à®¯ à®®à®¤à®¿à®ªà¯à®ªà¯€à®Ÿà¯à®Ÿà¯ à®‡à®Ÿà®®à¯)</string>
-    <string name="profile_sms_error">à®Žà®¸à¯à®Žà®®à¯à®Žà®¸à¯ à®…à®©à¯à®ªà¯à®ª à®®à¯à®Ÿà®¿à®¯à®µà®¿à®²à¯à®²à¯ˆ: %1$s</string>
+    <string name="profile_contact_details">%1$s • %2$s</string>
+    <string name="profile_contact_call_content_description">%1$s க்கு அழை</string>
+    <string name="profile_contact_sos_sms">எஸ்ஓஎஸ் எஸ்எம்எஸ்</string>
+    <string name="profile_contact_sos_sms_body">அவசர எஸ்ஓஎஸ்: எனக்கு உதவி தேவை! ஜிபிஎஸ்: %1$s வடக்கு, %2$s கிழக்கு %3$s. விப்பட்டி சாரணா வழியாக அனுப்பப்பட்டது.</string>
+    <string name="profile_contact_sos_location_device_gps">(சாதன ஜிபிஎஸ்)</string>
+    <string name="profile_contact_sos_location_india_fallback">(இந்திய மதிப்பீட்டு இடம்)</string>
+    <string name="profile_sms_error">எஸ்எம்எஸ் அனுப்ப முடியவில்லை: %1$s</string>
 
-    <string name="profile_section_app_data">à®šà¯†à®¯à®²à®¿ à®¤à®°à®µà¯ à®®à®±à¯à®±à¯à®®à¯ à®†à®ƒà®ªà¯à®²à¯ˆà®©à¯</string>
-    <string name="profile_offline_first_label">à®†à®ƒà®ªà¯à®²à¯ˆà®©à¯-à®®à¯à®¤à®²à¯ à®ªà®¯à®©à¯à®®à¯à®±à¯ˆ</string>
-    <string name="profile_offline_maps_label">à®†à®ƒà®ªà¯à®²à¯ˆà®©à¯ à®¨à®¿à®µà®¾à®°à®£ à®µà®°à¯ˆà®ªà®Ÿ à®•à¯‡à®·à¯</string>
-    <string name="profile_offline_maps_value">%2$s à®‡à®²à¯ %1$s</string>
-    <string name="profile_offline_maps_not_measured">à®‡à®©à¯à®©à¯à®®à¯ à®…à®³à®µà®¿à®Ÿà®ªà¯à®ªà®Ÿà®µà®¿à®²à¯à®²à¯ˆ</string>
-    <string name="profile_disaster_sync_label">à®ªà¯‡à®°à®¿à®Ÿà®°à¯ à®¤à®°à®µà¯ à®’à®¤à¯à®¤à®¿à®šà¯ˆà®µà¯</string>
-    <string name="profile_disaster_sync_never">à®‡à®©à¯à®©à¯à®®à¯ à®‡à®¯à®•à¯à®•à®ªà¯à®ªà®Ÿà®µà®¿à®²à¯à®²à¯ˆ</string>
-    <string name="profile_data_source_label">à®¤à®°à®µà¯ à®†à®¤à®¾à®°à®®à¯</string>
+    <string name="profile_section_app_data">செயலி தரவு மற்றும் ஆஃப்லைன்</string>
+    <string name="profile_offline_first_label">ஆஃப்லைன்-முதல் பயன்முறை</string>
+    <string name="profile_offline_maps_label">ஆஃப்லைன் நிவாரண வரைபட கேஷ்</string>
+    <string name="profile_offline_maps_value">%2$s இல் %1$s</string>
+    <string name="profile_offline_maps_not_measured">இன்னும் அளவிடப்படவில்லை</string>
+    <string name="profile_disaster_sync_label">பேரிடர் தரவு ஒத்திசைவு</string>
+    <string name="profile_disaster_sync_never">இன்னும் இயக்கப்படவில்லை</string>
+    <string name="profile_data_source_label">தரவு ஆதாரம்</string>
 
-    <string name="profile_section_preferences">à®µà®¿à®°à¯à®ªà¯à®ªà®™à¯à®•à®³à¯</string>
-    <string name="profile_theme_label">à®‡à®°à¯à®£à¯à®Ÿ à®¤à¯€à®®à¯</string>
-    <string name="profile_theme_appearance">à®¤à¯‹à®±à¯à®±à®®à¯</string>
-    <string name="profile_theme_on">à®‡à®¯à®•à¯à®•à®®à¯</string>
-    <string name="profile_theme_off">à®¨à®¿à®±à¯à®¤à¯à®¤à®®à¯</string>
-    <string name="profile_language_label">à®®à¯Šà®´à®¿</string>
-    <string name="profile_language_description">à®šà®¾à®¤à®©à®®à¯ à®®à®±à¯à®±à¯à®®à¯ à®šà¯†à®¯à®²à®¿à®¯à®¿à®©à¯ à®®à¯Šà®´à®¿</string>
-    <string name="profile_language_open_settings">à®šà¯†à®¯à®²à®¿ à®®à¯Šà®´à®¿ à®…à®®à¯ˆà®ªà¯à®ªà¯à®•à®³à¯ˆà®¤à¯ à®¤à®¿à®±à®•à¯à®•à®¿à®±à®¤à¯</string>
+    <string name="profile_section_preferences">விருப்பங்கள்</string>
+    <string name="profile_theme_label">இருண்ட தீம்</string>
+    <string name="profile_theme_appearance">தோற்றம்</string>
+    <string name="profile_theme_on">இயக்கம்</string>
+    <string name="profile_theme_off">நிறுத்தம்</string>
+    <string name="profile_language_label">மொழி</string>
+    <string name="profile_language_description">சாதனம் மற்றும் செயலியின் மொழி</string>
+    <string name="profile_language_open_settings">செயலி மொழி அமைப்புகளைத் திறக்கிறது</string>
 
-    <string name="profile_section_account">à®•à®£à®•à¯à®•à¯</string>
-    <string name="profile_account_email_label">à®‡à®µà®°à®¾à®• à®‰à®³à¯à®¨à¯à®´à¯ˆà®¨à¯à®¤à¯à®³à¯à®³à¯€à®°à¯à®•à®³à¯</string>
-    <string name="profile_account_no_email">à®šà®¾à®¤à®© à®šà¯à®¯à®µà®¿à®µà®°à®®à¯</string>
-    <string name="profile_sign_out">à®µà¯†à®³à®¿à®¯à¯‡à®±à¯</string>
-    <string name="profile_sign_out_content_description">à®‡à®¨à¯à®¤à®•à¯ à®•à®£à®•à¯à®•à®¿à®²à®¿à®°à¯à®¨à¯à®¤à¯ à®µà¯†à®³à®¿à®¯à¯‡à®±à¯</string>
+    <string name="profile_section_account">கணக்கு</string>
+    <string name="profile_account_email_label">இவராக உள்நுழைந்துள்ளீர்கள்</string>
+    <string name="profile_account_no_email">சாதன சுயவிவரம்</string>
+    <string name="profile_sign_out">வெளியேறு</string>
+    <string name="profile_sign_out_content_description">இந்தக் கணக்கிலிருந்து வெளியேறு</string>
 
-    <string name="profile_section_about">à®ªà®±à¯à®±à®¿</string>
-    <string name="profile_about_version_label">à®šà¯†à®¯à®²à®¿ à®ªà®¤à®¿à®ªà¯à®ªà¯</string>
-    <string name="profile_about_version_value">%1$s (à®ªà®¤à®¿à®ªà¯à®ªà¯ %2$d)</string>
-    <string name="profile_about_app_label">à®µà®¿à®ªà¯à®ªà®Ÿà¯à®Ÿà®¿ à®šà®¾à®°à®£à®¾</string>
-    <string name="profile_about_tagline">à®ªà¯‡à®°à®¿à®Ÿà®°à¯ à®¨à®¿à®µà®¾à®°à®£à®®à¯ à®®à®±à¯à®±à¯à®®à¯ à®…à®µà®šà®° à®µà®²à¯ˆà®¯à®®à¯ˆà®ªà¯à®ªà¯</string>
+    <string name="profile_section_about">பற்றி</string>
+    <string name="profile_about_version_label">செயலி பதிப்பு</string>
+    <string name="profile_about_version_value">%1$s (பதிப்பு %2$d)</string>
+    <string name="profile_about_app_label">விப்பட்டி சாரணா</string>
+    <string name="profile_about_tagline">பேரிடர் நிவாரணம் மற்றும் அவசர வலையமைப்பு</string>
 
-    <string name="action_edit">à®¤à®¿à®°à¯à®¤à¯à®¤à¯</string>
-    <string name="action_call">à®…à®´à¯ˆ</string>
-    <string name="action_save">à®šà¯‡à®®à®¿</string>
-    <string name="action_cancel">à®°à®¤à¯à®¤à¯ à®šà¯†à®¯à¯</string>
+    <string name="action_edit">திருத்து</string>
+    <string name="action_call">அழை</string>
+    <string name="action_save">சேமி</string>
+    <string name="action_cancel">ரத்து செய்</string>
 
     <string-array name="profile_contact_role_keys">
         <item>Spouse</item>
@@ -108,16 +108,16 @@
         <item>Other</item>
     </string-array>
     <string-array name="profile_contact_role_labels">
-        <item>à®¤à¯à®£à¯ˆà®µà®°à¯</item>
-        <item>à®šà®•à¯‹à®¤à®°à®°à¯</item>
-        <item>à®µà®Ÿà¯à®Ÿà®¾à®°à®¤à¯ à®¤à®²à¯ˆà®µà®°à¯ / à®…à®£à¯à®Ÿà¯ˆ à®µà¯€à®Ÿà¯à®Ÿà®¾à®°à¯</item>
-        <item>à®šà®•à¯‹à®¤à®°à®¿</item>
-        <item>à®ªà¯†à®±à¯à®±à¯‹à®°à¯</item>
-        <item>à®•à¯à®´à®¨à¯à®¤à¯ˆ</item>
-        <item>à®…à®£à¯à®Ÿà¯ˆ à®µà¯€à®Ÿà¯à®Ÿà®¾à®°à¯</item>
-        <item>à®¨à®£à¯à®ªà®°à¯</item>
-        <item>à®¤à¯Šà®£à¯à®Ÿà®°à¯</item>
-        <item>à®®à®±à¯à®±à®µà®°à¯</item>
+        <item>துணைவர்</item>
+        <item>சகோதரர்</item>
+        <item>வட்டாரத் தலைவர் / அண்டை வீட்டார்</item>
+        <item>சகோதரி</item>
+        <item>பெற்றோர்</item>
+        <item>குழந்தை</item>
+        <item>அண்டை வீட்டார்</item>
+        <item>நண்பர்</item>
+        <item>தொண்டர்</item>
+        <item>மற்றவர்</item>
     </string-array>
     <!-- ONBOARDING — first-launch carousel (5 cards) -->
     <string name="onboarding_skip">தவிர்க்க</string>
@@ -150,4 +150,16 @@
     <string name="onboarding_tools_body">தேவைப்படும்போது அவசர கருவிகள், SOS ஆதரவு, புகாரளிப்பு, வெளியேற்ற வழிகாட்டுதல் மற்றும் பிற தயார்நிலை அம்சங்களைப் பயன்படுத்தவும்.</string>
     <string name="onboarding_tools_illustration_cd">தொலைபேசியைச் சுற்றி அவசர கருவிகளின் விளக்கப்படம்</string>
     <string name="onboarding_ready_status">விபத்தி சரணாவை ஆராய நீங்கள் தயார்.</string>
+    <!-- Bottom navigation -->
+    <string name="nav_home">முகப்பு</string>
+    <string name="nav_map">வரைபடம்</string>
+    <string name="nav_news">செய்திகள்</string>
+    <string name="nav_guide">வழிகாட்டி</string>
+    <string name="nav_profile">சுயவிவரம்</string>
+
+    <!-- Authority console (Profile) -->
+    <string name="profile_section_authority">அதிகார மையம்</string>
+    <string name="profile_authority_open">திற</string>
+    <string name="profile_authority_description">பகுதி அடிதலங்கள் மற்றும் குடியேற்றப் பதிவுகளை உள்ளிட்டு, உடனடி / குறுகிய கால / நடுப்பட்ட கால நகர்விற்காக குடியேற்றங்களை நேரடி அபாய நிலைக்கு (SIH 26191) ஏற்ப வகைப்படுத்துங்கள். பதிவுகள் இந்தச் சாதனத்திலேயே இருக்கும்; டெமோ வரிசைகள் SIMULATED என்றே இருக்கும்.</string>
+    <string name="profile_contacts_empty">இன்னும் அவசர தொடர்புகள் இல்லை — உங்கள் உள்ளூர் SOS பதிவு அவற்றைக் குறிப்பிட உறும்பங்கள் அல்லது அருகுள்ளவர்களைச் சேர்க்கவும். தொடர்புகள் இந்தச் சாதனத்திலேயே தக்கவைக்கப்படும்.</string>
 </resources>

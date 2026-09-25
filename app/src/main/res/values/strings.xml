@@ -2,32 +2,32 @@
     <string name="app_name">Vippatti Sarana</string>
 
     <!-- =====================================================================
-         PROFILE SCREEN â€” simplified row-based UI (redesign).
+         PROFILE SCREEN — simplified row-based UI (redesign).
          Every static Profile label lives here so the six supported languages
          (values-hi / -te / -ta / -bn / -mr) resolve automatically.
          ===================================================================== -->
 
-    <!-- Section 1 â€” Profile header -->
+    <!-- Section 1 — Profile header -->
     <string name="profile_header_title">My Profile</string>
     <string name="profile_avatar_content_description">Profile photo</string>
     <string name="profile_verified_content_description">Verified citizen ID</string>
     <string name="profile_id_label">ID: %1$s</string>
     <string name="profile_edit_content_description">Edit profile</string>
 
-    <!-- Section 2 â€” Safety status -->
+    <!-- Section 2 — Safety status -->
     <string name="profile_section_safety_status">My safety status</string>
     <string name="profile_safety_safe">I am safe</string>
     <string name="profile_safety_needs_help">Need assistance</string>
     <string name="profile_safety_safe_description">Marks you safe on the relief network</string>
     <string name="profile_safety_needs_help_description">Flags your household for priority assistance</string>
 
-    <!-- Section 3 â€” SOS -->
+    <!-- Section 3 — SOS -->
     <string name="profile_sos_title">SOS Center</string>
     <string name="profile_sos_subtitle">Relays live GPS, battery level and medical tag</string>
     <string name="profile_sos_broadcast">Broadcast SOS</string>
     <string name="profile_sos_report_situation">Report my situation</string>
 
-    <!-- Section 4 â€” Emergency helplines (toll-free) -->
+    <!-- Section 4 — Emergency helplines (toll-free) -->
     <string name="profile_section_helplines">Emergency helplines</string>
     <string name="profile_section_helplines_caption">Toll-free priority lines</string>
     <string name="profile_helpline_ndrf">NDRF 112</string>
@@ -38,7 +38,7 @@
     <string name="profile_helpline_fire_description">Rescue squad</string>
     <string name="profile_dial_error">Cannot dial %1$s: %2$s</string>
 
-    <!-- Section 5 â€” Profile details -->
+    <!-- Section 5 — Profile details -->
     <string name="profile_section_details">My details</string>
     <string name="profile_household_label">Household</string>
     <string name="profile_household_description">Dependents in your home</string>
@@ -55,13 +55,13 @@
     <string name="profile_relocation_description">Evacuation ranking from your household data</string>
     <string name="profile_relocation_assigned_shelter">Assigned shelter: %1$s</string>
     <string name="profile_relocation_shelter_capacity">%1$d spots available</string>
-    <string name="profile_relocation_priority_note">Elderly, children, persons with disabilities, pregnant women and medical dependency all raise your household priority. Only the details you enter are used â€” no population statistics are fabricated.</string>
+    <string name="profile_relocation_priority_note">Elderly, children, persons with disabilities, pregnant women and medical dependency all raise your household priority. Only the details you enter are used — no population statistics are fabricated.</string>
 
-    <!-- Section 6 â€” Emergency contacts -->
+    <!-- Section 6 — Emergency contacts -->
     <string name="profile_section_contacts">Emergency contacts</string>
     <string name="profile_add_contact">Add contact</string>
     <string name="profile_contact_role">%1$s (%2$s)</string>
-    <string name="profile_contact_details">%1$s â€¢ %2$s</string>
+    <string name="profile_contact_details">%1$s • %2$s</string>
     <string name="profile_contact_call_content_description">Call %1$s</string>
     <string name="profile_contact_sos_sms">SOS SMS</string>
     <string name="profile_contact_sos_sms_body">EMERGENCY SOS: I need assistance! GPS: %1$s N, %2$s E %3$s. Sent via VIPPATTI SARANA.</string>
@@ -69,7 +69,7 @@
     <string name="profile_contact_sos_location_india_fallback">(INDIA FALLBACK)</string>
     <string name="profile_sms_error">Cannot send SMS: %1$s</string>
 
-    <!-- Section 7 â€” App data &amp; offline readiness -->
+    <!-- Section 7 — App data &amp; offline readiness -->
     <string name="profile_section_app_data">App data &amp; offline</string>
     <string name="profile_offline_first_label">Offline-first mode</string>
     <string name="profile_offline_maps_label">Offline relief map cache</string>
@@ -79,7 +79,7 @@
     <string name="profile_disaster_sync_never">Not yet run</string>
     <string name="profile_data_source_label">Data source</string>
 
-    <!-- Section 8 â€” Preferences -->
+    <!-- Section 8 — Preferences -->
     <string name="profile_section_preferences">Preferences</string>
     <string name="profile_theme_label">Dark theme</string>
     <string name="profile_theme_appearance">Appearance</string>
@@ -89,14 +89,14 @@
     <string name="profile_language_description">Device &amp; app display language</string>
     <string name="profile_language_open_settings">Opens the app language settings</string>
 
-    <!-- Section 9 â€” Account -->
+    <!-- Section 9 — Account -->
     <string name="profile_section_account">Account</string>
     <string name="profile_account_email_label">Signed in as</string>
     <string name="profile_account_no_email">Local device profile</string>
     <string name="profile_sign_out">Sign out</string>
     <string name="profile_sign_out_content_description">Sign out of this account</string>
 
-    <!-- Section 10 â€” About -->
+    <!-- Section 10 — About -->
     <string name="profile_section_about">About</string>
     <string name="profile_about_version_label">App version</string>
     <string name="profile_about_version_value">%1$s (build %2$d)</string>
@@ -206,5 +206,18 @@
     <string name="onboarding_tools_title">Your Safety Tools. One Place.</string>
     <string name="onboarding_tools_body">Access emergency tools, SOS support, reporting, evacuation guidance and other preparedness features when you need them.</string>
     <string name="onboarding_tools_illustration_cd">Illustration of emergency tools around a phone</string>
+    <!-- Bottom navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_map">Map</string>
+    <string name="nav_news">News</string>
+    <string name="nav_guide">Guide</string>
+    <string name="nav_profile">Profile</string>
+
+    <!-- Authority console (Profile) -->
+    <string name="profile_section_authority">Authority Console</string>
+    <string name="profile_authority_open">Open</string>
+    <string name="profile_authority_description">Enter field shelter &amp; habitation records and rank habitations for IMMEDIATE / SHORT-TERM / MEDIUM-TERM relocation against the live hazard picture (SIH 26191). Records stay on this device; demo rows stay labelled SIMULATED.</string>
+    <string name="profile_contacts_empty">No emergency contacts yet — add family or neighbours so your local SOS record can reference them. Contacts stay on this device only.</string>
+
     <string name="onboarding_ready_status">You\'re ready to explore Vippatti Sarana.</string>
 </resources>

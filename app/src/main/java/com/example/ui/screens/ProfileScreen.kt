@@ -172,7 +172,7 @@ fun ProfileScreen(
         ) {
           if (uiState.contactsList.isEmpty()) {
             Text(
-              text = "No emergency contacts yet — add family or neighbours so your local SOS record can reference them. Contacts stay on this device only.",
+              text = stringResource(R.string.profile_contacts_empty),
               fontSize = 12.sp,
               color = TacticalOnSurfaceVariant,
               lineHeight = 16.sp,
@@ -196,18 +196,17 @@ fun ProfileScreen(
         }
       }
       item {
-        ProfileSectionHeader(title = "AUTHORITY CONSOLE")
+        ProfileSectionHeader(
+          title = stringResource(R.string.profile_section_authority)
+        )
       }
       item {
         SectionCard(
-          actionLabel = "Open",
+          actionLabel = stringResource(R.string.profile_authority_open),
           onActionClick = onOpenAuthorityConsole
         ) {
           Text(
-            text = "Enter field shelter & habitation records and rank habitations for " +
-              "IMMEDIATE / SHORT-TERM / MEDIUM-TERM relocation against the live " +
-              "hazard picture (SIH 26191). Records stay on this device; demo rows " +
-              "stay labelled SIMULATED.",
+            text = stringResource(R.string.profile_authority_description),
             fontSize = 12.sp,
             color = TacticalOnSurfaceVariant,
             lineHeight = 16.sp,
@@ -1015,7 +1014,11 @@ internal fun PreferencesCard(
           RowTitle(text = stringResource(R.string.profile_language_label))
           RowDescription(text = stringResource(R.string.profile_language_description))
         }
-        RowValue(text = languageLabel, color = NeonEmerald)
+        RowValue(
+          text = languageLabel,
+          color = NeonEmerald,
+          modifier = Modifier.weight(1f, fill = false)
+        )
         Text(
           text = "\u203A",
           fontSize = 20.sp,
@@ -1120,7 +1123,13 @@ internal fun AboutCard() {
 // SHARED PROFILE PRIMITIVES
 //
 
-/** Row title: max 2 lines, ellipsis only here (never on emergency copy). */
+/**
+ * Row title.
+ *
+ * Translated labels are routinely longer than their English source (Tamil and
+ * Telugu in particular), so the text wraps over as many lines as it needs
+ * rather than being truncated. The row grows vertically instead of clipping.
+ */
 @Composable
 private fun RowTitle(text: String, modifier: Modifier = Modifier) {
   Text(
@@ -1129,8 +1138,6 @@ private fun RowTitle(text: String, modifier: Modifier = Modifier) {
     fontWeight = FontWeight.SemiBold,
     color = TacticalOnSurface,
     lineHeight = 18.sp,
-    maxLines = 2,
-    overflow = TextOverflow.Ellipsis,
     modifier = modifier
   )
 }
@@ -1263,7 +1270,13 @@ private fun SettingsRow(
       }
     }
     if (!value.isNullOrBlank()) {
-      RowValue(text = value, color = valueColor)
+      // Give the value at most half the row so a long translated value wraps
+      // beside the title instead of squeezing it into a clipped sliver.
+      RowValue(
+        text = value,
+        color = valueColor,
+        modifier = Modifier.weight(1f, fill = false)
+      )
     }
     if (showChevron) {
       Text(
@@ -1276,11 +1289,19 @@ private fun SettingsRow(
   }
 }
 
-/** Small uppercase group label — spacing carries the hierarchy, not a bar. */
+/**
+ * Small group label — spacing carries the hierarchy, not a bar.
+ *
+ * Latin section titles are uppercased for the tactical look, but that must not
+ * touch the other five languages: uppercasing is a no-op for Devanagari,
+ * Telugu, Tamil and Bengali, and forcing it can mangle conjuncts. The label
+ * also wraps freely so a long translated title is never clipped.
+ */
 @Composable
 private fun ProfileSectionHeader(title: String, modifier: Modifier = Modifier) {
+  val isLatin = title.all { it.code < 0x0250 }
   Text(
-    text = title.uppercase(Locale.getDefault()),
+    text = if (isLatin) title.uppercase(Locale.ROOT) else title,
     fontSize = 12.sp,
     fontWeight = FontWeight.Bold,
     letterSpacing = 0.6.sp,

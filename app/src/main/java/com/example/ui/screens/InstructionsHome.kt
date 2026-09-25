@@ -235,9 +235,10 @@ internal fun InstructionsHome(
     )
     // Existing "Evacuation Essentials" common module keeps its own detail view.
     DisasterInstructions.commonModules.firstOrNull { it.id == "evacuation" }?.let { evac ->
+      val (evacTitle, evacSubtitle) = commonModuleLabels(evac.id, evac.title, evac.subtitle)
       CategoryCard(
-        title = evac.title,
-        subtitle = evac.subtitle,
+        title = evacTitle,
+        subtitle = evacSubtitle,
         icon = Icons.Default.Backpack,
         accent = NeonEmerald,
         testTag = "category_card_evacuation",
@@ -319,15 +320,16 @@ private fun DisasterCard(category: DisasterCategory, onClick: () -> Unit) {
     horizontalArrangement = Arrangement.spacedBy(12.dp)
   ) {
     DisasterPosterThumbnail(category.id)
+    val (disasterName, disasterSummary) = disasterCategoryLabels(category.id, category.title)
     Column(modifier = Modifier.weight(1f)) {
       Text(
-        text = category.title,
+        text = disasterName,
         fontSize = 15.sp,
         fontWeight = FontWeight.Black,
         color = TacticalOnSurface
       )
       Text(
-        text = category.subtitle,
+        text = disasterSummary,
         fontSize = 11.sp,
         color = TacticalOnSurfaceVariant,
         maxLines = 2,
@@ -365,13 +367,14 @@ internal fun DisasterDetailHome(
   onSelectPhase: (String) -> Unit,
   onOpenPoster: () -> Unit
 ) {
+  val (disasterName, disasterSummary) = disasterCategoryLabels(category.id, category.title)
   Column(modifier = Modifier.fillMaxWidth()) {
     // 1. Predictable back — one tap returns to the Instructions home.
     DetailHeader(
       icon = categoryIcon(category.id),
       iconTint = NeonEmerald,
-      title = category.title,
-      subtitle = category.subtitle,
+      title = disasterName,
+      subtitle = disasterSummary,
       onBack = onBack
     )
 
@@ -379,7 +382,7 @@ internal fun DisasterDetailHome(
     //    nothing stretched or cropped away. Tap to zoom into the captions.
     DisasterInstructionPoster(
       categoryId = category.id,
-      disasterTitle = category.title,
+      disasterTitle = disasterName,
       onOpen = onOpenPoster
     )
 
