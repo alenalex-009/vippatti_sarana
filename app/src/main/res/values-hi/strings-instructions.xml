@@ -168,4 +168,6 @@
     <string name="gobag_kit_title">इंटरैक्टिव निकास किट</string>
     <string name="gobag_kin_contact_title">आपातकालीन परिवार संपर्क जोड़ें</string>
     <string name="gobag_save_button">आपातकालीन नेटवर्क में सहेजें</string>
+    <string name="gobag_done_complete">किट पूरी — हो गया</string>
+    <string name="gobag_mark_complete">पूर्ण के रूप में चिह्नित करें</string>
 </resources>

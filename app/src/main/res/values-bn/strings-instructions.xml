@@ -167,4 +167,6 @@
     <string name="gobag_kit_title">ইন্টারঅ্যাকটিভ সরণীকরণ কিট</string>
     <string name="gobag_kin_contact_title">জরুরি পরিবার যোগাযোগ যোগ করুন</string>
     <string name="gobag_save_button">জরুরি নেটওয়ার্কে সংরক্ষণ করুন</string>
+    <string name="gobag_done_complete">কিট সম্পূর্ণ — হয়ে গেছে</string>
+    <string name="gobag_mark_complete">সম্পূর্ণ হিসেবে চিহ্নিত করুন</string>
 </resources>

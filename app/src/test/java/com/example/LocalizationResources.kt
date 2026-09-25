@@ -44,7 +44,7 @@ internal object LocalizationResources {
    * run check is done separately.
    */
   val MOJIBAKE_CHARS: Set<Int> = buildSet {
-    for (c in 0x00C0..0x00FF) add(c)
+    for (c in 0x0080..0x00FF) add(c)
     addAll(
       listOf(
         0x20AC, 0x201A, 0x0192, 0x201E, 0x2026, 0x2020, 0x2021, 0x02C6,
@@ -119,6 +119,23 @@ internal object LocalizationResources {
         ?: error("string without a name attribute in ${file.path}")
       assertTrue("duplicate resource '$name' in ${file.path}", !out.containsKey(name))
       out[name] = el.textContent
+    }
+    val arrayNodes = doc.getElementsByTagName("string-array")
+    for (i in 0 until arrayNodes.length) {
+      val arrayEl = arrayNodes.item(i)
+      val arrayName = arrayEl.attributes.getNamedItem("name")?.nodeValue
+        ?: error("string-array without a name attribute in ${file.path}")
+      if (arrayName.endsWith("_keys")) continue
+      var itemIndex = 0
+      val children = arrayEl.childNodes
+      for (j in 0 until children.length) {
+        val child = children.item(j)
+        if (child.nodeName != "item") continue
+        val key = "$arrayName[$itemIndex]"
+        assertTrue("duplicate resource '$key' in ${file.path}", !out.containsKey(key))
+        out[key] = child.textContent
+        itemIndex++
+      }
     }
     return out
   }

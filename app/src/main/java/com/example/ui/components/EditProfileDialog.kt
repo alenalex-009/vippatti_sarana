@@ -121,7 +121,7 @@ fun EditProfileDialog(
               color = TacticalOnSurface
             )
             Text(
-              // STAGE 7 â€” local-only honesty: reports stay on this device.
+              // STAGE 7 — local-only honesty: reports stay on this device.
               text = stringResource(R.string.edit_profile_local_note),
               fontSize = 11.sp,
               color = TacticalOnSurfaceVariant
@@ -389,5 +389,4 @@ private fun BloodGroupChip(label: String, selected: Boolean, onClick: () -> Unit
     )
   }
 }
-
 

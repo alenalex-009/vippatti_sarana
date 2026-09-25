@@ -81,7 +81,7 @@ fun InteractiveBagDialog(
           .padding(20.dp)
           .fillMaxWidth()
           // Adapts to short screens: the checklist scrolls INTERNALLY and the
-          // bottom action button always stays visible â€” never covers items.
+          // bottom action button always stays visible — never covers items.
           .heightIn(max = 420.dp)
       ) {
         Row(
@@ -131,7 +131,7 @@ fun InteractiveBagDialog(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Internally scrollable checklist â€” no item is ever clipped.
+        // Internally scrollable checklist — no item is ever clipped.
         LazyColumn(
           modifier = Modifier
             .fillMaxWidth()
@@ -187,7 +187,7 @@ fun InteractiveBagDialog(
             .testTag("interactive_bag_done_button")
         ) {
           Text(
-            if (progressPercent == 100) "Kit Complete â€” Done" else "Mark as Complete",
+            if (progressPercent == 100) stringResource(R.string.gobag_done_complete) else stringResource(R.string.gobag_mark_complete),
             fontWeight = FontWeight.Bold,
             color = OnNeonEmerald
           )

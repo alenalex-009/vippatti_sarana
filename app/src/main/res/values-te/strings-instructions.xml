@@ -154,7 +154,7 @@
     <string name="report_what_do_you_see">మీరు ఏమి చూస్తున్నారు? (ఐచ్ఛికం)</string>
     <string name="report_description">పరిస్థితి వివరణ (మాట ద్వారా లేదా టైప్ చేసి)</string>
     <string name="report_send">నివేదిక పంపండి</string>
-    <string name="report_subtitle">వoice | ఫారం | ఫోటో — స్థానిక నివేదికగా సేవ్ అవుతుంది</string>
+    <string name="report_subtitle">వాయిస్ | ఫారం | ఫోటో — స్థానిక నివేదికగా సేవ్ అవుతుంది</string>
     <string name="report_dictate">నా పరిస్థితిని చెప్పండి (వాయిస్)</string>
     <string name="report_quick_tags">త్వరిత ట్యాగ్‌లు</string>
     <string name="report_attach_photo">ఫోటో ఆధారం జోడించండి</string>
@@ -167,4 +167,6 @@
     <string name="gobag_kit_title">ఇంటరాక్టివ్ తరలింపు కిట్</string>
     <string name="gobag_kin_contact_title">అత్యవసర కుటుంబ సంబంధం జోడించండి</string>
     <string name="gobag_save_button">అత్యవసర నెట్‌వర్క్‌లో సేవ్ చేయండి</string>
+    <string name="gobag_done_complete">కిట్ పూర్తైంది — అయింది</string>
+    <string name="gobag_mark_complete">పూర్తిగా గుర్తించండి</string>
 </resources>
