@@ -1,99 +1,99 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!--
-  Telugu (te) profile strings â€” same keys as values/strings.xml.
+  Telugu (te) profile strings — same keys as values/strings.xml.
   Missing keys fall back to the English resource automatically.
 -->
 <resources>
-    <string name="profile_header_title">à°¨à°¾ à°ªà±à°°à±Šà°«à±ˆà°²à±</string>
-    <string name="profile_avatar_content_description">à°ªà±à°°à±Šà°«à±ˆà°²à± à°«à±‹à°Ÿà±‹</string>
-    <string name="profile_verified_content_description">à°§à±ƒà°µà±€à°•à°°à°¿à°‚à°šà°¿à°¨ à°ªà±Œà°° à°à°¡à±€</string>
-    <string name="profile_id_label">à°à°¡à±€: %1$s</string>
-    <string name="profile_edit_content_description">à°ªà±à°°à±Šà°«à±ˆà°²à± à°®à°¾à°°à±à°šà°‚à°¡à°¿</string>
+    <string name="profile_header_title">నా ప్రొఫైల్</string>
+    <string name="profile_avatar_content_description">ప్రొఫైల్ ఫోటో</string>
+    <string name="profile_verified_content_description">ధృవీకరించిన పౌర ఐడీ</string>
+    <string name="profile_id_label">ఐడీ: %1$s</string>
+    <string name="profile_edit_content_description">ప్రొఫైల్ మార్చండి</string>
 
-    <string name="profile_section_safety_status">à°¨à°¾ à°­à°¦à±à°°à°¤à°¾ à°¸à±à°¥à°¿à°¤à°¿</string>
-    <string name="profile_safety_safe">à°¨à±‡à°¨à± à°¸à±à°°à°•à±à°·à°¿à°¤à°‚</string>
-    <string name="profile_safety_needs_help">à°¸à°¹à°¾à°¯à°‚ à°•à°¾à°µà°¾à°²à°¿</string>
-    <string name="profile_safety_safe_description">à°¸à°¹à°¾à°¯ à°¨à±†à°Ÿà±â€Œà°µà°°à±à°•à±â€Œà°²à±‹ à°®à°¿à°®à±à°®à°²à±à°¨à°¿ à°¸à±à°°à°•à±à°·à°¿à°¤à°‚à°—à°¾ à°¨à°®à±‹à°¦à± à°šà±‡à°¸à±à°¤à±à°‚à°¦à°¿</string>
-    <string name="profile_safety_needs_help_description">à°®à±€ à°•à±à°Ÿà±à°‚à°¬à°¾à°¨à±à°¨à°¿ à°ªà±à°°à°¾à°§à°¾à°¨à±à°¯ à°¸à°¹à°¾à°¯à°¾à°¨à°¿à°•à°¿ à°šà±‡à°°à±à°¸à±à°¤à±à°‚à°¦à°¿</string>
+    <string name="profile_section_safety_status">నా భద్రతా స్థితి</string>
+    <string name="profile_safety_safe">నేను సురక్షితం</string>
+    <string name="profile_safety_needs_help">సహాయం కావాలి</string>
+    <string name="profile_safety_safe_description">సహాయ నెట్‌వర్క్‌లో మిమ్మల్ని సురక్షితంగా నమోదు చేస్తుంది</string>
+    <string name="profile_safety_needs_help_description">మీ కుటుంబాన్ని ప్రాధాన్య సహాయానికి చేరుస్తుంది</string>
 
-    <string name="profile_sos_title">à°Žà°¸à±â€Œà°“à°Žà°¸à± à°•à±‡à°‚à°¦à±à°°à°‚</string>
-    <string name="profile_sos_subtitle">à°²à±ˆà°µà± à°œà±€à°ªà±€à°Žà°¸à±, à°¬à±à°¯à°¾à°Ÿà°°à±€ à°¸à±à°¥à°¾à°¯à°¿, à°µà±ˆà°¦à±à°¯ à°Ÿà±à°¯à°¾à°—à± à°ªà°‚à°ªà±à°¤à±à°‚à°¦à°¿</string>
-    <string name="profile_sos_broadcast">à°Žà°¸à±â€Œà°“à°Žà°¸à± à°ªà±à°°à°¸à°¾à°°à°‚</string>
-    <string name="profile_sos_report_situation">à°¨à°¾ à°ªà°°à°¿à°¸à±à°¥à°¿à°¤à°¿ à°¤à±†à°²à°¿à°¯à°œà±‡à°¯à°‚à°¡à°¿</string>
+    <string name="profile_sos_title">ఎస్‌ఓఎస్ కేంద్రం</string>
+    <string name="profile_sos_subtitle">లైవ్ జీపీఎస్, బ్యాటరీ స్థాయి, వైద్య ట్యాగ్ పంపుతుంది</string>
+    <string name="profile_sos_broadcast">ఎస్‌ఓఎస్ ప్రసారం</string>
+    <string name="profile_sos_report_situation">నా పరిస్థితి తెలియజేయండి</string>
 
-    <string name="profile_section_helplines">à°…à°¤à±à°¯à°µà°¸à°° à°¹à±†à°²à±à°ªà±â€Œà°²à±ˆà°¨à±à°²à±</string>
-    <string name="profile_section_helplines_caption">à°Ÿà±‹à°²à±-à°«à±à°°à±€ à°ªà±à°°à°¾à°§à°¾à°¨à±à°¯ à°²à±ˆà°¨à±à°²à±</string>
-    <string name="profile_helpline_ndrf">à°Žà°¨à±â€Œà°¡à±€à°†à°°à±â€Œà°Žà°«à± 112</string>
-    <string name="profile_helpline_ndrf_description">à°µà°¿à°ªà°¤à±à°¤à± à°¦à°³à°‚</string>
-    <string name="profile_helpline_ambulance">à°…à°‚à°¬à±à°²à±†à°¨à±à°¸à±</string>
-    <string name="profile_helpline_ambulance_description">à°¡à°¯à°²à± 108</string>
-    <string name="profile_helpline_fire">à°«à±ˆà°°à± 101</string>
-    <string name="profile_helpline_fire_description">à°°à±†à°¸à±à°•à±à°¯à±‚ à°¦à°³à°‚</string>
-    <string name="profile_dial_error">%1$s à°•à± à°•à°¾à°²à± à°šà±‡à°¯à°²à±‡à°•à°ªà±‹à°¯à°¾à°‚: %2$s</string>
+    <string name="profile_section_helplines">అత్యవసర హెల్ప్‌లైన్లు</string>
+    <string name="profile_section_helplines_caption">టోల్-ఫ్రీ ప్రాధాన్య లైన్లు</string>
+    <string name="profile_helpline_ndrf">ఎన్‌డీఆర్‌ఎఫ్ 112</string>
+    <string name="profile_helpline_ndrf_description">విపత్తు దళం</string>
+    <string name="profile_helpline_ambulance">అంబులెన్స్</string>
+    <string name="profile_helpline_ambulance_description">డయల్ 108</string>
+    <string name="profile_helpline_fire">ఫైర్ 101</string>
+    <string name="profile_helpline_fire_description">రెస్క్యూ దళం</string>
+    <string name="profile_dial_error">%1$s కు కాల్ చేయలేకపోయాం: %2$s</string>
 
-    <string name="profile_section_details">à°¨à°¾ à°µà°¿à°µà°°à°¾à°²à±</string>
-    <string name="profile_household_label">à°•à±à°Ÿà±à°‚à°¬à°‚</string>
-    <string name="profile_household_description">à°®à±€ à°‡à°‚à°Ÿà°¿à°²à±‹ à°†à°§à°¾à°°à°ªà°¡à°¿à°¨ à°¸à°­à±à°¯à±à°²à±</string>
-    <string name="profile_medical_label">à°µà±ˆà°¦à±à°¯ à°Ÿà±à°¯à°¾à°—à±</string>
-    <string name="profile_medical_description">à°¸à°¹à°¾à°¯ à°¬à±ƒà°‚à°¦à°¾à°²à°¤à±‹ à°ªà°‚à°šà±à°•à±‹à°¬à°¡à±à°¤à±à°‚à°¦à°¿</string>
-    <string name="profile_evacuation_needs_label">à°¤à°°à°²à°¿à°‚à°ªà± à°¶à°¿à°¬à°¿à°° à°…à°µà°¸à°°à°¾à°²à±</string>
-    <string name="profile_evacuation_needs_description">à°•à±‡à°Ÿà°¾à°¯à°¿à°‚à°šà°¿à°¨ à°¶à°¿à°¬à°¿à°°à°¾à°²à± à°ˆ à°…à°µà°¸à°°à°¾à°²à°•à± à°¸à±à°µà°¯à°‚à°—à°¾ à°¸à°°à°¿à°ªà±‹à°¤à°¾à°¯à°¿</string>
-    <string name="profile_need_elderly_mobility">à°µà±ƒà°¦à±à°§à±à°²à± / à°•à°¦à°²à°¿à°•</string>
-    <string name="profile_need_disability">à°µà°¿à°•à°²à°¾à°‚à°—à±à°² à°¸à°¹à°¾à°¯à°‚</string>
-    <string name="profile_need_medical_dependency">à°µà±ˆà°¦à±à°¯ à°†à°§à°¾à°°à°¤</string>
-    <string name="profile_need_pet_friendly">à°ªà±†à°‚à°ªà±à°¡à± à°œà°‚à°¤à±à°µà±à°²à°•à± à°…à°¨à±à°•à±‚à°²à°‚</string>
-    <string name="profile_need_oxygen_meds">à°†à°•à±à°¸à°¿à°œà°¨à± / à°®à°‚à°¦à±à°²à±</string>
-    <string name="profile_relocation_label">à°¤à°°à°²à°¿à°‚à°ªà± à°ªà±à°°à°¾à°§à°¾à°¨à±à°¯à°¤</string>
-    <string name="profile_relocation_description">à°®à±€ à°•à±à°Ÿà±à°‚à°¬ à°µà°¿à°µà°°à°¾à°² à°†à°§à°¾à°°à°‚à°—à°¾ à°¤à°°à°²à°¿à°‚à°ªà± à°°à±à°¯à°¾à°‚à°•à°¿à°‚à°—à±</string>
-    <string name="profile_relocation_assigned_shelter">à°•à±‡à°Ÿà°¾à°¯à°¿à°‚à°šà°¿à°¨ à°¶à°¿à°¬à°¿à°°à°‚: %1$s</string>
-    <string name="profile_relocation_shelter_capacity">%1$d à°¸à±à°¥à°²à°¾à°²à± à°…à°‚à°¦à±à°¬à°¾à°Ÿà±à°²à±‹</string>
+    <string name="profile_section_details">నా వివరాలు</string>
+    <string name="profile_household_label">కుటుంబం</string>
+    <string name="profile_household_description">మీ ఇంటిలో ఆధారపడిన సభ్యులు</string>
+    <string name="profile_medical_label">వైద్య ట్యాగ్</string>
+    <string name="profile_medical_description">సహాయ బృందాలతో పంచుకోబడుతుంది</string>
+    <string name="profile_evacuation_needs_label">తరలింపు శిబిర అవసరాలు</string>
+    <string name="profile_evacuation_needs_description">కేటాయించిన శిబిరాలు ఈ అవసరాలకు స్వయంగా సరిపోతాయి</string>
+    <string name="profile_need_elderly_mobility">వృద్ధులు / కదలిక</string>
+    <string name="profile_need_disability">వికలాంగుల సహాయం</string>
+    <string name="profile_need_medical_dependency">వైద్య ఆధారత</string>
+    <string name="profile_need_pet_friendly">పెంపుడు జంతువులకు అనుకూలం</string>
+    <string name="profile_need_oxygen_meds">ఆక్సిజన్ / మందులు</string>
+    <string name="profile_relocation_label">తరలింపు ప్రాధాన్యత</string>
+    <string name="profile_relocation_description">మీ కుటుంబ వివరాల ఆధారంగా తరలింపు ర్యాంకింగ్</string>
+    <string name="profile_relocation_assigned_shelter">కేటాయించిన శిబిరం: %1$s</string>
+    <string name="profile_relocation_shelter_capacity">%1$d స్థలాలు అందుబాటులో</string>
     <string name="profile_relocation_priority_note">వృద్ధులు, పిల్లలు, దివ్యాంగులు, గర్భిణీ మహిళలు మరియు వైద్యపరమైన ఆధారితత్వం — ఇవన్నీ మీ కుటుంబ ప్రాధాన్యతను పెంచుతాయి. మీరు నమోదు చేసిన వివరాలు మాత్రమే ఉపయోగించబడతాయి — జనాభా గణాంకాలు ఏవీ సృష్టించబడవు.</string>
 
-    <string name="profile_section_contacts">à°…à°¤à±à°¯à°µà°¸à°° à°ªà°°à°¿à°šà°¯à°¾à°²à±</string>
-    <string name="profile_add_contact">à°ªà°°à°¿à°šà°¯à°‚ à°œà±‹à°¡à°¿à°‚à°šà°‚à°¡à°¿</string>
+    <string name="profile_section_contacts">అత్యవసర పరిచయాలు</string>
+    <string name="profile_add_contact">పరిచయం జోడించండి</string>
     <string name="profile_contact_role">%1$s (%2$s)</string>
-    <string name="profile_contact_details">%1$s â€¢ %2$s</string>
-    <string name="profile_contact_call_content_description">%1$s à°•à± à°•à°¾à°²à± à°šà±‡à°¯à°‚à°¡à°¿</string>
-    <string name="profile_contact_sos_sms">à°Žà°¸à±â€Œà°“à°Žà°¸à± à°Žà°¸à±â€Œà°Žà°®à±â€Œà°Žà°¸à±</string>
-    <string name="profile_contact_sos_sms_body">à°…à°¤à±à°¯à°µà°¸à°° à°Žà°¸à±â€Œà°“à°Žà°¸à±: à°¨à°¾à°•à± à°¸à°¹à°¾à°¯à°‚ à°•à°¾à°µà°¾à°²à°¿! à°œà±€à°ªà±€à°Žà°¸à±: %1$s à°‰à°¤à±à°¤à°°à°‚, %2$s à°¤à±‚à°°à±à°ªà± %3$s. à°µà±€à°ªà°Ÿà±à°Ÿà°¿ à°¸à°¾à°°à°£ à°¦à±à°µà°¾à°°à°¾ à°ªà°‚à°ªà°¬à°¡à°¿à°‚à°¦à°¿.</string>
-    <string name="profile_contact_sos_location_device_gps">(à°ªà°°à°¿à°•à°° à°œà±€à°ªà±€à°Žà°¸à±)</string>
-    <string name="profile_contact_sos_location_india_fallback">(à°­à°¾à°°à°¤ à°…à°‚à°šà°¨à°¾ à°¸à±à°¥à°¾à°¨à°‚)</string>
-    <string name="profile_sms_error">à°Žà°¸à±â€Œà°Žà°®à±â€Œà°Žà°¸à± à°ªà°‚à°ªà°²à±‡à°•à°ªà±‹à°¯à°¾à°‚: %1$s</string>
+    <string name="profile_contact_details">%1$s • %2$s</string>
+    <string name="profile_contact_call_content_description">%1$s కు కాల్ చేయండి</string>
+    <string name="profile_contact_sos_sms">ఎస్‌ఓఎస్ ఎస్‌ఎమ్‌ఎస్</string>
+    <string name="profile_contact_sos_sms_body">అత్యవసర ఎస్‌ఓఎస్: నాకు సహాయం కావాలి! జీపీఎస్: %1$s ఉత్తరం, %2$s తూర్పు %3$s. వీపట్టి సారణ ద్వారా పంపబడింది.</string>
+    <string name="profile_contact_sos_location_device_gps">(పరికర జీపీఎస్)</string>
+    <string name="profile_contact_sos_location_india_fallback">(భారత అంచనా స్థానం)</string>
+    <string name="profile_sms_error">ఎస్‌ఎమ్‌ఎస్ పంపలేకపోయాం: %1$s</string>
 
-    <string name="profile_section_app_data">à°¯à°¾à°ªà± à°¡à±‡à°Ÿà°¾ à°®à°°à°¿à°¯à± à°†à°«à±â€Œà°²à±ˆà°¨à±</string>
-    <string name="profile_offline_first_label">à°†à°«à±â€Œà°²à±ˆà°¨à±-à°«à°¸à±à°Ÿà± à°®à±‹à°¡à±</string>
-    <string name="profile_offline_maps_label">à°†à°«à±â€Œà°²à±ˆà°¨à± à°¸à°¹à°¾à°¯ à°®à±à°¯à°¾à°ªà± à°•à±à°¯à°¾à°·à±</string>
-    <string name="profile_offline_maps_value">%2$sà°²à±‹ %1$s</string>
-    <string name="profile_offline_maps_not_measured">à°‡à°‚à°•à°¾ à°•à±Šà°²à°µà°²à±‡à°¦à±</string>
-    <string name="profile_disaster_sync_label">à°µà°¿à°ªà°¤à±à°¤à± à°¡à±‡à°Ÿà°¾ à°¸à°¿à°‚à°•à±</string>
-    <string name="profile_disaster_sync_never">à°‡à°‚à°•à°¾ à°…à°®à°²à± à°•à°¾à°²à±‡à°¦à±</string>
-    <string name="profile_data_source_label">à°¡à±‡à°Ÿà°¾ à°®à±‚à°²à°‚</string>
+    <string name="profile_section_app_data">యాప్ డేటా మరియు ఆఫ్‌లైన్</string>
+    <string name="profile_offline_first_label">ఆఫ్‌లైన్-ఫస్ట్ మోడ్</string>
+    <string name="profile_offline_maps_label">ఆఫ్‌లైన్ సహాయ మ్యాప్ క్యాష్</string>
+    <string name="profile_offline_maps_value">%2$sలో %1$s</string>
+    <string name="profile_offline_maps_not_measured">ఇంకా కొలవలేదు</string>
+    <string name="profile_disaster_sync_label">విపత్తు డేటా సింక్</string>
+    <string name="profile_disaster_sync_never">ఇంకా అమలు కాలేదు</string>
+    <string name="profile_data_source_label">డేటా మూలం</string>
 
-    <string name="profile_section_preferences">à°ªà±à°°à°¾à°§à°¾à°¨à±à°¯à°¤à°²à±</string>
-    <string name="profile_theme_label">à°¡à°¾à°°à±à°•à± à°¥à±€à°®à±</string>
-    <string name="profile_theme_appearance">à°°à±‚à°ªà°‚</string>
-    <string name="profile_theme_on">à°†à°¨à±</string>
-    <string name="profile_theme_off">à°†à°«à±</string>
-    <string name="profile_language_label">à°­à°¾à°·</string>
-    <string name="profile_language_description">à°ªà°°à°¿à°•à°°à°‚ à°®à°°à°¿à°¯à± à°¯à°¾à°ªà± à°­à°¾à°·</string>
-    <string name="profile_language_open_settings">à°¯à°¾à°ªà± à°­à°¾à°· à°¸à±†à°Ÿà±à°Ÿà°¿à°‚à°—à±â€Œà°²à°¨à± à°¤à±†à°°à±à°¸à±à°¤à±à°‚à°¦à°¿</string>
+    <string name="profile_section_preferences">ప్రాధాన్యతలు</string>
+    <string name="profile_theme_label">డార్క్ థీమ్</string>
+    <string name="profile_theme_appearance">రూపం</string>
+    <string name="profile_theme_on">ఆన్</string>
+    <string name="profile_theme_off">ఆఫ్</string>
+    <string name="profile_language_label">భాష</string>
+    <string name="profile_language_description">పరికరం మరియు యాప్ భాష</string>
+    <string name="profile_language_open_settings">యాప్ భాష సెట్టింగ్‌లను తెరుస్తుంది</string>
 
-    <string name="profile_section_account">à°–à°¾à°¤à°¾</string>
-    <string name="profile_account_email_label">à°‡à°²à°¾ à°¸à±ˆà°¨à± à°‡à°¨à±</string>
-    <string name="profile_account_no_email">à°¸à±à°¥à°¾à°¨à°¿à°• à°ªà°°à°¿à°•à°° à°ªà±à°°à±Šà°«à±ˆà°²à±</string>
-    <string name="profile_sign_out">à°¸à±ˆà°¨à± à°…à°µà±à°Ÿà±</string>
-    <string name="profile_sign_out_content_description">à°ˆ à°–à°¾à°¤à°¾ à°¨à±à°‚à°¡à°¿ à°¸à±ˆà°¨à± à°…à°µà±à°Ÿà± à°šà±‡à°¯à°‚à°¡à°¿</string>
+    <string name="profile_section_account">ఖాతా</string>
+    <string name="profile_account_email_label">ఇలా సైన్ ఇన్</string>
+    <string name="profile_account_no_email">స్థానిక పరికర ప్రొఫైల్</string>
+    <string name="profile_sign_out">సైన్ అవుట్</string>
+    <string name="profile_sign_out_content_description">ఈ ఖాతా నుండి సైన్ అవుట్ చేయండి</string>
 
-    <string name="profile_section_about">à°—à±à°°à°¿à°‚à°šà°¿</string>
-    <string name="profile_about_version_label">à°¯à°¾à°ªà± à°µà±†à°°à±à°·à°¨à±</string>
-    <string name="profile_about_version_value">%1$s (à°¬à°¿à°²à±à°¡à± %2$d)</string>
-    <string name="profile_about_app_label">à°µà±€à°ªà°Ÿà±à°Ÿà°¿ à°¸à°¾à°°à°£</string>
-    <string name="profile_about_tagline">à°µà°¿à°ªà°¤à±à°¤à± à°¸à°¹à°¾à°¯à°‚ à°®à°°à°¿à°¯à± à°…à°¤à±à°¯à°µà°¸à°° à°¨à±†à°Ÿà±â€Œà°µà°°à±à°•à±</string>
+    <string name="profile_section_about">గురించి</string>
+    <string name="profile_about_version_label">యాప్ వెర్షన్</string>
+    <string name="profile_about_version_value">%1$s (బిల్డ్ %2$d)</string>
+    <string name="profile_about_app_label">వీపట్టి సారణ</string>
+    <string name="profile_about_tagline">విపత్తు సహాయం మరియు అత్యవసర నెట్‌వర్క్</string>
 
-    <string name="action_edit">à°®à°¾à°°à±à°šà°‚à°¡à°¿</string>
-    <string name="action_call">à°•à°¾à°²à±</string>
-    <string name="action_save">à°¸à±‡à°µà± à°šà±‡à°¯à°‚à°¡à°¿</string>
-    <string name="action_cancel">à°°à°¦à±à°¦à± à°šà±‡à°¯à°‚à°¡à°¿</string>
+    <string name="action_edit">మార్చండి</string>
+    <string name="action_call">కాల్</string>
+    <string name="action_save">సేవ్ చేయండి</string>
+    <string name="action_cancel">రద్దు చేయండి</string>
 
     <string-array name="profile_contact_role_keys">
         <item>Spouse</item>
@@ -108,16 +108,16 @@
         <item>Other</item>
     </string-array>
     <string-array name="profile_contact_role_labels">
-        <item>à°œà±€à°µà°¿à°¤ à°­à°¾à°—à°¸à±à°µà°¾à°®à°¿</item>
-        <item>à°¸à±‹à°¦à°°à±à°¡à±</item>
-        <item>à°¬à±à°²à°¾à°•à± à°²à±€à°¡à± / à°ªà±Šà°°à±à°—à±à°µà°¾à°°à±</item>
-        <item>à°¸à±‹à°¦à°°à°¿</item>
-        <item>à°¤à°²à±à°²à°¿à°¦à°‚à°¡à±à°°à±à°²à±</item>
-        <item>à°ªà°¿à°²à±à°²à°µà°¾à°¡à±</item>
-        <item>à°ªà±Šà°°à±à°—à±à°µà°¾à°°à±</item>
-        <item>à°¸à±à°¨à±‡à°¹à°¿à°¤à±à°¡à±</item>
-        <item>à°µà°¾à°²à°‚à°Ÿà±€à°°à±</item>
-        <item>à°‡à°¤à°°</item>
+        <item>జీవిత భాగస్వామి</item>
+        <item>సోదరుడు</item>
+        <item>బ్లాక్ లీడ్ / పొరుగువారు</item>
+        <item>సోదరి</item>
+        <item>తల్లిదండ్రులు</item>
+        <item>పిల్లవాడు</item>
+        <item>పొరుగువారు</item>
+        <item>స్నేహితుడు</item>
+        <item>వాలంటీర్</item>
+        <item>ఇతర</item>
     </string-array>
     <!-- ONBOARDING — first-launch carousel (5 cards) -->
     <string name="onboarding_skip">దాటవేయండి</string>
@@ -150,4 +150,16 @@
     <string name="onboarding_tools_body">అవసరమైనప్పుడు అత్యవసర సాధనాలు, SOS మద్దతు, నివేదికలు, స్థానభ్రంశ మార్గదర్శకత్వం, ఇతర సిద్ధతా సదుపాయాలను ఉపయోగించండి.</string>
     <string name="onboarding_tools_illustration_cd">ఫోన్ చుట్టూ అత్యవసర సాధనాల చిత్రం</string>
     <string name="onboarding_ready_status">మీరు విపత్తి సరణాను అన్వేషించడానికి సిద్ధంగా ఉన్నారు.</string>
+    <!-- Bottom navigation -->
+    <string name="nav_home">హోమ్</string>
+    <string name="nav_map">మ్యాప్</string>
+    <string name="nav_news">వార్తలు</string>
+    <string name="nav_guide">మార్గదర్శకం</string>
+    <string name="nav_profile">ప్రొఫైల్</string>
+
+    <!-- Authority console (Profile) -->
+    <string name="profile_section_authority">అధికార కేంద్రం</string>
+    <string name="profile_authority_open">తెరవండి</string>
+    <string name="profile_authority_description">ప్రాంతీయ ఆశ్రయ మరియు నివాస గ్రామాల రికార్డులను నమోదు చేసి, తక్షణ / త్వరిత / మధ్యకాలిక నిర్ధారణ కోసం గ్రామాలను ప్రత్యక్ష ప్రమాద పరిస్థితి (SIH 26191) ప్రకారం వర్గీకరించండి. రికార్డులు ఈ పరికరంలోనే ఉంటాయి; డెమో వరుసలు SIMULATEDగానే ఉంటాయి.</string>
+    <string name="profile_contacts_empty">ఇంకా అత్యవసర పరిచయాలు లేవు — మీ స్థానిక SOS రికార్డు వారిని సూచించేందుకు కుటుంబం లేదా పొరుగులను జోడించండి. పరిచయాలు ఈ పరికరంలోనే ఉంటాయి.</string>
 </resources>

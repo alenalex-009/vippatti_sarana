@@ -1,110 +1,110 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!--
-  Hindi (hi) profile strings â€” same keys as values/strings.xml.
+  Hindi (hi) profile strings — same keys as values/strings.xml.
   Any key missing here falls back to the English resource automatically.
 -->
 <resources>
-    <!-- Section 1 â€” header -->
-    <string name="profile_header_title">à¤®à¥‡à¤°à¥€ à¤ªà¥à¤°à¥‹à¤«à¤¼à¤¾à¤‡à¤²</string>
-    <string name="profile_avatar_content_description">à¤ªà¥à¤°à¥‹à¤«à¤¼à¤¾à¤‡à¤² à¤«à¤¼à¥‹à¤Ÿà¥‹</string>
-    <string name="profile_verified_content_description">à¤¸à¤¤à¥à¤¯à¤¾à¤ªà¤¿à¤¤ à¤¨à¤¾à¤—à¤°à¤¿à¤• à¤†à¤ˆà¤¡à¥€</string>
-    <string name="profile_id_label">à¤†à¤ˆà¤¡à¥€: %1$s</string>
-    <string name="profile_edit_content_description">à¤ªà¥à¤°à¥‹à¤«à¤¼à¤¾à¤‡à¤² à¤¸à¤‚à¤ªà¤¾à¤¦à¤¿à¤¤ à¤•à¤°à¥‡à¤‚</string>
+    <!-- Section 1 — header -->
+    <string name="profile_header_title">मेरी प्रोफ़ाइल</string>
+    <string name="profile_avatar_content_description">प्रोफ़ाइल फ़ोटो</string>
+    <string name="profile_verified_content_description">सत्यापित नागरिक आईडी</string>
+    <string name="profile_id_label">आईडी: %1$s</string>
+    <string name="profile_edit_content_description">प्रोफ़ाइल संपादित करें</string>
 
-    <!-- Section 2 â€” safety status -->
-    <string name="profile_section_safety_status">à¤®à¥‡à¤°à¥€ à¤¸à¥à¤°à¤•à¥à¤·à¤¾ à¤¸à¥à¤¥à¤¿à¤¤à¤¿</string>
-    <string name="profile_safety_safe">à¤®à¥ˆà¤‚ à¤¸à¥à¤°à¤•à¥à¤·à¤¿à¤¤ à¤¹à¥‚à¤</string>
-    <string name="profile_safety_needs_help">à¤®à¤¦à¤¦ à¤šà¤¾à¤¹à¤¿à¤</string>
-    <string name="profile_safety_safe_description">à¤°à¤¾à¤¹à¤¤ à¤¨à¥‡à¤Ÿà¤µà¤°à¥à¤• à¤ªà¤° à¤†à¤ªà¤•à¥‹ à¤¸à¥à¤°à¤•à¥à¤·à¤¿à¤¤ à¤¦à¤°à¥à¤œ à¤•à¤°à¤¤à¤¾ à¤¹à¥ˆ</string>
-    <string name="profile_safety_needs_help_description">à¤†à¤ªà¤•à¥‡ à¤ªà¤°à¤¿à¤µà¤¾à¤° à¤•à¥‹ à¤ªà¥à¤°à¤¾à¤¥à¤®à¤¿à¤•à¤¤à¤¾ à¤¸à¤¹à¤¾à¤¯à¤¤à¤¾ à¤®à¥‡à¤‚ à¤œà¥‹à¤¡à¤¼à¤¤à¤¾ à¤¹à¥ˆ</string>
+    <!-- Section 2 — safety status -->
+    <string name="profile_section_safety_status">मेरी सुरक्षा स्थिति</string>
+    <string name="profile_safety_safe">मैं सुरक्षित हूँ</string>
+    <string name="profile_safety_needs_help">मदद चाहिए</string>
+    <string name="profile_safety_safe_description">राहत नेटवर्क पर आपको सुरक्षित दर्ज करता है</string>
+    <string name="profile_safety_needs_help_description">आपके परिवार को प्राथमिकता सहायता में जोड़ता है</string>
 
-    <!-- Section 3 â€” SOS -->
-    <string name="profile_sos_title">à¤à¤¸à¤“à¤à¤¸ à¤•à¥‡à¤‚à¤¦à¥à¤°</string>
-    <string name="profile_sos_subtitle">à¤²à¤¾à¤‡à¤µ à¤œà¥€à¤ªà¥€à¤à¤¸, à¤¬à¥ˆà¤Ÿà¤°à¥€ à¤¸à¥à¤¤à¤° à¤”à¤° à¤®à¥‡à¤¡à¤¿à¤•à¤² à¤Ÿà¥ˆà¤— à¤­à¥‡à¤œà¤¤à¤¾ à¤¹à¥ˆ</string>
-    <string name="profile_sos_broadcast">à¤à¤¸à¤“à¤à¤¸ à¤ªà¥à¤°à¤¸à¤¾à¤°à¤¿à¤¤ à¤•à¤°à¥‡à¤‚</string>
-    <string name="profile_sos_report_situation">à¤®à¥‡à¤°à¥€ à¤¸à¥à¤¥à¤¿à¤¤à¤¿ à¤¬à¤¤à¤¾à¤à¤</string>
+    <!-- Section 3 — SOS -->
+    <string name="profile_sos_title">एसओएस केंद्र</string>
+    <string name="profile_sos_subtitle">लाइव जीपीएस, बैटरी स्तर और मेडिकल टैग भेजता है</string>
+    <string name="profile_sos_broadcast">एसओएस प्रसारित करें</string>
+    <string name="profile_sos_report_situation">मेरी स्थिति बताएँ</string>
 
-    <!-- Section 4 â€” helplines -->
-    <string name="profile_section_helplines">à¤†à¤ªà¤¾à¤¤à¤•à¤¾à¤²à¥€à¤¨ à¤¹à¥‡à¤²à¥à¤ªà¤²à¤¾à¤‡à¤¨</string>
-    <string name="profile_section_helplines_caption">à¤Ÿà¥‹à¤²-à¤«à¤¼à¥à¤°à¥€ à¤ªà¥à¤°à¤¾à¤¥à¤®à¤¿à¤•à¤¤à¤¾ à¤²à¤¾à¤‡à¤¨à¥‡à¤‚</string>
-    <string name="profile_helpline_ndrf">à¤à¤¨à¤¡à¥€à¤†à¤°à¤à¤«à¤¼ 112</string>
-    <string name="profile_helpline_ndrf_description">à¤†à¤ªà¤¦à¤¾ à¤¬à¤²</string>
-    <string name="profile_helpline_ambulance">à¤à¤‚à¤¬à¥à¤²à¥‡à¤‚à¤¸</string>
-    <string name="profile_helpline_ambulance_description">à¤¡à¤¾à¤¯à¤² 108</string>
-    <string name="profile_helpline_fire">à¤«à¤¼à¤¾à¤¯à¤° 101</string>
-    <string name="profile_helpline_fire_description">à¤¬à¤šà¤¾à¤µ à¤¦à¤²</string>
-    <string name="profile_dial_error">%1$s à¤ªà¤° à¤•à¥‰à¤² à¤¨à¤¹à¥€à¤‚ à¤¹à¥‹ à¤¸à¤•à¤¾: %2$s</string>
+    <!-- Section 4 — helplines -->
+    <string name="profile_section_helplines">आपातकालीन हेल्पलाइन</string>
+    <string name="profile_section_helplines_caption">टोल-फ़्री प्राथमिकता लाइनें</string>
+    <string name="profile_helpline_ndrf">एनडीआरएफ़ 112</string>
+    <string name="profile_helpline_ndrf_description">आपदा बल</string>
+    <string name="profile_helpline_ambulance">एंबुलेंस</string>
+    <string name="profile_helpline_ambulance_description">डायल 108</string>
+    <string name="profile_helpline_fire">फ़ायर 101</string>
+    <string name="profile_helpline_fire_description">बचाव दल</string>
+    <string name="profile_dial_error">%1$s पर कॉल नहीं हो सका: %2$s</string>
 
-    <!-- Section 5 â€” details -->
-    <string name="profile_section_details">à¤®à¥‡à¤°à¤¾ à¤µà¤¿à¤µà¤°à¤£</string>
-    <string name="profile_household_label">à¤ªà¤°à¤¿à¤µà¤¾à¤°</string>
-    <string name="profile_household_description">à¤†à¤ªà¤•à¥‡ à¤˜à¤° à¤®à¥‡à¤‚ à¤†à¤¶à¥à¤°à¤¿à¤¤ à¤¸à¤¦à¤¸à¥à¤¯</string>
-    <string name="profile_medical_label">à¤®à¥‡à¤¡à¤¿à¤•à¤² à¤Ÿà¥ˆà¤—</string>
-    <string name="profile_medical_description">à¤¬à¤šà¤¾à¤µ à¤¦à¤² à¤•à¥‡ à¤¸à¤¾à¤¥ à¤¸à¤¾à¤à¤¾ à¤•à¤¿à¤¯à¤¾ à¤œà¤¾à¤¤à¤¾ à¤¹à¥ˆ</string>
-    <string name="profile_evacuation_needs_label">à¤¨à¤¿à¤•à¤¾à¤¸à¥€ à¤¶à¤¿à¤µà¤¿à¤° à¤†à¤µà¤¶à¥à¤¯à¤•à¤¤à¤¾à¤à¤</string>
-    <string name="profile_evacuation_needs_description">à¤†à¤µà¤‚à¤Ÿà¤¿à¤¤ à¤¶à¤¿à¤µà¤¿à¤° à¤‡à¤¨ à¤†à¤µà¤¶à¥à¤¯à¤•à¤¤à¤¾à¤“à¤‚ à¤¸à¥‡ à¤¸à¥à¤µà¤¤à¤ƒ à¤®à¥‡à¤² à¤–à¤¾à¤¤à¥‡ à¤¹à¥ˆà¤‚</string>
-    <string name="profile_need_elderly_mobility">à¤µà¥ƒà¤¦à¥à¤§ / à¤—à¤¤à¤¿à¤¶à¥€à¤²à¤¤à¤¾</string>
-    <string name="profile_need_disability">à¤µà¤¿à¤•à¤²à¤¾à¤‚à¤—à¤¤à¤¾ à¤¸à¤¹à¤¾à¤¯à¤¤à¤¾</string>
-    <string name="profile_need_medical_dependency">à¤šà¤¿à¤•à¤¿à¤¤à¥à¤¸à¥€à¤¯ à¤¨à¤¿à¤°à¥à¤­à¤°à¤¤à¤¾</string>
-    <string name="profile_need_pet_friendly">à¤ªà¤¾à¤²à¤¤à¥‚ à¤…à¤¨à¥à¤•à¥‚à¤²</string>
-    <string name="profile_need_oxygen_meds">à¤‘à¤•à¥à¤¸à¥€à¤œà¤¨ / à¤¦à¤µà¤¾</string>
-    <string name="profile_relocation_label">à¤¸à¥à¤¥à¤¾à¤¨à¤¾à¤‚à¤¤à¤°à¤£ à¤ªà¥à¤°à¤¾à¤¥à¤®à¤¿à¤•à¤¤à¤¾</string>
-    <string name="profile_relocation_description">à¤†à¤ªà¤•à¥‡ à¤ªà¤°à¤¿à¤µà¤¾à¤° à¤•à¥‡ à¤µà¤¿à¤µà¤°à¤£ à¤¸à¥‡ à¤¨à¤¿à¤•à¤¾à¤¸à¥€ à¤°à¥ˆà¤‚à¤•à¤¿à¤‚à¤—</string>
-    <string name="profile_relocation_assigned_shelter">à¤†à¤µà¤‚à¤Ÿà¤¿à¤¤ à¤¶à¤¿à¤µà¤¿à¤°: %1$s</string>
-    <string name="profile_relocation_shelter_capacity">%1$d à¤¸à¥à¤¥à¤¾à¤¨ à¤‰à¤ªà¤²à¤¬à¥à¤§</string>
+    <!-- Section 5 — details -->
+    <string name="profile_section_details">मेरा विवरण</string>
+    <string name="profile_household_label">परिवार</string>
+    <string name="profile_household_description">आपके घर में आश्रित सदस्य</string>
+    <string name="profile_medical_label">मेडिकल टैग</string>
+    <string name="profile_medical_description">बचाव दल के साथ साझा किया जाता है</string>
+    <string name="profile_evacuation_needs_label">निकासी शिविर आवश्यकताएँ</string>
+    <string name="profile_evacuation_needs_description">आवंटित शिविर इन आवश्यकताओं से स्वतः मेल खाते हैं</string>
+    <string name="profile_need_elderly_mobility">वृद्ध / गतिशीलता</string>
+    <string name="profile_need_disability">विकलांगता सहायता</string>
+    <string name="profile_need_medical_dependency">चिकित्सीय निर्भरता</string>
+    <string name="profile_need_pet_friendly">पालतू अनुकूल</string>
+    <string name="profile_need_oxygen_meds">ऑक्सीजन / दवा</string>
+    <string name="profile_relocation_label">स्थानांतरण प्राथमिकता</string>
+    <string name="profile_relocation_description">आपके परिवार के विवरण से निकासी रैंकिंग</string>
+    <string name="profile_relocation_assigned_shelter">आवंटित शिविर: %1$s</string>
+    <string name="profile_relocation_shelter_capacity">%1$d स्थान उपलब्ध</string>
     <string name="profile_relocation_priority_note">बुजुर्ग, बच्चे, दिव्यांग जन, गर्भवती महिलाएँ और चिकित्सानिर्भरता — ये सब आपके परिवार की प्राथमिकता बढ़ाते हैं। केवल आपके दर्ज किए गए विवरण ही उपयोग होते हैं — कोई जनसंख्या आँकड़ा नहीं गढ़ा जाता।</string>
 
-    <!-- Section 6 â€” contacts -->
-    <string name="profile_section_contacts">à¤†à¤ªà¤¾à¤¤à¤•à¤¾à¤²à¥€à¤¨ à¤¸à¤‚à¤ªà¤°à¥à¤•</string>
-    <string name="profile_add_contact">à¤¸à¤‚à¤ªà¤°à¥à¤• à¤œà¥‹à¤¡à¤¼à¥‡à¤‚</string>
+    <!-- Section 6 — contacts -->
+    <string name="profile_section_contacts">आपातकालीन संपर्क</string>
+    <string name="profile_add_contact">संपर्क जोड़ें</string>
     <string name="profile_contact_role">%1$s (%2$s)</string>
-    <string name="profile_contact_details">%1$s â€¢ %2$s</string>
-    <string name="profile_contact_call_content_description">%1$s à¤•à¥‹ à¤•à¥‰à¤² à¤•à¤°à¥‡à¤‚</string>
-    <string name="profile_contact_sos_sms">à¤à¤¸à¤“à¤à¤¸ à¤à¤¸à¤à¤®à¤à¤¸</string>
-    <string name="profile_contact_sos_sms_body">à¤†à¤ªà¤¾à¤¤à¤•à¤¾à¤²à¥€à¤¨ à¤à¤¸à¤“à¤à¤¸: à¤®à¥à¤à¥‡ à¤¸à¤¹à¤¾à¤¯à¤¤à¤¾ à¤šà¤¾à¤¹à¤¿à¤! à¤œà¥€à¤ªà¥€à¤à¤¸: %1$s à¤‰à¤¤à¥à¤¤à¤°, %2$s à¤ªà¥‚à¤°à¥à¤µ %3$s. à¤µà¥€à¤ªà¤Ÿà¥à¤Ÿà¥€ à¤¸à¤¾à¤°à¤£à¤¾ à¤¸à¥‡ à¤­à¥‡à¤œà¤¾ à¤—à¤¯à¤¾à¥¤</string>
-    <string name="profile_contact_sos_location_device_gps">(à¤¡à¤¿à¤µà¤¾à¤‡à¤¸ à¤œà¥€à¤ªà¥€à¤à¤¸)</string>
-    <string name="profile_contact_sos_location_india_fallback">(à¤­à¤¾à¤°à¤¤ à¤…à¤¨à¥à¤®à¤¾à¤¨à¤¿à¤¤ à¤¸à¥à¤¥à¤¾à¤¨)</string>
-    <string name="profile_sms_error">à¤à¤¸à¤à¤®à¤à¤¸ à¤¨à¤¹à¥€à¤‚ à¤­à¥‡à¤œà¤¾ à¤œà¤¾ à¤¸à¤•à¤¾: %1$s</string>
+    <string name="profile_contact_details">%1$s • %2$s</string>
+    <string name="profile_contact_call_content_description">%1$s को कॉल करें</string>
+    <string name="profile_contact_sos_sms">एसओएस एसएमएस</string>
+    <string name="profile_contact_sos_sms_body">आपातकालीन एसओएस: मुझे सहायता चाहिए! जीपीएस: %1$s उत्तर, %2$s पूर्व %3$s. वीपट्टी सारणा से भेजा गया।</string>
+    <string name="profile_contact_sos_location_device_gps">(डिवाइस जीपीएस)</string>
+    <string name="profile_contact_sos_location_india_fallback">(भारत अनुमानित स्थान)</string>
+    <string name="profile_sms_error">एसएमएस नहीं भेजा जा सका: %1$s</string>
 
-    <!-- Section 7 â€” app data -->
-    <string name="profile_section_app_data">à¤à¤ª à¤¡à¥‡à¤Ÿà¤¾ à¤”à¤° à¤‘à¤«à¤¼à¤²à¤¾à¤‡à¤¨</string>
-    <string name="profile_offline_first_label">à¤‘à¤«à¤¼à¤²à¤¾à¤‡à¤¨-à¤ªà¥à¤°à¤¥à¤® à¤®à¥‹à¤¡</string>
-    <string name="profile_offline_maps_label">à¤‘à¤«à¤¼à¤²à¤¾à¤‡à¤¨ à¤°à¤¾à¤¹à¤¤ à¤®à¤¾à¤¨à¤šà¤¿à¤¤à¥à¤° à¤•à¥ˆà¤¶</string>
-    <string name="profile_offline_maps_value">%2$s à¤®à¥‡à¤‚ à¤¸à¥‡ %1$s</string>
-    <string name="profile_offline_maps_not_measured">à¤…à¤­à¥€ à¤®à¤¾à¤ªà¤¾ à¤¨à¤¹à¥€à¤‚ à¤—à¤¯à¤¾</string>
-    <string name="profile_disaster_sync_label">à¤†à¤ªà¤¦à¤¾ à¤¡à¥‡à¤Ÿà¤¾ à¤¸à¤¿à¤‚à¤•</string>
-    <string name="profile_disaster_sync_never">à¤…à¤­à¥€ à¤¤à¤• à¤¨à¤¹à¥€à¤‚ à¤šà¤²à¤¾</string>
-    <string name="profile_data_source_label">à¤¡à¥‡à¤Ÿà¤¾ à¤¸à¥à¤°à¥‹à¤¤</string>
+    <!-- Section 7 — app data -->
+    <string name="profile_section_app_data">ऐप डेटा और ऑफ़लाइन</string>
+    <string name="profile_offline_first_label">ऑफ़लाइन-प्रथम मोड</string>
+    <string name="profile_offline_maps_label">ऑफ़लाइन राहत मानचित्र कैश</string>
+    <string name="profile_offline_maps_value">%2$s में से %1$s</string>
+    <string name="profile_offline_maps_not_measured">अभी मापा नहीं गया</string>
+    <string name="profile_disaster_sync_label">आपदा डेटा सिंक</string>
+    <string name="profile_disaster_sync_never">अभी तक नहीं चला</string>
+    <string name="profile_data_source_label">डेटा स्रोत</string>
 
-    <!-- Section 8 â€” preferences -->
-    <string name="profile_section_preferences">à¤ªà¥à¤°à¤¾à¤¥à¤®à¤¿à¤•à¤¤à¤¾à¤à¤</string>
-    <string name="profile_theme_label">à¤¡à¤¾à¤°à¥à¤• à¤¥à¥€à¤®</string>
-    <string name="profile_theme_appearance">à¤°à¥‚à¤ª</string>
-    <string name="profile_theme_on">à¤šà¤¾à¤²à¥‚</string>
-    <string name="profile_theme_off">à¤¬à¤‚à¤¦</string>
-    <string name="profile_language_label">à¤­à¤¾à¤·à¤¾</string>
-    <string name="profile_language_description">à¤¡à¤¿à¤µà¤¾à¤‡à¤¸ à¤”à¤° à¤à¤ª à¤•à¥€ à¤­à¤¾à¤·à¤¾</string>
-    <string name="profile_language_open_settings">à¤à¤ª à¤­à¤¾à¤·à¤¾ à¤¸à¥‡à¤Ÿà¤¿à¤‚à¤—à¥à¤¸ à¤–à¥‹à¤²à¤¤à¤¾ à¤¹à¥ˆ</string>
+    <!-- Section 8 — preferences -->
+    <string name="profile_section_preferences">प्राथमिकताएँ</string>
+    <string name="profile_theme_label">डार्क थीम</string>
+    <string name="profile_theme_appearance">रूप</string>
+    <string name="profile_theme_on">चालू</string>
+    <string name="profile_theme_off">बंद</string>
+    <string name="profile_language_label">भाषा</string>
+    <string name="profile_language_description">डिवाइस और ऐप की भाषा</string>
+    <string name="profile_language_open_settings">ऐप भाषा सेटिंग्स खोलता है</string>
 
-    <!-- Section 9 â€” account -->
-    <string name="profile_section_account">à¤–à¤¾à¤¤à¤¾</string>
-    <string name="profile_account_email_label">à¤‡à¤¸ à¤°à¥‚à¤ª à¤®à¥‡à¤‚ à¤¸à¤¾à¤‡à¤¨ à¤‡à¤¨</string>
-    <string name="profile_account_no_email">à¤¸à¥à¤¥à¤¾à¤¨à¥€à¤¯ à¤¡à¤¿à¤µà¤¾à¤‡à¤¸ à¤ªà¥à¤°à¥‹à¤«à¤¼à¤¾à¤‡à¤²</string>
-    <string name="profile_sign_out">à¤¸à¤¾à¤‡à¤¨ à¤†à¤‰à¤Ÿ</string>
-    <string name="profile_sign_out_content_description">à¤‡à¤¸ à¤–à¤¾à¤¤à¥‡ à¤¸à¥‡ à¤¸à¤¾à¤‡à¤¨ à¤†à¤‰à¤Ÿ à¤•à¤°à¥‡à¤‚</string>
+    <!-- Section 9 — account -->
+    <string name="profile_section_account">खाता</string>
+    <string name="profile_account_email_label">इस रूप में साइन इन</string>
+    <string name="profile_account_no_email">स्थानीय डिवाइस प्रोफ़ाइल</string>
+    <string name="profile_sign_out">साइन आउट</string>
+    <string name="profile_sign_out_content_description">इस खाते से साइन आउट करें</string>
 
-    <!-- Section 10 â€” about -->
-    <string name="profile_section_about">à¤ªà¤°à¤¿à¤šà¤¯</string>
-    <string name="profile_about_version_label">à¤à¤ª à¤¸à¤‚à¤¸à¥à¤•à¤°à¤£</string>
-    <string name="profile_about_version_value">%1$s (à¤¬à¤¿à¤²à¥à¤¡ %2$d)</string>
-    <string name="profile_about_app_label">à¤µà¥€à¤ªà¤Ÿà¥à¤Ÿà¥€ à¤¸à¤¾à¤°à¤£à¤¾</string>
-    <string name="profile_about_tagline">à¤†à¤ªà¤¦à¤¾ à¤°à¤¾à¤¹à¤¤ à¤”à¤° à¤†à¤ªà¤¾à¤¤à¤•à¤¾à¤²à¥€à¤¨ à¤¨à¥‡à¤Ÿà¤µà¤°à¥à¤•</string>
+    <!-- Section 10 — about -->
+    <string name="profile_section_about">परिचय</string>
+    <string name="profile_about_version_label">ऐप संस्करण</string>
+    <string name="profile_about_version_value">%1$s (बिल्ड %2$d)</string>
+    <string name="profile_about_app_label">वीपट्टी सारणा</string>
+    <string name="profile_about_tagline">आपदा राहत और आपातकालीन नेटवर्क</string>
 
     <!-- Generic labels -->
-    <string name="action_edit">à¤¸à¤‚à¤ªà¤¾à¤¦à¤¿à¤¤ à¤•à¤°à¥‡à¤‚</string>
-    <string name="action_call">à¤•à¥‰à¤²</string>
-    <string name="action_save">à¤¸à¤¹à¥‡à¤œà¥‡à¤‚</string>
-    <string name="action_cancel">à¤°à¤¦à¥à¤¦ à¤•à¤°à¥‡à¤‚</string>
+    <string name="action_edit">संपादित करें</string>
+    <string name="action_call">कॉल</string>
+    <string name="action_save">सहेजें</string>
+    <string name="action_cancel">रद्द करें</string>
 
     <string-array name="profile_contact_role_keys">
         <item>Spouse</item>
@@ -119,16 +119,16 @@
         <item>Other</item>
     </string-array>
     <string-array name="profile_contact_role_labels">
-        <item>à¤œà¥€à¤µà¤¨à¤¸à¤¾à¤¥à¥€</item>
-        <item>à¤­à¤¾à¤ˆ</item>
-        <item>à¤¬à¥à¤²à¥‰à¤• à¤ªà¥à¤°à¤®à¥à¤– / à¤ªà¤¡à¤¼à¥‹à¤¸à¥€</item>
-        <item>à¤¬à¤¹à¤¨</item>
-        <item>à¤®à¤¾à¤¤à¤¾-à¤ªà¤¿à¤¤à¤¾</item>
-        <item>à¤¬à¤šà¥à¤šà¤¾</item>
-        <item>à¤ªà¤¡à¤¼à¥‹à¤¸à¥€</item>
-        <item>à¤®à¤¿à¤¤à¥à¤°</item>
-        <item>à¤¸à¥à¤µà¤¯à¤‚à¤¸à¥‡à¤µà¤•</item>
-        <item>à¤…à¤¨à¥à¤¯</item>
+        <item>जीवनसाथी</item>
+        <item>भाई</item>
+        <item>ब्लॉक प्रमुख / पड़ोसी</item>
+        <item>बहन</item>
+        <item>माता-पिता</item>
+        <item>बच्चा</item>
+        <item>पड़ोसी</item>
+        <item>मित्र</item>
+        <item>स्वयंसेवक</item>
+        <item>अन्य</item>
     </string-array>
     <!-- ONBOARDING — first-launch carousel (5 cards) -->
     <string name="onboarding_skip">छोड़ें</string>
@@ -161,4 +161,16 @@
     <string name="onboarding_tools_body">ज़रूरत पड़ने पर आपातकालीन उपकरण, SOS सहायता, रिपोर्टिंग, निकासी मार्गदर्शन और अन्य तैयारी सुविधाएँ उपयोग करें।</string>
     <string name="onboarding_tools_illustration_cd">फ़ोन के चारों ओर आपातकालीन उपकरणों का चित्रण</string>
     <string name="onboarding_ready_status">अब आप विपत्ति सारणा का उपयोग करने के लिए तैयार हैं।</string>
+    <!-- Bottom navigation -->
+    <string name="nav_home">होम</string>
+    <string name="nav_map">मानचित्र</string>
+    <string name="nav_news">समाचार</string>
+    <string name="nav_guide">मार्गदर्शिका</string>
+    <string name="nav_profile">प्रोफ़ाइल</string>
+
+    <!-- Authority console (Profile) -->
+    <string name="profile_section_authority">अधिकार केंद्र</string>
+    <string name="profile_authority_open">खोलें</string>
+    <string name="profile_authority_description">क्षेत्रीय आश्रय और बस्ती रिकॉर्ड दर्ज करें और तत्काल / अल्पकालिक / मध्यकालिक पुनर्वास के लिए बस्तियों को लाइव खतरे की स्थिति (SIH 26191) के अनुसार वर्गीकृत करें। रिकॉर्ड इसी डिवाइस पर रहते हैं; डेमो पंक्तियाँ SIMULATED ही रहती हैं।</string>
+    <string name="profile_contacts_empty">अभी कोई आपातकालीन संपर्क नहीं — परिवार या पड़ोसियों को जोड़ें ताकि आपका स्थानीय SOS रिकॉर्ड उन्हें संदर्भित कर सके। संपर्क केवल इसी डिवाइस पर रहते हैं।</string>
 </resources>
