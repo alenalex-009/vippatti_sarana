@@ -42,11 +42,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.data.disaster.GoBagItem
+import com.example.R
 import com.example.ui.theme.NeonEmerald
 import com.example.ui.theme.ObsidianContainerHigh
 import com.example.ui.theme.ObsidianContainerLow
@@ -79,7 +81,7 @@ fun InteractiveBagDialog(
           .padding(20.dp)
           .fillMaxWidth()
           // Adapts to short screens: the checklist scrolls INTERNALLY and the
-          // bottom action button always stays visible — never covers items.
+          // bottom action button always stays visible â€” never covers items.
           .heightIn(max = 420.dp)
       ) {
         Row(
@@ -89,7 +91,7 @@ fun InteractiveBagDialog(
         ) {
           Column(modifier = Modifier.weight(1f)) {
             Text(
-              text = "INTERACTIVE EVACUATION KIT",
+              text = stringResource(R.string.gobag_kit_title),
               fontSize = 15.sp,
               fontWeight = FontWeight.Bold,
               color = TacticalOnSurface
@@ -101,7 +103,7 @@ fun InteractiveBagDialog(
             )
           }
           IconButton(onClick = onDismiss) {
-            Icon(Icons.Default.Close, contentDescription = "Close", tint = TacticalOnSurfaceVariant)
+            Icon(Icons.Default.Close, contentDescription = stringResource(R.string.dialog_close_content_desc), tint = TacticalOnSurfaceVariant)
           }
         }
 
@@ -129,7 +131,7 @@ fun InteractiveBagDialog(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Internally scrollable checklist — no item is ever clipped.
+        // Internally scrollable checklist â€” no item is ever clipped.
         LazyColumn(
           modifier = Modifier
             .fillMaxWidth()
@@ -185,7 +187,7 @@ fun InteractiveBagDialog(
             .testTag("interactive_bag_done_button")
         ) {
           Text(
-            if (progressPercent == 100) "Kit Complete — Done" else "Mark as Complete",
+            if (progressPercent == 100) "Kit Complete â€” Done" else "Mark as Complete",
             fontWeight = FontWeight.Bold,
             color = OnNeonEmerald
           )
@@ -228,20 +230,20 @@ fun AddContactDialog(
           verticalAlignment = Alignment.CenterVertically
         ) {
           Text(
-            text = "Add Emergency Kin Contact",
+            text = stringResource(R.string.gobag_kin_contact_title),
             fontSize = 16.sp,
             fontWeight = FontWeight.Bold,
             color = TacticalOnSurface
           )
           IconButton(onClick = onDismiss) {
-            Icon(Icons.Default.Close, contentDescription = "Close", tint = TacticalOnSurfaceVariant)
+            Icon(Icons.Default.Close, contentDescription = stringResource(R.string.dialog_close_content_desc), tint = TacticalOnSurfaceVariant)
           }
         }
 
         OutlinedTextField(
           value = name,
           onValueChange = { name = it },
-          label = { Text("Full Name", fontSize = 12.sp) },
+          label = { Text(stringResource(R.string.gobag_full_name), fontSize = 12.sp) },
           colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = NeonEmerald,
             unfocusedBorderColor = TacticalOutlineVariant,
@@ -256,7 +258,7 @@ fun AddContactDialog(
         OutlinedTextField(
           value = relation,
           onValueChange = { relation = it },
-          label = { Text("Relationship (e.g. Spouse, Brother, Neighbor)", fontSize = 12.sp) },
+          label = { Text(stringResource(R.string.gobag_relationship), fontSize = 12.sp) },
           colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = NeonEmerald,
             unfocusedBorderColor = TacticalOutlineVariant,
@@ -271,7 +273,7 @@ fun AddContactDialog(
         OutlinedTextField(
           value = phone,
           onValueChange = { phone = it },
-          label = { Text("Phone Number (+91 ...)", fontSize = 12.sp) },
+          label = { Text(stringResource(R.string.gobag_phone), fontSize = 12.sp) },
           colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = NeonEmerald,
             unfocusedBorderColor = TacticalOutlineVariant,
@@ -286,7 +288,7 @@ fun AddContactDialog(
         OutlinedTextField(
           value = location,
           onValueChange = { location = it },
-          label = { Text("Proximity / Ward (e.g. Within 2km, Ward 3)", fontSize = 12.sp) },
+          label = { Text(stringResource(R.string.gobag_proximity), fontSize = 12.sp) },
           colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = NeonEmerald,
             unfocusedBorderColor = TacticalOutlineVariant,
@@ -314,7 +316,7 @@ fun AddContactDialog(
             .height(44.dp)
             .testTag("save_contact_button")
         ) {
-          Text("Save to Emergency Net", fontWeight = FontWeight.Bold, color = OnNeonEmerald)
+          Text(stringResource(R.string.gobag_save_button), fontWeight = FontWeight.Bold, color = OnNeonEmerald)
         }
       }
     }

@@ -14,4 +14,134 @@
     <string name="instructions_poster_content_desc">Safety poster for %1$s showing the before, during and after guidance</string>
     <string name="instructions_choose_disaster">Choose a disaster</string>
     <string name="instructions_kit_subtitle">72-hour self-reliance pack</string>
+
+    <!--
+      Display labels for the instruction content model.
+      The safety copy in DisasterInstructions.kt stays the single English
+      source of truth and is NOT changed; these keys translate only the
+      user-visible category / module headings that wrap that copy, resolved
+      by the existing stable ids (flood, landslide, fire, earthquake,
+      evacuation, emergency_contacts, emergency_kit).
+    -->
+    <string name="instructions_disaster_flood">Flood</string>
+    <string name="instructions_disaster_flood_subtitle">Periyar valley &amp; low-lying settlement guidance</string>
+    <string name="instructions_disaster_landslide">Landslide</string>
+    <string name="instructions_disaster_landslide_subtitle">Western Ghats slope &amp; highland guidance</string>
+    <string name="instructions_disaster_fire">Fire</string>
+    <string name="instructions_disaster_fire_subtitle">Household, grassland &amp; plantation guidance</string>
+    <string name="instructions_disaster_earthquake">Earthquake</string>
+    <string name="instructions_disaster_earthquake_subtitle">Drop, cover and hold guidance</string>
+
+    <string name="instructions_module_contacts">Emergency Contacts</string>
+    <string name="instructions_module_contacts_subtitle">Official Indian emergency lines</string>
+    <string name="instructions_module_evacuation">Evacuation Essentials</string>
+    <string name="instructions_module_evacuation_subtitle">What to do when an order arrives</string>
+    <string name="instructions_module_kit">Emergency Kit</string>
+    <string name="instructions_module_kit_subtitle">72-hour self-reliance pack</string>
+    <string name="instructions_module_intro">Your safety comes first. Follow these instructions to reduce risk.</string>
+
+    <!-- SOS dialogs -->
+    <string name="sos_active_title">SOS ACTIVE — RECORDED ON THIS DEVICE</string>
+    <string name="sos_active_notice">No authority has been notified automatically. Dial 112 to reach emergency services, or send the saved SOS SMS to your kin network.</string>
+    <string name="sos_label_gps">GPS Location</string>
+    <string name="sos_label_battery">Battery Level</string>
+    <string name="sos_label_medical">Medical Tag</string>
+    <string name="sos_label_delivery">Delivery</string>
+    <string name="sos_call_112_now">CALL 112 NOW</string>
+    <string name="sos_keep_active">Keep The Local SOS Active</string>
+    <string name="sos_cancel_false_alarm">Cancel SOS / False Alarm</string>
+    <string name="sos_confirm_title">START A LOCAL SOS RECORD?</string>
+    <string name="sos_confirm_body">This saves a distress record on THIS DEVICE with your location, device battery and medical tags so it is ready to relay. It does NOT contact NDRF, SARANA or any authority — this build has no relief-network backend. Dial 112 for real help.</string>
+    <string name="sos_save_local">SAVE LOCAL SOS</string>
+    <string name="sos_cancel_i_am_safe">CANCEL — I AM SAFE</string>
+
+    <!-- Login / authentication -->
+    <string name="login_passwords_do_not_match">Passwords do not match.</string>
+    <string name="login_sos_badge">SOS</string>
+    <string name="login_title">VIPPATTI SARANA</string>
+    <string name="login_subtitle">Disaster Relief • Civil Safety Network</string>
+    <string name="login_tab_create">CREATE EMERGENCY ACCOUNT</string>
+    <string name="login_tab_signin">SIGN IN TO THE NETWORK</string>
+    <string name="login_email">Email</string>
+    <string name="login_password_min">Password (min %1$d characters)</string>
+    <string name="login_hide_password">Hide password</string>
+    <string name="login_show_password">Show password</string>
+    <string name="login_confirm_password">Confirm password</string>
+    <string name="login_stay_signed_in">Stay signed in on this device</string>
+    <string name="login_create_account">CREATE ACCOUNT</string>
+    <string name="login_sign_in">SIGN IN</string>
+    <string name="login_have_account">Already have an account? Sign in</string>
+    <string name="login_new_to_network">New to the network? Create an account</string>
+    <string name="login_demo_account">DEMO ACCOUNT (works offline)</string>
+    <string name="login_error_invalid_email">Enter a valid email address.</string>
+    <string name="login_error_password_short">Password must be at least 6 characters.</string>
+    <string name="login_error_account_exists">An account already exists for this email — sign in instead.</string>
+    <string name="login_error_no_account">No account found for this email — create one below.</string>
+    <string name="login_error_incorrect">Incorrect email or password.</string>
+    <string name="login_error_generic">Something went wrong. Please try again.</string>
+
+
+    <!-- Home dashboard -->
+    <string name="home_question">what should I do right now?</string>
+    <string name="home_look_elsewhere">Look at another state/city</string>
+    <string name="home_chosen_place">Chosen place</string>
+    <string name="home_all_india">All-India view — no GPS yet</string>
+    <string name="home_your_area_gps">Your area (device GPS)</string>
+    <string name="home_tap_to_choose_place">Tap to choose a state, city or district</string>
+    <string name="home_card_safe_zones_title">Safe zones &amp; evacuation routes</string>
+    <string name="home_card_safe_zones_subtitle">Where to go and the hazard-checked road there</string>
+    <string name="home_card_guide_title">What to do during a disaster</string>
+    <string name="home_card_guide_subtitle">Step-by-step guides, go-bag checklist and tools</string>
+    <string name="home_card_news_title">Latest disaster news</string>
+    <string name="home_card_news_subtitle">Live feed from GNews — not an official alert</string>
+    <string name="home_badge_danger_nearby">DANGER NEARBY</string>
+    <string name="home_badge_elevated_risk">ELEVATED RISK</string>
+    <string name="home_badge_stay_alert">STAY ALERT</string>
+    <string name="home_badge_calm">YOUR AREA LOOKS CALM</string>
+    <string name="home_badge_assessing">ASSESSING YOUR AREA…</string>
+    <string name="home_area_safe_question">IS MY AREA SAFE RIGHT NOW?</string>
+    <string name="home_assessing_body">Reading live hazard feeds (earthquakes, fires, official alerts) for your location…</string>
+    <string name="home_action_show_where_to_go">SHOW ME WHERE TO GO</string>
+    <string name="home_action_open_hazard_map">OPEN THE HAZARD MAP</string>
+
+    <!-- Edit profile / contact / situation-report dialogs -->
+    <string name="dialog_close">Close</string>
+    <string name="dialog_close_content_desc">Close</string>
+    <string name="edit_profile_title">Edit Citizen Profile</string>
+    <string name="edit_profile_local_note">Saved with every SOS &amp; situation report on this device</string>
+    <string name="edit_profile_full_name">Full Name</string>
+    <string name="edit_profile_citizen_id">Citizen ID</string>
+    <string name="edit_profile_blood_group">BLOOD GROUP</string>
+    <string name="edit_profile_medical_tag">Medical Attention Tag (e.g. Asthma / Inhaler)</string>
+    <string name="edit_profile_medical_notes">Medical Notes (e.g. Requires Mobility Support)</string>
+    <string name="edit_profile_dependents">FAMILY DEPENDENTS</string>
+    <string name="edit_profile_add_dependent">Add dependent</string>
+    <string name="edit_profile_remove_dependent">Remove dependent</string>
+    <string name="edit_profile_save">Save</string>
+    <string name="gobag_title">Go-Bag Checklist</string>
+    <string name="gobag_subtitle">Pack these before the season</string>
+    <string name="gobag_add_contact">Add Emergency Contact</string>
+    <string name="gobag_full_name">Full Name</string>
+    <string name="gobag_relationship">Relationship (e.g. Spouse, Brother, Neighbor)</string>
+    <string name="gobag_phone">Phone Number (+91 ...)</string>
+    <string name="gobag_proximity">Proximity / Ward (e.g. Within 2km, Ward 3)</string>
+    <string name="gobag_save">Save Contact</string>
+    <string name="report_title">Report My Situation</string>
+    <string name="report_local_note">Saved locally on this device — nothing is uploaded automatically</string>
+    <string name="report_what_do_you_see">What are you seeing? (optional)</string>
+    <string name="report_description">Situation description (voice or typed)</string>
+    <string name="report_send">Send Report</string>
+    <string name="report_subtitle">Voice | Form | Photo - saved as a local report</string>
+    <string name="report_dictate">DICTATE MY SITUATION (VOICE)</string>
+    <string name="report_quick_tags">QUICK TAGS</string>
+    <string name="report_attach_photo">ATTACH PHOTO EVIDENCE</string>
+    <string name="report_photo_saved">Photo reference saved locally with the report</string>
+    <string name="report_reporting_as">Reporting as</string>
+    <string name="edit_profile_dependents_detail">Dependents Detail (e.g. 1 Elder, 1 Child (4yo), Spouse)</string>
+    <string name="edit_profile_need_medical">Household needs shelter with medical support</string>
+    <string name="edit_profile_need_medical_sub">Prioritizes on-site medical facilities</string>
+    <string name="edit_profile_save_button">Save Profile</string>
+    <string name="gobag_kit_title">INTERACTIVE EVACUATION KIT</string>
+    <string name="gobag_kin_contact_title">Add Emergency Kin Contact</string>
+    <string name="gobag_save_button">Save to Emergency Net</string>
 </resources>

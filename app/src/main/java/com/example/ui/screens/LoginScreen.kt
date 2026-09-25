@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -47,6 +48,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.R
+import androidx.compose.ui.res.stringResource
 import com.example.data.auth.AuthError
 import com.example.data.auth.AuthRepository
 import com.example.data.auth.AuthResult
@@ -79,17 +82,18 @@ fun LoginScreen(
   var confirmPassword by rememberSaveable { mutableStateOf("") }
   var staySignedIn by rememberSaveable { mutableStateOf(true) }
   var showPassword by rememberSaveable { mutableStateOf(false) }
-  var errorText by rememberSaveable { mutableStateOf<String?>(null) }
+  var errorRes by rememberSaveable { mutableStateOf<Int?>(null) }
+  val errorText = errorRes?.let { stringResource(it) }
 
   fun submit() {
-    errorText = if (isRegisterMode) {
+    errorRes = if (isRegisterMode) {
       if (password != confirmPassword) {
-        "Passwords do not match."
+        R.string.login_passwords_do_not_match
       } else {
-        mapAuthError(onRegister(email.trim(), password, staySignedIn))
+        authErrorMessageRes(onRegister(email.trim(), password, staySignedIn))
       }
     } else {
-      mapAuthError(onLogin(email.trim(), password, staySignedIn))
+      authErrorMessageRes(onLogin(email.trim(), password, staySignedIn))
     }
   }
 
@@ -115,25 +119,25 @@ fun LoginScreen(
           .border(2.dp, EmergencyRed, CircleShape),
         contentAlignment = Alignment.Center
       ) {
-        Text("SOS", fontSize = 20.sp, fontWeight = FontWeight.Black, color = EmergencyRed)
+        Text(stringResource(R.string.login_sos_badge), fontSize = 20.sp, fontWeight = FontWeight.Black, color = EmergencyRed)
       }
       Spacer(Modifier.height(16.dp))
       Text(
-        "VIPPATTI SARANA",
+        stringResource(R.string.login_title),
         fontSize = 18.sp,
         fontWeight = FontWeight.Black,
         color = EmergencyRedBright,
         letterSpacing = 1.sp
       )
       Text(
-        "Disaster Relief \u2022 Civil Safety Network",
+        stringResource(R.string.login_subtitle),
         fontSize = 12.sp,
         color = TacticalOnSurfaceVariant
       )
       Spacer(Modifier.height(32.dp))
 
       Text(
-        if (isRegisterMode) "CREATE EMERGENCY ACCOUNT" else "SIGN IN TO THE NETWORK",
+        if (isRegisterMode) stringResource(R.string.login_tab_create) else stringResource(R.string.login_tab_signin),
         fontSize = 14.sp,
         fontWeight = FontWeight.Bold,
         color = TacticalOnSurface
@@ -142,8 +146,8 @@ fun LoginScreen(
 
       OutlinedTextField(
         value = email,
-        onValueChange = { email = it; errorText = null },
-        label = { Text("Email", fontSize = 13.sp, color = TacticalOnSurfaceVariant) },
+        onValueChange = { email = it; errorRes = null },
+        label = { Text(stringResource(R.string.login_email), fontSize = 13.sp, color = TacticalOnSurfaceVariant) },
         singleLine = true,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
         modifier = Modifier
@@ -155,10 +159,10 @@ fun LoginScreen(
 
       OutlinedTextField(
         value = password,
-        onValueChange = { password = it; errorText = null },
+        onValueChange = { password = it; errorRes = null },
         label = {
           Text(
-            "Password (min ${AuthRepository.MIN_PASSWORD_LENGTH} characters)",
+            stringResource(R.string.login_password_min, AuthRepository.MIN_PASSWORD_LENGTH),
             fontSize = 13.sp,
             color = TacticalOnSurfaceVariant
           )
@@ -170,7 +174,7 @@ fun LoginScreen(
           IconButton(onClick = { showPassword = !showPassword }) {
             Icon(
               imageVector = if (showPassword) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-              contentDescription = if (showPassword) "Hide password" else "Show password",
+              contentDescription = stringResource(if (showPassword) R.string.login_hide_password else R.string.login_show_password),
               tint = TacticalOnSurfaceVariant
             )
           }
@@ -184,8 +188,8 @@ fun LoginScreen(
         Spacer(Modifier.height(12.dp))
         OutlinedTextField(
           value = confirmPassword,
-          onValueChange = { confirmPassword = it; errorText = null },
-          label = { Text("Confirm password", fontSize = 13.sp, color = TacticalOnSurfaceVariant) },
+          onValueChange = { confirmPassword = it; errorRes = null },
+          label = { Text(stringResource(R.string.login_confirm_password), fontSize = 13.sp, color = TacticalOnSurfaceVariant) },
           singleLine = true,
           visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
           keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -209,7 +213,7 @@ fun LoginScreen(
         )
         Spacer(Modifier.size(8.dp))
         Text(
-          "Stay signed in on this device",
+          stringResource(R.string.login_stay_signed_in),
           fontSize = 12.sp,
           color = TacticalOnSurfaceVariant
         )
@@ -239,22 +243,22 @@ fun LoginScreen(
         shape = RoundedCornerShape(14.dp),
         modifier = Modifier
           .fillMaxWidth()
-          .height(50.dp)
+          .heightIn(min = 50.dp)
           .testTag("login_submit_button")
       ) {
         Text(
-          if (isRegisterMode) "CREATE ACCOUNT" else "SIGN IN",
+          if (isRegisterMode) stringResource(R.string.login_create_account) else stringResource(R.string.login_sign_in),
           fontWeight = FontWeight.Black,
           color = Color.White
         )
       }
 
       TextButton(
-        onClick = { isRegisterMode = !isRegisterMode; errorText = null; password = ""; confirmPassword = "" },
+        onClick = { isRegisterMode = !isRegisterMode; errorRes = null; password = ""; confirmPassword = "" },
         modifier = Modifier.testTag("login_toggle_mode_button")
       ) {
         Text(
-          if (isRegisterMode) "Already have an account? Sign in" else "New to the network? Create an account",
+          if (isRegisterMode) stringResource(R.string.login_have_account) else stringResource(R.string.login_new_to_network),
           fontSize = 12.sp,
           color = TacticalCyan
         )
@@ -270,7 +274,7 @@ fun LoginScreen(
           .padding(14.dp)
       ) {
         Text(
-          "DEMO ACCOUNT (works offline)",
+          stringResource(R.string.login_demo_account),
           fontSize = 10.sp,
           fontWeight = FontWeight.Black,
           color = NeonEmerald,
@@ -285,7 +289,7 @@ fun LoginScreen(
             .clickable {
               email = AuthRepository.DEMO_EMAIL
               password = AuthRepository.DEMO_PASSWORD
-              errorText = null
+              errorRes = null
             }
             .padding(vertical = 4.dp)
         )
@@ -294,14 +298,21 @@ fun LoginScreen(
   }
 }
 
-private fun mapAuthError(result: AuthResult): String? {
+/**
+ * Maps an auth failure to the string resource for its message.
+ *
+ * Returns a resource id rather than resolved text so this stays a pure
+ * mapping function that the @Composable submit() handler can call; the
+ * auth behaviour itself is untouched.
+ */
+private fun authErrorMessageRes(result: AuthResult): Int? {
   if (result.ok) return null
   return when (result.error) {
-    AuthError.INVALID_EMAIL -> "Enter a valid email address."
-    AuthError.WEAK_PASSWORD -> "Password must be at least 6 characters."
-    AuthError.EMAIL_TAKEN -> "An account already exists for this email \u2014 sign in instead."
-    AuthError.ACCOUNT_NOT_FOUND -> "No account found for this email \u2014 create one below."
-    AuthError.WRONG_CREDENTIALS -> "Incorrect email or password."
-    null -> "Something went wrong. Please try again."
+    AuthError.INVALID_EMAIL -> R.string.login_error_invalid_email
+    AuthError.WEAK_PASSWORD -> R.string.login_error_password_short
+    AuthError.EMAIL_TAKEN -> R.string.login_error_account_exists
+    AuthError.ACCOUNT_NOT_FOUND -> R.string.login_error_no_account
+    AuthError.WRONG_CREDENTIALS -> R.string.login_error_incorrect
+    null -> R.string.login_error_generic
   }
 }

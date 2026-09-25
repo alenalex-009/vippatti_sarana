@@ -20,8 +20,16 @@ internal object LocalizationResources {
 
   val LOCALES = listOf("hi", "te", "ta", "bn", "mr")
 
-  /** Proper nouns / brand and provider names that must stay untranslated. */
-  val ALLOWED_UNTRANSLATED = setOf("app_name")
+  /**
+   * Proper nouns, brand names and acronyms that must stay identical in every
+   * language. These are not translatable prose, so the "still English" and
+   * "native script" checks must not flag them.
+   */
+  val ALLOWED_UNTRANSLATED = setOf(
+    "app_name",        // Vippatti Sarana
+    "login_title",     // VIPPATTI SARANA brand lockup
+    "login_sos_badge"  // SOS, a universal emergency acronym
+  )
 
   /** Files holding translatable UI strings, per locale folder. */
   val STRING_FILES = listOf("strings.xml", "strings-instructions.xml")

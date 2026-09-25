@@ -36,10 +36,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.R
 import com.example.data.model.DataStatus
 import com.example.data.risk.RiskLevel
 import com.example.data.shelters.EmergencyGuidance
@@ -119,16 +122,17 @@ fun HomeScreen(
         Text(
           when {
             uiState.isViewingChosenPlace ->
-              (uiState.viewedPlaceLabel?.substringBefore(',') ?: "Chosen place") + "  •  VIEWING"
-            uiState.isUserLocationFallback -> "All-India view — no GPS yet"
-            else -> "Your area (device GPS)"
+              (uiState.viewedPlaceLabel?.substringBefore(',')
+                ?: stringResource(R.string.home_chosen_place)) + "  •  VIEWING"
+            uiState.isUserLocationFallback -> stringResource(R.string.home_all_india)
+            else -> stringResource(R.string.home_your_area_gps)
           },
           fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TacticalOnSurface,
           maxLines = 1, overflow = TextOverflow.Ellipsis,
           modifier = Modifier.testTag("home_location_bar")
         )
         Text(
-          "Tap to choose a state, city or district",
+          stringResource(R.string.home_tap_to_choose_place),
           fontSize = 11.sp, color = TacticalOnSurfaceVariant
         )
       }
@@ -181,24 +185,27 @@ fun HomeScreen(
       HomeActionRow(
         icon = Icons.Default.Shield,
         tint = NeonEmerald,
-        title = "Safe zones & evacuation routes",
-        subtitle = "Where to go and the hazard-checked road there",
+        title = stringResource(R.string.home_card_safe_zones_title),
+        subtitle = stringResource(R.string.home_card_safe_zones_subtitle),
         tag = "home_action_radar"
       ) { onOpenRadar() }
       HomeDivider()
       HomeActionRow(
         icon = Icons.Default.NotificationsActive,
         tint = WarningAmber,
-        title = "What to do during a disaster",
-        subtitle = "Step-by-step guides, go-bag checklist and tools",
+        title = stringResource(R.string.home_card_guide_title),
+        subtitle = stringResource(R.string.home_card_guide_subtitle),
         tag = "home_action_guide"
       ) { onOpenGuide() }
       HomeDivider()
       HomeActionRow(
         icon = Icons.Default.WaterDrop,
         tint = TacticalCyan,
-        title = "Latest disaster news",
-        subtitle = uiState.newsHero?.title?.take(64) ?: "Live feed from GNews — not an official alert",
+        title = stringResource(R.string.home_card_news_title),
+        // Falls back to the app's own label, never to a translated article
+        // title: the article headline is external content and stays as-is.
+        subtitle = uiState.newsHero?.title?.take(64)
+          ?: stringResource(R.string.home_card_news_subtitle),
         tag = "home_action_news"
       ) { onOpenNews() }
     }
@@ -224,11 +231,11 @@ private fun RiskHero(
     null -> TacticalOnSurfaceVariant
   }
   val headline = when (risk?.level) {
-    RiskLevel.RED -> "DANGER NEARBY"
-    RiskLevel.ORANGE -> "ELEVATED RISK"
-    RiskLevel.YELLOW -> "STAY ALERT"
-    RiskLevel.GREEN -> "YOUR AREA LOOKS CALM"
-    null -> "ASSESSING YOUR AREA…"
+    RiskLevel.RED -> stringResource(R.string.home_badge_danger_nearby)
+    RiskLevel.ORANGE -> stringResource(R.string.home_badge_elevated_risk)
+    RiskLevel.YELLOW -> stringResource(R.string.home_badge_stay_alert)
+    RiskLevel.GREEN -> stringResource(R.string.home_badge_calm)
+    null -> stringResource(R.string.home_badge_assessing)
   }
   Column(
     modifier = modifier
@@ -239,7 +246,7 @@ private fun RiskHero(
       .padding(16.dp)
   ) {
     Text(
-      "IS MY AREA SAFE RIGHT NOW?",
+      stringResource(R.string.home_area_safe_question),
       fontSize = 10.sp, fontWeight = FontWeight.Black,
       color = TacticalOnSurfaceVariant, letterSpacing = 1.sp
     )
@@ -256,8 +263,7 @@ private fun RiskHero(
     }
     Spacer(Modifier.height(6.dp))
     Text(
-      risk?.explanation
-        ?: "Reading live hazard feeds (earthquakes, fires, official alerts) for your location…",
+      risk?.explanation ?: stringResource(R.string.home_assessing_body),
       fontSize = 12.sp, color = TacticalOnSurface, lineHeight = 17.sp
     )
     risk?.let {
@@ -278,8 +284,14 @@ private fun RiskHero(
       contentAlignment = Alignment.Center
     ) {
       Text(
-        if (risk != null && risk.level != RiskLevel.GREEN) "SHOW ME WHERE TO GO" else "OPEN THE HAZARD MAP",
-        fontSize = 13.sp, fontWeight = FontWeight.Black, color = Color.Black
+        if (risk != null && risk.level != RiskLevel.GREEN) {
+          stringResource(R.string.home_action_show_where_to_go)
+        } else {
+          stringResource(R.string.home_action_open_hazard_map)
+        },
+        fontSize = 13.sp, fontWeight = FontWeight.Black, color = Color.Black,
+        textAlign = TextAlign.Center,
+        modifier = Modifier.padding(horizontal = 12.dp)
       )
     }
   }
