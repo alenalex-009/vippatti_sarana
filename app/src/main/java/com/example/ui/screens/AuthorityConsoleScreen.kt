@@ -40,6 +40,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.platform.testTag
+import com.example.ui.theme.TacticalOutlineVariant
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -232,11 +234,18 @@ private fun DashboardTab(uiState: VippattiUiState, onRerank: (Boolean) -> Unit) 
       }
     }
 
+    Text(
+      if (priorities.isEmpty()) "Nothing ranked yet"
+      else "Relocation order — most urgent first",
+      fontSize = 13.sp, fontWeight = FontWeight.Black, color = TacticalOnSurface,
+      modifier = Modifier.padding(vertical = 6.dp)
+    )
     priorities.forEach { p -> PriorityRow(p) }
     if (priorities.isEmpty() && !uiState.isRankingPriorities) {
       Text(
-        "No ranking yet — tap RANK HABITATIONS.",
-        fontSize = 10.sp, color = TacticalOnSurfaceVariant,
+        "Add habitation records in the HABITATIONS tab, then tap RANK HABITATIONS — " +
+          "each row will explain WHY it landed in its tier.",
+        fontSize = 12.sp, color = TacticalOnSurfaceVariant, lineHeight = 16.sp,
         modifier = Modifier.padding(vertical = 16.dp)
       )
     }
@@ -252,42 +261,91 @@ private fun PriorityRow(p: HabitationPriority) {
     modifier = Modifier
       .fillMaxWidth()
       .padding(vertical = 4.dp)
-      .clip(RoundedCornerShape(10.dp))
+      .clip(RoundedCornerShape(12.dp))
       .background(ObsidianContainerLow)
-      .border(1.dp, color.copy(alpha = 0.5f), RoundedCornerShape(10.dp))
+      .border(1.dp, color.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
       .clickable { expanded = !expanded }
-      .padding(10.dp)
   ) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-      Column(Modifier.weight(1f)) {
-        Text(p.habitation.name, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TacticalOnSurface, maxLines = 1, overflow = TextOverflow.Ellipsis)
+    // Tier band: the urgency reads before any text does.
+    Row(
+      modifier = Modifier
+        .fillMaxWidth()
+        .background(color.copy(alpha = 0.16f))
+        .padding(horizontal = 12.dp, vertical = 6.dp),
+      verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+      Box(Modifier.size(8.dp).clip(CircleShape).background(color))
+      Text(
+        p.tier.label, fontSize = 11.sp, fontWeight = FontWeight.Black,
+        color = color, letterSpacing = 0.6.sp
+      )
+      Spacer(Modifier.weight(1f))
+      Text(
+        "SCORE ${p.score}", fontSize = 11.sp, fontWeight = FontWeight.Black,
+        color = TacticalOnSurfaceVariant
+      )
+    }
+    Column(
+      modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+      verticalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+      Text(
+        p.habitation.name, fontSize = 15.sp, fontWeight = FontWeight.Bold,
+        color = TacticalOnSurface, maxLines = 1, overflow = TextOverflow.Ellipsis,
+        modifier = Modifier.testTag("priority_row_${p.habitation.id}")
+      )
+      Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.Top) {
         Text(
           buildString {
             append("${p.habitation.point.lat.fmt()}, ${p.habitation.point.lon.fmt()}")
-            p.habitation.population?.let { append(" • pop ${it.value} (${it.classification.label})") }
-            p.nearestSafeZoneDistanceMeters?.let { append(" • nearest zone ${"%.1f".format(it / 1000)} km") }
+            p.habitation.population?.let { append(" · pop ${it.value}") }
+            p.nearestSafeZoneDistanceMeters?.let {
+              append(" · safe zone %.1f km".format(it / 1000))
+            }
           },
-          fontSize = 11.sp, color = TacticalOnSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis
+          fontSize = 12.sp, color = TacticalOnSurfaceVariant, lineHeight = 16.sp,
+          modifier = Modifier.weight(1f)
         )
       }
-      Column(horizontalAlignment = Alignment.End) {
-        Text(p.tier.label, fontSize = 11.sp, fontWeight = FontWeight.Black, color = color)
-        Text("score ${p.score}", fontSize = 11.sp, color = TacticalOnSurfaceVariant)
+      if (p.habitation.population?.classification == DataClassification.SIMULATED) {
+        Text(
+          "SIMULATED demo record",
+          fontSize = 11.sp, fontWeight = FontWeight.Bold, color = WarningAmber
+        )
       }
-    }
-    if (p.habitation.population?.classification == DataClassification.SIMULATED) {
+      // WHY, up front (was hidden behind expand — authorities read reasons first)
+      p.reasons.firstOrNull()?.let {
+        Text(
+          it, fontSize = 12.sp, color = TacticalOnSurface, lineHeight = 16.sp,
+          maxLines = if (expanded) 10 else 2,
+          overflow = TextOverflow.Ellipsis
+        )
+      }
+      if (expanded) {
+        Box(
+          Modifier
+            .fillMaxWidth()
+            .height(1.dp)
+            .background(TacticalOutlineVariant.copy(alpha = 0.3f))
+        )
+        Text(
+          p.tier.actionGuide, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = color
+        )
+        p.reasons.drop(1).forEach { reason ->
+          Text(
+            "·  $reason", fontSize = 12.sp, color = TacticalOnSurface, lineHeight = 16.sp
+          )
+        }
+        Text(
+          "Weights: hazard 35% · terrain 30% · vulnerability 20% · history 15%",
+          fontSize = 11.sp, color = TacticalOnSurfaceVariant
+        )
+      }
       Text(
-        "SIMULATED demo record",
-        fontSize = 10.sp, fontWeight = FontWeight.Bold, color = WarningAmber,
-        modifier = Modifier.padding(top = 2.dp)
+        if (expanded) "TAP TO COLLAPSE" else "TAP FOR ALL REASONS",
+        fontSize = 11.sp, fontWeight = FontWeight.Bold, color = TacticalCyan
       )
-    }
-    if (expanded) {
-      Spacer(Modifier.height(6.dp))
-      Text(p.tier.actionGuide, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = color)
-      p.reasons.forEach { reason ->
-        Text("• $reason", fontSize = 11.sp, color = TacticalOnSurface, lineHeight = 12.sp)
-      }
     }
   }
 }
@@ -331,7 +389,7 @@ private fun SheltersTab(
         verticalAlignment = Alignment.CenterVertically
       ) {
         Column(Modifier.weight(1f)) {
-          Text(zone.name, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = TacticalOnSurface)
+          Text(zone.name, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = TacticalOnSurface)
           Text(
             "${zone.lat.fmt()}, ${zone.lon.fmt()} • cap ${zone.capacityTotal - zone.capacityCurrent}/${zone.capacityTotal} open • ${zone.operatingStatus}",
             fontSize = 11.sp, color = TacticalOnSurfaceVariant

@@ -96,13 +96,19 @@ fun SafeZoneDetailDialog(
               color = TacticalOnSurfaceVariant
             )
             Text(
+              "${zone.availableCapacity} of ${zone.capacityTotal} spots free",
+              fontSize = 14.sp,
+              fontWeight = FontWeight.Bold,
+              color = if (zone.availableCapacity > 0) NeonEmerald else EmergencyRedBright
+            )
+            Text(
               text = String.format(
                 java.util.Locale.US,
-                "%.4f N, %.4f E â€¢ ${zone.availableCapacity}/${zone.capacityTotal} spots free",
+                "%.4f N, %.4f E",
                 zone.lat,
                 zone.lon
               ),
-              fontSize = 12.sp,
+              fontSize = 11.sp,
               color = TacticalOnSurfaceVariant
             )
             // Provenance: simulated shelter records are never labelled live or verified.

@@ -61,7 +61,15 @@ internal fun EmergencyGuidanceCard(
   onDismiss: () -> Unit,
   modifier: Modifier = Modifier
 ) {
-  AnimatedVisibility(visible = guidance != EmergencyGuidance.None || haven != null || isSearchingHaven) {
+  // The container only renders when there is something to say: AlreadyRouting
+  // has no content row, and a visible-but-empty bordered box under the hazard
+  // legend chips read as a broken UI bar (field report). Haven search states
+  // still count as content.
+  val hasContent = guidance is EmergencyGuidance.SuggestShelter ||
+    guidance is EmergencyGuidance.NoShelterEligible ||
+    guidance is EmergencyGuidance.NoShelterKnown ||
+    haven != null || isSearchingHaven
+  AnimatedVisibility(visible = hasContent) {
     val accent = when (guidance) {
       is EmergencyGuidance.SuggestShelter -> NeonEmerald
       is EmergencyGuidance.NoShelterEligible -> WarningAmber

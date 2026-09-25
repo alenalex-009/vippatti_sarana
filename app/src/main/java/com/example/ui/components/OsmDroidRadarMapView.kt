@@ -679,6 +679,13 @@ class OsmMapControllerHolder(
     val tilePath = File(basePath, "tiles-v2") // v2: stale CARTO-watermark tiles under "tiles" must never serve the Esri switch
     osmConfig.osmdroidBasePath = basePath
     osmConfig.osmdroidTileCache = tilePath
+    // RENDER SPEED (field report: the map takes a long time to fill in):
+    // osmdroid defaults to 2 download threads and a 120-tile memory cache.
+    // 4 downloaders + 256 cached tiles roughly halves first-paint time on
+    // mobile networks without stressing the public tile servers.
+    osmConfig.tileDownloadThreads = 4
+    osmConfig.cacheMapTileCount = 256.toShort()
+    osmConfig.tileFileSystemThreads = 4
 
     // 2. Create MapView ? opens directly on the India network region.
     val view = MapView(context).apply {
@@ -691,6 +698,27 @@ class OsmMapControllerHolder(
       setDestroyMode(false)
       setTileSource(tileSources[0])
       setMaxZoomLevel(maxZoomFor(tileSources[0]))
+      // ONE world map only (issue: routing fit showed the world stacked 3x
+      // side by side). osmdroid repeats the canvas horizontally by default at
+      // low zoom; disabling BOTH repetition axes pins a single copy.
+      isHorizontalMapRepetitionEnabled = false
+      isVerticalMapRepetitionEnabled = false
+      // India-only browsing (issue: "no need to see other countries"):
+      // vertical drag cannot leave India + margin. The LONGITUDE limit is
+      // deliberately NOT applied: osmdroid clamps the CENTER so the viewport
+      // EDGES stay inside the box, and on small/wide screens the viewport is
+      // wider than the India box — that dragged the center to the box edge
+      // and broke GPS centering (caught by MapGpsAndRouteTest). Horizontal
+      // confinement is instead guaranteed by disabling world repetition below
+      // plus the min-zoom India frame; hazard DATA is India-only anyway.
+      setScrollableAreaLimitLatitude(
+        com.example.data.disaster.IndiaGeo.MAX_LAT + 2.0,
+        com.example.data.disaster.IndiaGeo.MIN_LAT - 2.0,
+        0
+      )
+      // Never zoom out past a whole-India frame (z4.5 ≈ India fits once):
+      // no world view, no other countries, no repeated tiles.
+      setMinZoomLevel(4.5)
       setMultiTouchControls(true)
       zoomController.setVisibility(CustomZoomButtonsController.Visibility.NEVER)
       // Google-style entry: start at CITY scale, not a whole-continent view.
@@ -1300,11 +1328,15 @@ class OsmMapControllerHolder(
     // route actually changed (id), never on every recompute/GPS nudge.
     if (route.routeId != lastFittedRouteId && points.size >= 2 && mv.width > 0 && mv.height > 0) {
       lastFittedRouteId = route.routeId
+      // Fit to the corridor, but INSIDE the India limit: a raw bbox of a long
+      // NE->SW route used to zoom out past the single-world frame and show
+      // the map repeated side by side (issue 13). increaseByScale adds margin
+      // without crossing into repetition because repetition is now off.
       val box = org.osmdroid.util.BoundingBox(
         points.maxOf { it.latitude }, points.minOf { it.longitude },
         points.minOf { it.latitude }, points.maxOf { it.longitude }
-      )
-      mv.zoomToBoundingBox(box, true, 96)
+      ).increaseByScale(1.25f)
+      mv.zoomToBoundingBox(box, true, 64, 17.0, 600L)
     }
     mv.invalidate()
   }

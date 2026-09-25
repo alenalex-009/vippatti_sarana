@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -104,26 +106,42 @@ fun HazardZoneDetailDialog(
           }
         }
 
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-          InfoPill("SEVERITY", zone.severity.label.uppercase(), EmergencyRedBright)
-          InfoPill("RISK LEVEL", zone.riskLevel, EmergencyRedBright)
-          InfoPill("TREND", zone.trend.name, TacticalCyan)
-        }
-
-        Text(
-          text = String.format(
-            java.util.Locale.US,
-            "Zone center: %.4f N, %.4f E",
-            zone.center.lat,
-            zone.center.lon
-          ),
-          fontSize = 11.sp,
-          color = TacticalOnSurface
+        // --- BOTTOM LINE FIRST: what this means, in one glance ---
+        // (Field report: details read as a wall of equal rows. The verdict +
+        // the way out now come before any data rows.)
+        val nearest = detail.nearestSafeZone
+        VerdictBox(
+          accent = if (zone.provenance.classification ==
+              com.example.data.model.DataClassification.SIMULATED
+          ) WarningAmber else EmergencyRedBright,
+          title = when {
+            zone.provenance.classification ==
+              com.example.data.model.DataClassification.SIMULATED ->
+              "DEMO danger zone — practice mode"
+            zone.severity.label == "Extreme" -> "Very dangerous area — stay away"
+            else -> "Danger area — keep your distance"
+          },
+          body = nearest?.let {
+            "Nearest safe spot: ${it.name} — ${it.distanceText} away (${it.capacityText})."
+          } ?: "No viable safe zone identified yet.",
+          tag = "hazard_verdict_box"
         )
 
-        // --- DISASTER-AWARE DYNAMIC SECTIONS (rendered verbatim from the
-        // mapper: rows whose backend field is missing read "Data unavailable",
-        // never an invented value) ---
+        // --- KEY FACTS as big readable tiles (not cramped pills) ---
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+          StatTile("SEVERITY", zone.severity.label, EmergencyRedBright, Modifier.weight(1f),
+            tag = "hazard_stat_severity")
+          StatTile("TREND", zone.trend.label, TacticalCyan, Modifier.weight(1f),
+            tag = "hazard_stat_trend")
+          StatTile(
+            "AFFECTED RADIUS",
+            String.format(java.util.Locale.US, "%.1f km", zone.radiusMeters / 1000.0),
+            TacticalOnSurface, Modifier.weight(1f),
+            tag = "hazard_stat_radius"
+          )
+        }
+
+        // --- DATA SECTIONS: generous row spacing, 12sp labels / 13sp values ---
         detail.sections.forEach { section ->
           Column(
             modifier = Modifier
@@ -131,34 +149,45 @@ fun HazardZoneDetailDialog(
               .clip(RoundedCornerShape(12.dp))
               .background(ObsidianContainerHigh)
               .border(1.dp, TacticalOutlineVariant.copy(alpha = 0.4f), RoundedCornerShape(12.dp))
-              .padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp)
+              .padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
           ) {
             Text(
               text = section.heading,
-              fontSize = 10.sp,
+              fontSize = 12.sp,
               fontWeight = FontWeight.Black,
               color = TacticalCyan,
-              letterSpacing = 0.6.sp
+              letterSpacing = 0.5.sp
             )
-            section.fields.forEach { field ->
+            section.fields.forEachIndexed { index, field ->
+              if (index > 0) {
+                Box(
+                  Modifier
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(TacticalOutlineVariant.copy(alpha = 0.25f))
+                )
+              }
               Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier
+                  .fillMaxWidth()
+                  .padding(vertical = 2.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
                 verticalAlignment = Alignment.Top
               ) {
                 Text(
                   text = field.label,
-                  fontSize = 11.sp,
+                  fontSize = 12.sp,
                   color = TacticalOnSurfaceVariant,
+                  lineHeight = 16.sp,
                   modifier = Modifier.weight(0.42f)
                 )
                 Text(
                   text = field.value ?: "Data unavailable",
-                  fontSize = 11.sp,
+                  fontSize = 13.sp,
                   fontWeight = if (field.value != null) FontWeight.SemiBold else FontWeight.Normal,
                   color = if (field.value != null) TacticalOnSurface else TacticalOnSurfaceVariant,
-                  lineHeight = 14.sp,
+                  lineHeight = 17.sp,
                   modifier = Modifier.weight(0.58f)
                 )
               }
@@ -166,38 +195,94 @@ fun HazardZoneDetailDialog(
           }
         }
 
-        // --- NEAREST VIABLE SAFE ZONE (computed live; honest empty state) ---
-        val nearest = detail.nearestSafeZone
-        if (nearest != null) {
+        // --- FOOTER: source + geometry demoted to quiet 11sp lines (they are
+        // provenance for the curious, not the headline). Fixed the corrupted
+        // "Source: X ? Status: Y" separators from an earlier text mangling. ---
+        Column(
+          modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 2.dp),
+          verticalArrangement = Arrangement.spacedBy(3.dp)
+        ) {
           Text(
-            text = "Nearest viable safe zone: ${nearest.name} — ${nearest.distanceText} away (${nearest.capacityText})",
+            text = zone.sourceStatus,
             fontSize = 11.sp,
-            fontWeight = FontWeight.Bold,
-            color = NeonEmerald,
+            color = TacticalOnSurfaceVariant,
             lineHeight = 14.sp
           )
-        } else {
           Text(
-            text = "No viable safe zone identified",
+            text = "Data from ${zone.provenance.source} · ${zone.provenance.status} · " +
+              zone.provenance.classification.label,
             fontSize = 11.sp,
-            fontWeight = FontWeight.Bold,
-            color = WarningAmber,
+            color = TacticalCyan.copy(alpha = 0.9f),
+            lineHeight = 14.sp
+          )
+          Text(
+            text = String.format(
+              java.util.Locale.US,
+              "Area centre: %.4f N, %.4f E",
+              zone.center.lat,
+              zone.center.lon
+            ),
+            fontSize = 11.sp,
+            color = TacticalOnSurfaceVariant,
             lineHeight = 14.sp
           )
         }
-        Text(
-          text = zone.sourceStatus,
-          fontSize = 11.sp,
-          color = TacticalOnSurfaceVariant
-        )
-        Text(
-          text = "Source: ${zone.provenance.source} ? Status: ${zone.provenance.status} ? Classification: ${zone.provenance.classification.label}",
-          fontSize = 11.sp,
-          color = TacticalCyan,
-          lineHeight = 12.sp
-        )
       }
     }
+  }
+}
+
+/** The one-glance verdict block shared by the map detail dialogs. */
+@Composable
+private fun VerdictBox(accent: Color, title: String, body: String, tag: String) {
+  Column(
+    modifier = Modifier
+      .fillMaxWidth()
+      .clip(RoundedCornerShape(12.dp))
+      .background(accent.copy(alpha = 0.12f))
+      .border(1.5.dp, accent.copy(alpha = 0.6f), RoundedCornerShape(12.dp))
+      .padding(horizontal = 14.dp, vertical = 12.dp),
+    verticalArrangement = Arrangement.spacedBy(4.dp)
+  ) {
+    Text(
+      text = title,
+      fontSize = 15.sp,
+      fontWeight = FontWeight.Black,
+      color = accent,
+      lineHeight = 20.sp,
+      modifier = Modifier.testTag(tag)
+    )
+    Text(
+      text = body,
+      fontSize = 13.sp,
+      color = TacticalOnSurface,
+      lineHeight = 17.sp
+    )
+  }
+}
+
+/** Big-number fact tile: label 11sp, value 15sp black. */
+@Composable
+private fun StatTile(label: String, value: String, accent: Color, modifier: Modifier = Modifier, tag: String = "") {
+  Column(
+    modifier = modifier
+      .clip(RoundedCornerShape(10.dp))
+      .background(ObsidianContainerHigh)
+      .border(1.dp, TacticalOutlineVariant.copy(alpha = 0.4f), RoundedCornerShape(10.dp))
+      .padding(horizontal = 10.dp, vertical = 9.dp)
+      .let { if (tag.isNotEmpty()) it.testTag(tag) else it }
+  ) {
+    Text(
+      label, fontSize = 11.sp, fontWeight = FontWeight.Bold,
+      color = TacticalOnSurfaceVariant, letterSpacing = 0.4.sp
+    )
+    Spacer(Modifier.height(2.dp))
+    Text(
+      value, fontSize = 15.sp, fontWeight = FontWeight.Black, color = accent,
+      maxLines = 1, overflow = TextOverflow.Ellipsis
+    )
   }
 }
 
@@ -272,10 +357,36 @@ fun DisasterEventDetailDialog(
           }
         }
 
+        // Bottom line first: what this event IS, in one sentence, then the
+        // three facts that matter (severity / status / freshness) as tiles.
+        VerdictBox(
+          accent = when {
+            event.origin == com.example.data.disaster.EventOrigin.REPORTED -> WarningAmber
+            event.status.label == "Active" -> EmergencyRedBright
+            else -> TacticalCyan
+          },
+          title = when (event.origin) {
+            com.example.data.disaster.EventOrigin.REPORTED ->
+              "Citizen report — not verified"
+            else -> "${event.source.label} alert — ${event.status.label.lowercase()}"
+          },
+          body = event.description.takeIf { it.isNotBlank() }?.take(160)
+            ?: "Detected at ${
+              String.format(java.util.Locale.US, "%.2f, %.2f",
+                (event.geometry as? com.example.data.disaster.EventGeometry.Point)?.lat
+                  ?: (event.geometry as? com.example.data.disaster.EventGeometry.MultiPoint)?.points?.firstOrNull()?.lat ?: 0.0,
+                (event.geometry as? com.example.data.disaster.EventGeometry.Point)?.lon
+                  ?: (event.geometry as? com.example.data.disaster.EventGeometry.MultiPoint)?.points?.firstOrNull()?.lon ?: 0.0)
+            }",
+          tag = "event_verdict_box"
+        )
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-          InfoPill("SEVERITY", event.severity.label.uppercase(), EmergencyRedBright)
-          InfoPill("STATUS", event.status.label.uppercase(), TacticalCyan)
-          InfoPill("DATA", freshness.uppercase(), TacticalCyan)
+          StatTile("SEVERITY", event.severity.label, EmergencyRedBright, Modifier.weight(1f),
+            tag = "event_stat_severity")
+          StatTile("STATUS", event.status.label, TacticalCyan, Modifier.weight(1f),
+            tag = "event_stat_status")
+          StatTile("DATA", freshness, TacticalOnSurface, Modifier.weight(1f),
+            tag = "event_stat_freshness")
         }
 
         // Source / provider provenance.
@@ -395,21 +506,22 @@ fun DisasterEventDetailDialog(
 private fun DetailLine(label: String, value: String) {
   Row(
     modifier = Modifier.fillMaxWidth(),
-    horizontalArrangement = Arrangement.SpaceBetween,
+    horizontalArrangement = Arrangement.spacedBy(10.dp),
     verticalAlignment = Alignment.Top
   ) {
     Text(
       text = label,
-      fontSize = 11.sp,
+      fontSize = 12.sp,
       color = TacticalOnSurfaceVariant,
+      lineHeight = 16.sp,
       modifier = Modifier.weight(0.42f)
     )
     Text(
       text = value,
-      fontSize = 11.sp,
+      fontSize = 13.sp,
       fontWeight = FontWeight.SemiBold,
       color = TacticalOnSurface,
-      lineHeight = 14.sp,
+      lineHeight = 17.sp,
       modifier = Modifier.weight(0.58f)
     )
   }

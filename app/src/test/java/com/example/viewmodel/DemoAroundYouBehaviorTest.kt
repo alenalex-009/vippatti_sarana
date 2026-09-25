@@ -114,4 +114,38 @@ class DemoAroundYouBehaviorTest {
     assertTrue(state.hazardZones.none { it.id.startsWith("demo-hz-") })
     assertTrue(state.evaluatedShelters.none { it.zone.id.startsWith("demo-sz-") })
   }
+
+  @Test
+  fun `focused places see ONLY their local demo network, not other states`() = runTest {
+    val vm = viewModel()
+    vm.applyRealGpsFix(17.6935, 83.2921) // Vizag
+    val state = vm.uiState.value
+    // The India-wide 14-district pilot set must NOT appear once focused...
+    val pilotOnly = state.hazardZones.filter { it.id.startsWith("hz-") }
+    org.junit.Assert.assertTrue(
+      "other districts' demo zones leaked into a focused view: $pilotOnly",
+      pilotOnly.isEmpty()
+    )
+    // ...and the ONLY demo hazard is the local one covering the user.
+    org.junit.Assert.assertTrue(
+      state.hazardZones.any { it.id.startsWith("demo-hz-") }
+    )
+    val farShelters = state.evaluatedShelters.filter { it.zone.id.startsWith("sz-") }
+    org.junit.Assert.assertTrue(
+      "far-state demo shelters leaked into a focused view",
+      farShelters.isEmpty()
+    )
+  }
+
+  @Test
+  fun `unfocused fallback keeps the India-wide demo set (nothing local to scope)`() = runTest {
+    val vm = viewModel()
+    // no GPS fix: fallback state
+    org.junit.Assert.assertTrue(vm.uiState.value.isUserLocationFallback)
+    val state = vm.uiState.value
+    org.junit.Assert.assertTrue(
+      "fallback view should still show the India-wide demo network",
+      state.hazardZones.any { it.id.startsWith("hz-") }
+    )
+  }
 }

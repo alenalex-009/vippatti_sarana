@@ -125,6 +125,9 @@ private const val WEATHER_MIN_MOVEMENT_METERS = 2_000.0
  * message carries this sentence. It is a single constant so the cached, live
  * and alternatives messages can never drift apart.
  */
+/** A shelter is only worth ranking while it could realistically be reached. */
+private const val REACHABLE_SHELTER_WINDOW_METERS = 60_000.0
+
 private const val ROUTE_LIMITATIONS_NOTE = "Road closures and live traffic are not verified."
 
 
@@ -544,33 +547,49 @@ class VippattiViewModel(
         .map { it.toDisasterEvent(now) }
         .filter { it.isValid(now) }
     )
+    // PLACE-SCOPED DEMO (user rule: pick a place -> see THAT place's demo
+    // disaster + a nearby safe zone, not every other state). Once the app is
+    // focused (real GPS or a chosen place), the demo network is generated
+    // AROUND the focus only: one danger circle covering the user + one
+    // eligible shelter opposite, both genuinely reachable. The old India-wide
+    // 14-district set serves ONLY the unfocused fallback view (no GPS yet),
+    // where there is no local position to scope to. Every demo record stays
+    // labelled SIMULATED with demo-namespaced ids either way.
+    val focused = !state.isUserLocationFallback
+    val demoAround = if (state.isMockDataVisible && focused) DemoNetworkAroundUser.around(location) else null
     val mockZones = if (state.isMockDataVisible) {
-      // India-only guard so a record outside IndiaGeo never reaches the map.
-      PilotRegionData.hazardZones.filter { IndiaGeo.contains(it.center) }
+      if (focused) {
+        listOfNotNull(demoAround?.first)
+      } else {
+        // India-only guard so a record outside IndiaGeo never reaches the map.
+        PilotRegionData.hazardZones.filter { IndiaGeo.contains(it.center) }
+      }
     } else {
       emptyList()
     }
-    // DEMO-AROUND-YOU: the India-wide demo set is 14 far-apart districts, so
-    // anywhere else in the country the DEMO switch ON still showed nothing
-    // near the user. With demo on, ONE clearly-SIMULATED hazard circle is
-    // generated around the current focus (GPS or chosen place), guaranteeing
-    // the demo demonstrates the full journey: danger -> safe zone -> route.
-    val demoAroundUser = if (state.isMockDataVisible) {
-      listOfNotNull(DemoNetworkAroundUser.around(location)?.first)
-    } else emptyList()
-    val hazards = (liveZones + reportZones + mockZones + demoAroundUser).distinctBy { it.id }
+    val hazards = (liveZones + reportZones + mockZones).distinctBy { it.id }
 
-    // The shelter network today: SIMULATED demo zones (only while the demo
-    // switch is on) PLUS any REAL operator-entered field registry records,
-    // which stay in scope in every mode — they are field data, not demo data.
+    // The shelter network candidates: demo zones (scoped as above)
+    // PLUS any REAL operator-entered field registry records, which stay
+    // in scope in every mode — they are field data, not demo data.
     val demoZones = if (state.isMockDataVisible) {
-      val nearby = listOfNotNull(DemoNetworkAroundUser.around(location)?.second)
-      state.safeZones.filter { IndiaGeo.contains(it.point) } + nearby
+      if (focused) listOfNotNull(demoAround?.second)
+      else state.safeZones.filter { IndiaGeo.contains(it.point) }
     } else {
       emptyList()
     }
     val zonesInScope = (state.fieldShelters.filter { IndiaGeo.contains(it.point) } + demoZones)
       .distinctBy { it.id }
+    // While FOCUSED, only shelters a person could realistically reach are
+    // ranked/evaluated. The evaluator would reject distant ones as
+    // UNREACHABLE anyway — hiding them removes the 'all safe zones are
+    // unreachable' wall the user reported (issue 4/11).
+    val scopedCandidates = if (focused) {
+      zonesInScope.filter {
+        com.example.data.model.GeoMath.distanceMeters(location, it.point) <=
+          REACHABLE_SHELTER_WINDOW_METERS
+      }
+    } else zonesInScope
 
     val risk = RiskAssessmentEngine.assess(
       location = location,
@@ -596,7 +615,7 @@ class VippattiViewModel(
     // Evaluate EVERY candidate: feasible shelters are ranked; rejected ones
     // carry their rejection reason so the UI can never present a full or
     // hazard-trapped shelter as an eligible destination.
-    val evaluated = SafeZoneEvaluator.evaluateAll(zonesInScope, ctx)
+    val evaluated = SafeZoneEvaluator.evaluateAll(scopedCandidates, ctx)
     val ranked = evaluated.filter { it.isFeasible }.sortedByDescending { it.score }
     val action = ActionAdvisor.recommend(risk, ranked)
 

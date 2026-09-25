@@ -288,10 +288,45 @@ fun HistoricalIntelligencePanel(
         lineHeight = 15.sp
       )
     } else {
-      // A bounded preview: the full list would swamp the screen, and the count
-      // above already states the total.
-      events.take(12).forEach { event ->
-        HistoricalRecordRow(event = event, onClick = { onSelectEvent(event) })
+      // A bounded preview grouped BY DISASTER TYPE: each group header shows
+      // how big that family is as a share bar, so the wall of rows becomes a
+      // scannable picture. Tapping a record still opens the full sheet.
+      val preview = events.take(12)
+      val groupTotals = preview.groupingBy { it.type }.eachCount()
+      preview.groupBy { it.type }.forEach { (type, group) ->
+        val share = group.size.toFloat() / preview.size
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+          Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+          ) {
+            Text(
+              type, fontSize = 11.sp, fontWeight = FontWeight.Black,
+              color = TacticalCyan, maxLines = 1, overflow = TextOverflow.Ellipsis,
+              modifier = Modifier.weight(0.5f)
+            )
+            Box(
+              modifier = Modifier
+                .weight(1f)
+                .height(6.dp)
+                .clip(RoundedCornerShape(3.dp))
+                .background(ObsidianContainer)
+            ) {
+              Box(
+                modifier = Modifier
+                  .fillMaxWidth(share.coerceAtLeast(0.05f))
+                  .height(6.dp)
+                  .clip(RoundedCornerShape(3.dp))
+                  .background(TacticalCyan.copy(alpha = 0.85f))
+              )
+            }
+            Text("${group.size}", fontSize = 11.sp, color = TacticalOnSurfaceVariant)
+          }
+          group.forEach { event ->
+            HistoricalRecordRow(event = event, onClick = { onSelectEvent(event) })
+          }
+        }
       }
       if (events.size > 12) {
         Text(
@@ -521,6 +556,49 @@ if (summary.typeBars.isNotEmpty()) {
   }
 }
 
+/** Big-number impact tile with a relative share bar (dialog use). */
+@Composable
+private fun androidx.compose.foundation.layout.RowScope.ImpactTile(
+  label: String,
+  caption: String,
+  value: Long?,
+  scaleMax: Long,
+  tint: androidx.compose.ui.graphics.Color,
+  tag: String
+) {
+  Column(
+    modifier = Modifier
+      .weight(1f)
+      .clip(RoundedCornerShape(10.dp))
+      .background(ObsidianContainerHigh)
+      .padding(10.dp)
+      .testTag(tag),
+    verticalArrangement = Arrangement.spacedBy(4.dp)
+  ) {
+    Text(label, fontSize = 11.sp, fontWeight = FontWeight.Black, color = TacticalOnSurfaceVariant)
+    Text(caption, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = tint,
+      maxLines = 1, overflow = TextOverflow.Ellipsis)
+    Box(
+      modifier = Modifier
+        .fillMaxWidth()
+        .height(5.dp)
+        .clip(RoundedCornerShape(3.dp))
+        .background(ObsidianContainer)
+    ) {
+      Box(
+        modifier = Modifier
+          .fillMaxWidth(
+            if (value == null) 0f
+            else (value.toFloat() / scaleMax).coerceIn(0.06f, 1f)
+          )
+          .height(5.dp)
+          .clip(RoundedCornerShape(3.dp))
+          .background(tint)
+      )
+    }
+  }
+}
+
 @Composable
 private fun HistBarRow(label: String, count: Int, fraction: Float, tint: androidx.compose.ui.graphics.Color, tag: String) {
   Row(
@@ -635,6 +713,18 @@ fun HistoricalEventDetailDialog(
           .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(6.dp)
       ) {
+        // Visual impact tiles FIRST: the human cost as big numbers + share
+        // bars of what EM-DAT recorded, before the full field-by-field list.
+        val impactMax = listOfNotNull(
+          event.impacts.totalDeaths, event.impacts.injured,
+          event.impacts.affected, event.impacts.homeless, event.impacts.totalAffected
+        ).maxOrNull()?.coerceAtLeast(1L) ?: 1L
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+          ImpactTile("DEATHS", event.impacts.totalDeaths?.let { "${formatCount(it)} deaths" } ?: "Not recorded",
+            event.impacts.totalDeaths, impactMax, EmergencyRedBright, "hist_tile_deaths")
+          ImpactTile("AFFECTED", event.impacts.totalAffected?.let { "${formatCount(it)} affected" } ?: "Not recorded",
+            event.impacts.totalAffected, impactMax, WarningAmber, "hist_tile_affected")
+        }
         DetailLine("Disaster group", event.group)
         DetailLine("Subgroup", event.subgroup)
         DetailLine("Type", event.type)
