@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.sp
  *  - `label*` carry chips, tags and metric captions.
  *
  * Screens should read from `MaterialTheme.typography` (or the semantic helpers
- * in [VippattiText]) instead of the ad-hoc inline `fontSize = 9.sp` literals the
+ * in [VippattiText]) instead of the ad-hoc inline `fontSize = 11.sp` literals the
  * codebase accumulated.
  */
 private val Sans = FontFamily.Default

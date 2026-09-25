@@ -23,32 +23,40 @@ defaultConfig {
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-    // GNews API key — read from app/.env (git-ignored, real key) with the
-    // .env.example placeholder as fallback so clean clones still build; the
-    // app then reports an honest "key not configured" state instead of
-    // fabricating news. Surfaces as BuildConfig.GNEWS_API_KEY — the key is
-    // never hardcoded in Kotlin sources.
-    val gnewsEnvFile = file(".env").takeIf { it.isFile } ?: file(".env.example")
-    val gnewsApiKey = gnewsEnvFile.readLines()
-        .firstOrNull { it.trim().startsWith("GNEWS_API_KEY=") }
+    // API keys — read from app/.env (git-ignored, real keys), falling back to
+    // the .env.example placeholders so clean clones still build.
+    //
+    // THIS READ IS CONFIG-CACHE SAFE (real bug fixed 2026-09-24): the previous
+    // raw file().takeIf{isFile} read ran at configuration time and Gradle could
+    // not see .env appear/change, so a stale (placeholder) value was FROZEN
+    // into BuildConfig and reused for every later build — the app shipped
+    // "YOUR_GN...HERE" as a key and GNews answered HTTP 400. providers.*
+    // registers the files as real configuration inputs, so any .env edit
+    // invalidates the cache entry.
+    //
+    // Surfaces as BuildConfig.GNEWS_API_KEY / BuildConfig.FIRMS_MAP_KEY — keys
+    // are never hardcoded in Kotlin sources.
+    val envReal = layout.projectDirectory.file(".env")
+    val envExample = layout.projectDirectory.file(".env.example")
+    fun envValue(name: String, placeholder: String): String {
+      val text = providers.fileContents(envReal).asText.getOrElse("")
+        .ifBlank { providers.fileContents(envExample).asText.getOrElse("") }
+      val raw = text.lineSequence()
+        .map { it.trim() }
+        .firstOrNull { it.startsWith("$name=") }
         ?.substringAfter('=')
         ?.trim()
         ?.replace("\"", "")
-        ?: "YOUR_GNEWS_API_KEY_HERE"
-    buildConfigField("String", "GNEWS_API_KEY", "\"$gnewsApiKey\"")
+        .orEmpty()
+      // Guard: any non-ASCII or obviously-short value is a corrupted/placeholder
+      // read — embed the honest placeholder instead of garbage that fails at runtime.
+      return if (raw.isNotBlank() && raw == placeholder) placeholder
+        else if (raw.length >= 20 && raw.all { it.code in 32..126 }) raw
+        else placeholder
+    }
+    buildConfigField("String", "GNEWS_API_KEY", "\"" + envValue("GNEWS_API_KEY", "YOUR_GNEWS_API_KEY_HERE") + "\"")
+    buildConfigField("String", "FIRMS_MAP_KEY", "\"" + envValue("FIRMS_MAP_KEY", "YOUR_FIRMS_MAP_KEY_HERE") + "\"")
 
-    // NASA FIRMS MAP_KEY — free key for the official active-fire API
-    // (https://firms.modaps.eosdis.nasa.gov/api/area/ -> "Get MAP Key").
-    // Same .env convention: real key in app/.env (git-ignored), placeholder
-    // fallback so clean clones build and the app honestly reports the fire
-    // layer as unavailable until the key is configured.
-    val firmsMapKey = gnewsEnvFile.readLines()
-        .firstOrNull { it.trim().startsWith("FIRMS_MAP_KEY=") }
-        ?.substringAfter('=')
-        ?.trim()
-        ?.replace("\"", "")
-        ?: "YOUR_FIRMS_MAP_KEY_HERE"
-    buildConfigField("String", "FIRMS_MAP_KEY", "\"$firmsMapKey\"")
 }
 
 signingConfigs {
@@ -136,6 +144,12 @@ secrets {
 propertiesFileName = ".env"
 defaultPropertiesFileName = ".env.example"
 ignoreList.add("FIREBASE_APPCHECK_DEBUG_TOKEN")
+// GNEWS/FIRMS keys are injected ABOVE via the config-cache-safe envValue() read.
+// The plugin must NOT write its own copy of them: doing so overwrote the real key
+// with a corrupted placeholder (the "Map data"-style truncation) and every request
+// then died with GNews HTTP 400 / FIRMS empty layer.
+ignoreList.add("GNEWS_API_KEY")
+ignoreList.add("FIRMS_MAP_KEY")
 }
 
 googleServices {

@@ -93,7 +93,7 @@ class MapRotationLifecycleTest {
 
     holder.deployHistoricalEvents(listOf(historicalEvent), {})
 
-    val rendered = view.overlays.filterIsInstance<PulsingZoneOverlay>()
+    val rendered = view.overlays.filterIsInstance<MarkerOverlay>()
     assertEquals("the archive marker must be drawn before teardown", 1, rendered.size)
     assertTrue("a drawn pulse overlay animates", rendered.first().isAnimating)
 
@@ -102,7 +102,7 @@ class MapRotationLifecycleTest {
     assertEquals(
       "cleanup must remove EVERY pulsing overlay, the EM-DAT layer included",
       0,
-      view.overlays.count { it is PulsingZoneOverlay }
+      view.overlays.count { it is MarkerOverlay }
     )
     assertTrue(
       "no overlay may keep scheduling redraws after the map is released",

@@ -79,7 +79,9 @@ internal fun RouteIntelligencePanel(
   onSetTravelMode: (String) -> Unit,
   onLoadAlternativeRoutes: () -> Unit,
   onSelectBestSafeZone: () -> Unit,
-  onRequestFallbackRoute: () -> Unit = {}
+  onRequestFallbackRoute: () -> Unit = {},
+  /** Swap a listed alternative corridor in as the active route (chip tap). */
+  onSelectAlternativeRoute: (String) -> Unit = {}
 ) {
   val route = uiState.activeRoute
   val evaluation = uiState.selectedEvaluation
@@ -117,7 +119,7 @@ internal fun RouteIntelligencePanel(
       Column(modifier = Modifier.weight(1f)) {
         Text(
           text = "ROUTE TO",
-          fontSize = 9.sp,
+          fontSize = 11.sp,
           fontWeight = FontWeight.Black,
           color = TacticalOnSurfaceVariant,
           letterSpacing = 0.8.sp
@@ -161,7 +163,7 @@ internal fun RouteIntelligencePanel(
             RouteStatus.REQUESTING -> "REQUESTING…"
             RouteStatus.RECEIVED -> "ROUTE RECEIVED"
             RouteStatus.VALIDATING_HAZARDS -> "CHECKING HAZARDS…"
-            RouteStatus.READY -> "OSRM VALIDATED"
+            RouteStatus.READY -> "REAL ROADS VERIFIED"
             RouteStatus.NO_ROUTE -> "NO ROUTE FOUND"
             RouteStatus.NETWORK_ERROR -> "ROUTER UNREACHABLE"
             RouteStatus.FALLBACK_UNVERIFIED -> "UNVERIFIED ESTIMATE"
@@ -264,32 +266,52 @@ internal fun RouteIntelligencePanel(
 
     // Route safety status + score bar.
     if (route != null) {
-      Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+      Column(
+        modifier = Modifier.fillMaxWidth().testTag("route_safety_block"),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
       ) {
-        Text(
-          text = if (uiState.routeStatus == RouteStatus.FALLBACK_UNVERIFIED) {
-            "ROUTE SAFETY: NOT VALIDATED (OFFLINE ESTIMATE)"
-          } else {
-            "ROUTE SAFETY: ${route.routeSafetyStatus.label.uppercase()}"
-          },
-          fontSize = 12.sp,
-          fontWeight = FontWeight.Bold,
-          color = when (route.routeSafetyStatus) {
-            RouteSafetyStatus.SAFE -> NeonEmerald
-            RouteSafetyStatus.CAUTION -> WarningAmber
-            RouteSafetyStatus.DANGER -> EmergencyRedBright
-          },
-          maxLines = 1,
-          overflow = TextOverflow.Ellipsis
-        )
-        Text(
-          text = "Safety ${route.routeSafetyScore}/100",
-          fontSize = 10.sp,
-          color = TacticalOnSurfaceVariant
-        )
+        Row(
+          modifier = Modifier.fillMaxWidth(),
+          horizontalArrangement = Arrangement.spacedBy(8.dp),
+          verticalAlignment = Alignment.CenterVertically
+        ) {
+          Text(
+            text = if (uiState.routeStatus == RouteStatus.FALLBACK_UNVERIFIED) {
+              "Route safety: NOT CHECKED"
+            } else {
+              "Route safety: ${route.routeSafetyStatus.label}"
+            },
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold,
+            color = when (route.routeSafetyStatus) {
+              RouteSafetyStatus.SAFE -> NeonEmerald
+              RouteSafetyStatus.CAUTION -> WarningAmber
+              RouteSafetyStatus.DANGER -> EmergencyRedBright
+            },
+            lineHeight = 16.sp,
+            modifier = Modifier.weight(1f)
+          )
+          Text(
+            text = "${route.routeSafetyScore}/100",
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Bold,
+            color = TacticalOnSurfaceVariant
+          )
+        }
+        // Plain-language action line for the worst state (the raw label "Danger
+        // — Route Enters Hazard Zone" left users guessing; the user asked for
+        // wording people understand).
+        if (route.routeSafetyStatus == RouteSafetyStatus.DANGER &&
+          uiState.routeStatus != RouteStatus.FALLBACK_UNVERIFIED
+        ) {
+          Text(
+            text = "This road passes through a danger area. Prefer another route if you can.",
+            fontSize = 11.sp,
+            color = EmergencyRedBright,
+            lineHeight = 15.sp,
+            modifier = Modifier.testTag("route_danger_advice")
+          )
+        }
       }
       LinearProgressIndicator(
         progress = { route.routeSafetyScore / 100f },
@@ -458,7 +480,10 @@ internal fun RouteIntelligencePanel(
     }
     } // end of showDetails (controls + alternatives)
 
-    // Alternative corridor chips (when computed).
+    // Alternative corridor chips (when computed). TAPPING one swaps it in as
+    // the active route (the chips used to be inert — the "Alternatives
+    // doesn't work" report). Alternatives render as grey ghost lines on the
+    // map; the active corridor stays green.
     if (showDetails && uiState.alternativeRoutes.size > 1) {
       LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
         items(uiState.alternativeRoutes.size) { idx ->
@@ -475,12 +500,14 @@ internal fun RouteIntelligencePanel(
                 if (isPrimary) NeonEmerald else TacticalOutlineVariant,
                 RoundedCornerShape(8.dp)
               )
-              .padding(horizontal = 8.dp, vertical = 4.dp)
+              .clickable(enabled = !isPrimary) { onSelectAlternativeRoute(alt.routeId) }
+              .padding(horizontal = 8.dp, vertical = 6.dp)
+              .testTag("alternative_chip_$idx")
           ) {
             Text(
-              text = "${alt.summary} • ${OsrmRoutingService.formatDistance(alt.distanceMeters)} • Safety ${alt.routeSafetyScore}",
-              fontSize = 9.sp,
-              color = if (isPrimary) NeonEmerald else TacticalOnSurfaceVariant,
+              text = (if (isPrimary) "" else "USE: ") + "${alt.summary} • ${OsrmRoutingService.formatDistance(alt.distanceMeters)} • Safety ${alt.routeSafetyScore}",
+              fontSize = 11.sp,
+              color = if (isPrimary) NeonEmerald else TacticalOnSurface,
               fontWeight = if (isPrimary) FontWeight.Bold else FontWeight.Normal,
               maxLines = 1
             )
@@ -502,7 +529,7 @@ private fun androidx.compose.foundation.layout.RowScope.RouteMetric(label: Strin
       .padding(vertical = 4.dp),
     horizontalAlignment = Alignment.CenterHorizontally
   ) {
-    Text(label, fontSize = 8.sp, fontWeight = FontWeight.SemiBold, color = TacticalOnSurfaceVariant, maxLines = 1)
+    Text(label, fontSize = 10.sp, fontWeight = FontWeight.SemiBold, color = TacticalOnSurfaceVariant, maxLines = 1)
     Text(value, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = accent, maxLines = 1)
   }
 }

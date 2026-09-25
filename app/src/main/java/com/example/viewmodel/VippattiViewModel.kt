@@ -69,6 +69,7 @@ import com.example.data.disaster.ProviderState
 import com.example.data.disaster.providers.UsgsEarthquakeProvider
 import com.example.data.disaster.defaultSeverity
 import com.example.data.disaster.dedupeBySourceEventId
+import com.example.data.disaster.DemoNetworkAroundUser
 import com.example.data.disaster.toHazardZones
 import com.example.data.disaster.isValid
 import kotlinx.coroutines.Job
@@ -169,6 +170,12 @@ class VippattiViewModel(
    * default resolves nothing, so a caller without a resolver stays national.
    */
   private val placeResolver: PlaceResolver = UnresolvedPlaceResolver,
+  /**
+   * Forward place search for "look at a chosen state/city" (picker on Home +
+   * Map). Production uses Nominatim; tests inject a fake searcher.
+   */
+  private val placeSearcher: com.example.data.location.PlaceSearcher =
+    com.example.data.location.NominatimPlaceSearcher(),
   /**
    * EMERGENCY GUIDANCE wiring (SIH 26191): live terrain probe + offline coast
    * grid for the terrain-derived safe-haven finder. Production MainActivity
@@ -543,13 +550,22 @@ class VippattiViewModel(
     } else {
       emptyList()
     }
-    val hazards = (liveZones + reportZones + mockZones).distinctBy { it.id }
+    // DEMO-AROUND-YOU: the India-wide demo set is 14 far-apart districts, so
+    // anywhere else in the country the DEMO switch ON still showed nothing
+    // near the user. With demo on, ONE clearly-SIMULATED hazard circle is
+    // generated around the current focus (GPS or chosen place), guaranteeing
+    // the demo demonstrates the full journey: danger -> safe zone -> route.
+    val demoAroundUser = if (state.isMockDataVisible) {
+      listOfNotNull(DemoNetworkAroundUser.around(location)?.first)
+    } else emptyList()
+    val hazards = (liveZones + reportZones + mockZones + demoAroundUser).distinctBy { it.id }
 
     // The shelter network today: SIMULATED demo zones (only while the demo
     // switch is on) PLUS any REAL operator-entered field registry records,
     // which stay in scope in every mode — they are field data, not demo data.
     val demoZones = if (state.isMockDataVisible) {
-      state.safeZones.filter { IndiaGeo.contains(it.point) }
+      val nearby = listOfNotNull(DemoNetworkAroundUser.around(location)?.second)
+      state.safeZones.filter { IndiaGeo.contains(it.point) } + nearby
     } else {
       emptyList()
     }
@@ -679,6 +695,9 @@ class VippattiViewModel(
    * re-routing is movement-guarded so 1 Hz fixes never starve the OSRM request.
    */
   fun applyRealGpsFix(latitude: Double, longitude: Double) {
+    // While the user is deliberately viewing a CHOSEN place, hardware fixes
+    // must not yank the app back — the banner says "not your GPS location".
+    if (_uiState.value.isViewingChosenPlace) return
     val state = _uiState.value
     if (state.isUserLocationFallback || state.userLocation.lat != latitude || state.userLocation.lon != longitude) {
       _uiState.update {
@@ -726,6 +745,129 @@ class VippattiViewModel(
 
   private fun scopeKey(place: ResolvedPlace?): String =
     listOf(place?.district, place?.state).joinToString("|")
+
+  // =============================================== PLACE VIEW MODE (picker) ==
+
+  fun openPlacePicker() {
+    _uiState.update {
+      it.copy(
+        showPlacePicker = true,
+        placeCandidates = emptyList(),
+        placeSearchError = null,
+        placeSearchQuery = ""
+      )
+    }
+  }
+
+  fun closePlacePicker() {
+    placeSearchJob?.cancel()
+    _uiState.update {
+      it.copy(showPlacePicker = false, isSearchingPlace = false, placeCandidates = emptyList())
+    }
+  }
+
+  private var placeSearchJob: Job? = null
+
+  /** Type-ahead place search; results are India-filtered by the searcher. */
+  fun setPlaceQuery(query: String) {
+    _uiState.update { it.copy(placeSearchQuery = query, placeSearchError = null) }
+    placeSearchJob?.cancel()
+    val q = query.trim()
+    if (q.length < 2) {
+      _uiState.update { it.copy(placeCandidates = emptyList(), isSearchingPlace = false) }
+      return
+    }
+    placeSearchJob = viewModelScope.launch {
+      _uiState.update { it.copy(isSearchingPlace = true) }
+      val result = try {
+        placeSearcher.search(q)
+      } catch (cancelled: kotlinx.coroutines.CancellationException) {
+        throw cancelled
+      } catch (error: Exception) {
+        com.example.data.location.PlaceSearchResult.Failure(
+          "Place search failed (${error.javaClass.simpleName})."
+        )
+      }
+      when (result) {
+        is com.example.data.location.PlaceSearchResult.Found ->
+          _uiState.update {
+            it.copy(isSearchingPlace = false, placeCandidates = result.candidates, placeSearchError = null)
+          }
+        is com.example.data.location.PlaceSearchResult.Failure ->
+          _uiState.update {
+            it.copy(isSearchingPlace = false, placeCandidates = emptyList(), placeSearchError = result.reason)
+          }
+      }
+    }
+  }
+
+  /**
+   * Points the whole app at a chosen place: the map flies there, risk/news/
+   * weather/historical re-scope to it, and the header shows it is a CHOSEN
+   * PLACE, never the user's real position. GPS fixes are ignored while in
+   * view mode (they are remembered and restored on exit).
+   */
+  private var savedGpsLocation: GeoPoint? = null
+  private var savedWasFallback: Boolean = true
+
+  fun viewChosenPlace(candidate: com.example.data.location.PlaceCandidate) {
+    val state = _uiState.value
+    if (!state.isViewingChosenPlace) {
+      savedGpsLocation = state.userLocation
+      savedWasFallback = state.isUserLocationFallback
+    }
+    _uiState.update {
+      it.copy(
+        showPlacePicker = false,
+        isViewingChosenPlace = true,
+        viewedPlaceLabel = candidate.displayName,
+        userLocation = candidate.point,
+        isUserLocationFallback = false,
+        cameraJumpTarget = candidate.point,
+        // A new view invalidates per-location derived state until refreshed.
+        terrainSelfAssessment = null,
+        terrainHaven = null
+      )
+    }
+    recomputeIntelligence()
+    refreshWeather(force = true)
+    refreshResolvedPlace(candidate.point, force = true)
+    syncDisasterData()
+    _uiState.update {
+      it.copy(snackbarMessage = "Now showing ${candidate.name} — not your GPS location.")
+    }
+  }
+
+  /** The map fired the fly-to; clear the one-shot so it never re-animates. */
+  fun consumeCameraJump() {
+    if (_uiState.value.cameraJumpTarget != null) {
+      _uiState.update { it.copy(cameraJumpTarget = null) }
+    }
+  }
+
+  fun exitPlaceView() {
+    if (!_uiState.value.isViewingChosenPlace) return
+    _uiState.update {
+      it.copy(
+        isViewingChosenPlace = false,
+        viewedPlaceLabel = null,
+        userLocation = savedGpsLocation ?: PilotRegionData.FALLBACK_USER_LOCATION,
+        isUserLocationFallback = savedWasFallback,
+        cameraJumpTarget = null,
+        terrainSelfAssessment = null,
+        terrainHaven = null
+      )
+    }
+    recomputeIntelligence()
+    refreshWeather(force = true)
+    refreshResolvedPlace(
+      savedGpsLocation ?: PilotRegionData.FALLBACK_USER_LOCATION,
+      force = true
+    )
+    _uiState.update {
+      it.copy(snackbarMessage = "Back to your own location view.")
+    }
+  }
 
   /** Search rings for the place resolved RIGHT NOW (national ring always). */
   private fun currentNewsQueries(): List<NewsQueryFactory.ScopedNewsQuery> =
@@ -1314,6 +1456,26 @@ class VippattiViewModel(
    * it auto-selects the best-ranked shelter first, and with no feasible
    * shelter at all it says so instead of doing nothing.
    */
+  /**
+   * Swaps a listed alternative corridor IN as the active route (chip tap).
+   * Pure state operation — no network — so it is instant.
+   */
+  fun selectAlternativeRoute(routeId: String) {
+    val state = _uiState.value
+    val target = state.alternativeRoutes.firstOrNull { it.routeId == routeId } ?: return
+    if (state.activeRoute?.routeId == routeId) return
+    _uiState.update {
+      it.copy(
+        activeRoute = target,
+        routeStatus = RouteStatus.READY,
+        routeStatusMessage = "Switched to ${target.summary} (${
+          com.example.data.routing.OsrmRoutingService.formatDistance(target.distanceMeters)
+        }). $ROUTE_LIMITATIONS_NOTE",
+        currentNavigationStepIndex = 0
+      )
+    }
+  }
+
   fun loadAlternativeRoutes() {
     var zone = _uiState.value.selectedSafeZone
     if (zone == null) {
@@ -1333,16 +1495,15 @@ class VippattiViewModel(
     val mode = _uiState.value.travelMode
     val hazards = _uiState.value.hazardZones
     lastRouteOrigin = origin
-    // Nothing is drawn until verified road corridors arrive (no straight-line
-    // placeholder). Synthetic offline detours are filtered out below.
+    // The corridor the user ALREADY has stays on screen while the extra
+    // options load — failing to find MORE routes must never destroy the
+    // working one (previous behaviour blanked the map line on every tap).
+    val existingRoute = _uiState.value.activeRoute
     _uiState.update {
       it.copy(
-        activeRoute = null,
-        alternativeRoutes = emptyList(),
         isCalculatingRoute = true,
         routeStatus = RouteStatus.REQUESTING,
-        routeStatusMessage = "Requesting alternative road corridors to ${target.name}…",
-        currentNavigationStepIndex = 0
+        routeStatusMessage = "Checking for other verified roads to ${target.name}..."
       )
     }
     routingJob = viewModelScope.launch {
@@ -1362,13 +1523,20 @@ class VippattiViewModel(
       // detour variants are not roads, so they are never presented as options.
       val roadAlternatives = alternatives.filter { it.isLiveOsrm }
       if (roadAlternatives.isEmpty()) {
+        // Keep whatever corridor the user ALREADY has on screen — failing to
+        // find EXTRA options must never destroy the working route (previous
+        // behaviour nulled activeRoute, i.e. the map line vanished on tap).
+        val existing = existingRoute
         _uiState.update {
           it.copy(
-            activeRoute = null,
-            alternativeRoutes = emptyList(),
             isCalculatingRoute = false,
-            routeStatus = RouteStatus.NETWORK_ERROR,
-            routeStatusMessage = "No verified road alternatives available. Nothing is drawn."
+            alternativeRoutes = existing?.let { r -> listOf(r) } ?: emptyList(),
+            routeStatus = if (existing != null) it.routeStatus else RouteStatus.NETWORK_ERROR,
+            routeStatusMessage = if (existing != null) {
+              "No different road alternative found — the current route is the only verified one."
+            } else {
+              "No verified road alternatives available. Nothing is drawn."
+            }
           )
         }
         return@launch

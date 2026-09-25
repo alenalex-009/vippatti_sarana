@@ -170,6 +170,20 @@ Vippatti Sarana is an active disaster-management pilot project focused on **risk
 
 ---
 
+---
+
+## 🎨 Design Principles (UI/UX pass, Sep 2026)
+
+The app is organised around seven established mobile UX principles:
+
+1. **User-centricity** — the app now opens on a calm **Home** screen answering the one question people actually have in a disaster: *"Is my area safe right now, and what do I do?"* Dense tools stay one tap away.
+2. **Simplicity** — each screen has one job: Home = decide, Map = see, News = read, Guide = prepare, Profile = manage. The radar's bottom sheet now starts **collapsed** (map-first), and the layer/status chip row only carries controls relevant to the map.
+3. **Consistency** — one status vocabulary (LIVE / CACHED / STALE / SIMULATED / DERIVED / NOT CONFIGURED) with the same badge colours everywhere; the same GO/Cancel button shapes on guidance, console and dialogs; shared spacing and card language.
+4. **Efficiency** — danger guidance appears on BOTH Home and Map; GO routes in one tap; the Authority Console ranks with a single button; back-gesture now walks tabs Home-ward instead of exiting the app.
+5. **Feedback & guidance** — every long action shows progress ("Probing terrain around you…"), every failure states what happened and how to fix it (never a silent default), and empty states say what to do next (contacts, shelters, ranking).
+6. **Accessibility** — minimum readable type raised (no text under 10 sp on new surfaces, most ≥ 11 sp), bottom-nav announces its label + selected state to screen readers, icon-only controls have content descriptions, live/error copy uses proper ellipsis glyphs.
+7. **Scalability** — the tab enum, nav bar and Home action list are data-driven; adding a destination or an action row is a list edit, not a layout rewrite.
+
 ## ⚠️ Disclaimer
 
 Vippatti Sarana is a software prototype/pilot and **should not be considered a replacement for official emergency warnings, government advisories, or instructions from emergency authorities**.

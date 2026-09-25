@@ -80,6 +80,8 @@ private const val REROUTE_MIN_MOVEMENT_METERS = 50.0
 /** Cap on locally-held citizen reports (device memory guard). */
 
 enum class ScreenTab {
+  /** Quiet landing screen: "am I safe / what do I do" — the default entry. */
+  HOME,
   RADAR_MAP,
   NEWS_DISPATCHES,
   INSTRUCTIONS,
@@ -126,8 +128,8 @@ enum class RouteStatus {
  */
 data class VippattiUiState(
   // --- App chrome ---
-  val currentTab: ScreenTab = ScreenTab.RADAR_MAP,
-  val isDarkTheme: Boolean = true,
+  val currentTab: ScreenTab = ScreenTab.HOME,
+  val isDarkTheme: Boolean = false,
   /**
    * Offline-first display preference. There is NO bulk offline download in this
    * build, so this flag only says "I intend to work offline"; the Profile pack
@@ -283,6 +285,20 @@ data class VippattiUiState(
   val relocationPriorities: List<com.example.data.habitations.HabitationPriority> = emptyList(),
   val isRankingPriorities: Boolean = false,
   val showAuthorityDashboard: Boolean = false,
+
+  // --- PLACE VIEW MODE ("look at a state/city without GPS") ---
+  /** True while the map/risk reflect a CHOSEN place, not the device GPS. */
+  val isViewingChosenPlace: Boolean = false,
+  /** The chosen place's honest label, e.g. "Visakhapatnam, Andhra Pradesh". */
+  val viewedPlaceLabel: String? = null,
+  /** Set once per explicit pick so the map animates the camera exactly then. */
+  val cameraJumpTarget: com.example.data.routing.GeoPoint? = null,
+  /** Live place-search state for the picker sheet. */
+  val placeSearchQuery: String = "",
+  val isSearchingPlace: Boolean = false,
+  val placeCandidates: List<com.example.data.location.PlaceCandidate> = emptyList(),
+  val placeSearchError: String? = null,
+  val showPlacePicker: Boolean = false,
 
   // --- Carrying capacity (SIH milestone) ---
   /** How many people need relocation here; null = no population figure. */

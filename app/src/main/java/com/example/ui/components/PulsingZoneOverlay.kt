@@ -24,7 +24,7 @@ class PulsingZoneOverlay(
   baseColorArgb: Int,
   private val pulsePeriodMs: Long,
   private val onZoneTapped: (() -> Unit)? = null
-) : Overlay() {
+) : MarkerOverlay() {
 
   private val fillPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
     color = baseColorArgb
@@ -62,7 +62,7 @@ class PulsingZoneOverlay(
   private var active = true
 
   /** Permanently stops this overlay's animation + invalidations. Idempotent. */
-  fun stop() {
+  override fun stop() {
     active = false
   }
 
@@ -72,7 +72,7 @@ class PulsingZoneOverlay(
    * Read-only view of [active] so teardown can be verified: a released map must
    * leave NO animating overlay behind (see OsmMapControllerHolder.cleanup).
    */
-  val isAnimating: Boolean get() = active
+  override val isAnimating: Boolean get() = active
 
   /**
    * Base-circle pixel radius derived from two projected points (center and a

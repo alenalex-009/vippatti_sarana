@@ -101,16 +101,16 @@ internal fun PersonalRiskStrip(
           maxLines = 1
         )
         Text(
-          text = if (isFallbackLocation) "• INDIA FALLBACK" else "• DEVICE GPS",
-          fontSize = 8.sp,
+          text = if (isFallbackLocation) "• location approximate" else "• your GPS",
+          fontSize = 10.sp,
           fontWeight = FontWeight.Bold,
           color = if (isFallbackLocation) TacticalCyan else NeonEmerald,
           maxLines = 1
         )
       }
       Text(
-        text = risk?.explanation ?: "Analyzing hazards around your location...",
-        fontSize = 9.sp,
+        text = risk?.explanation ?: "Checking hazards around your location…",
+        fontSize = 11.sp,
         color = TacticalOnSurface,
         maxLines = 2,
         overflow = TextOverflow.Ellipsis,
@@ -191,7 +191,7 @@ internal fun RecommendedActionCard(
         Icon(Icons.Default.NearMe, contentDescription = null, tint = NeonEmerald, modifier = Modifier.size(13.dp))
         Text(
           text = "Why this zone? Best pick — $selectedZoneName",
-          fontSize = 9.sp,
+          fontSize = 11.sp,
           fontWeight = FontWeight.Bold,
           color = NeonEmerald,
           maxLines = 1,

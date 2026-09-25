@@ -67,12 +67,12 @@ internal fun TerrainSelfAssessmentChip(
     ) {
       if (isAssessing) {
         CircularProgressIndicator(modifier = Modifier.size(12.dp), strokeWidth = 2.dp, color = TacticalCyan)
-        Text("Checking terrain around you...", fontSize = 9.5.sp, color = TacticalOnSurface)
+        Text("Checking terrain around you…", fontSize = 12.sp, color = TacticalOnSurface)
       } else {
         Icon(Icons.Default.Terrain, null, tint = TacticalCyan, modifier = Modifier.size(14.dp))
         Text(
           if (assessment == null) "CHECK MY TERRAIN" else "RE-CHECK MY TERRAIN",
-          fontSize = 9.5.sp, fontWeight = FontWeight.Black, color = TacticalCyan
+          fontSize = 12.sp, fontWeight = FontWeight.Black, color = TacticalCyan
         )
       }
     }
@@ -118,19 +118,19 @@ internal fun TerrainSelfAssessmentChip(
                   v.rainfallMm24h?.let { "%.0f mm".format(it) } ?: "unknown",
                   if (assessment.coastKnown) "from land-data grid" else "unresolved"
                 ),
-                fontSize = 8.5.sp, color = TacticalOnSurfaceVariant
+                fontSize = 11.sp, color = TacticalOnSurfaceVariant
               )
             }
             Spacer(Modifier.height(4.dp))
             v.reasons.take(4).forEach { reason ->
-              Text("• $reason", fontSize = 8.5.sp, color = TacticalOnSurface, lineHeight = 11.sp,
+              Text("• $reason", fontSize = 11.sp, color = TacticalOnSurface, lineHeight = 14.sp,
                 maxLines = 2, overflow = TextOverflow.Ellipsis)
             }
             Spacer(Modifier.height(4.dp))
-            Text(v.source, fontSize = 7.5.sp, color = TacticalOnSurfaceVariant)
+            Text(v.source, fontSize = 10.sp, color = TacticalOnSurfaceVariant)
             Text(
               "DERIVED • " + v.disclaimer,
-              fontSize = 7.5.sp, color = WarningAmber, lineHeight = 10.sp
+              fontSize = 10.sp, color = WarningAmber, lineHeight = 13.sp
             )
           }
         }
@@ -147,11 +147,11 @@ internal fun TerrainSelfAssessmentChip(
             Text(
               "The elevation/rainfall service could not answer (${assessment.detail}). " +
                 "Nothing was assumed — try again when connected.",
-              fontSize = 8.5.sp, color = TacticalOnSurface, lineHeight = 11.sp
+              fontSize = 11.sp, color = TacticalOnSurface, lineHeight = 14.sp
             )
             Spacer(Modifier.height(4.dp))
             Text(
-              "✕ dismiss", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = TacticalOnSurfaceVariant,
+              "✕ dismiss", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = TacticalOnSurfaceVariant,
               modifier = Modifier.clickable(onClick = onDismiss)
             )
           }

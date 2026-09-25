@@ -124,7 +124,7 @@ internal fun SafeZoneCarousel(
         } else {
           "NO FEASIBLE SHELTER — all in danger / full"
         },
-        fontSize = 9.sp,
+        fontSize = 11.sp,
         fontWeight = FontWeight.Bold,
         color = if (nearest != null) NeonEmerald else WarningAmber,
         maxLines = 2,
@@ -232,7 +232,7 @@ private fun SafeZoneCard(
     // Location note + rank badge / rejection reason.
     Text(
       text = zone.locationNote,
-      fontSize = 9.sp,
+      fontSize = 11.sp,
       color = TacticalOnSurfaceVariant,
       maxLines = 1,
       overflow = TextOverflow.Ellipsis
@@ -243,7 +243,7 @@ private fun SafeZoneCard(
       if (evaluation.isFeasible) {
         Text(
           text = "MATCH ${evaluation.score}/100 • ${evaluation.capacityReport.statusLabel.uppercase()}",
-          fontSize = 9.sp,
+          fontSize = 11.sp,
           fontWeight = FontWeight.Bold,
           color = if (isFull) EmergencyRedBright else NeonEmerald,
           maxLines = 1,
@@ -259,7 +259,7 @@ private fun SafeZoneCard(
           )
           Text(
             text = evaluation.rejectionReason?.label ?: "Not recommended",
-            fontSize = 9.sp,
+            fontSize = 11.sp,
             fontWeight = FontWeight.Bold,
             color = EmergencyRedBright,
             maxLines = 1,
@@ -312,13 +312,13 @@ private fun SafeZoneCard(
     ) {
       Text(
         text = "${(occupancyRatio * 100).roundToInt()}% full • ${zone.availableCapacity}/${zone.capacityTotal} spots free",
-        fontSize = 9.sp,
+        fontSize = 11.sp,
         color = TacticalOnSurfaceVariant,
         maxLines = 1
       )
       Text(
         text = if (isFull) "FULL" else "OPEN",
-        fontSize = 9.sp,
+        fontSize = 11.sp,
         fontWeight = FontWeight.Bold,
         color = if (isFull) EmergencyRedBright else NeonEmerald
       )
@@ -334,7 +334,7 @@ private fun SafeZoneCard(
         "Sanitation".takeIf { zone.sanitationAvailable },
         "Women & children".takeIf { zone.womenChildrenSuitability }
       ).joinToString(" • ").ifEmpty { "No resource flags set" },
-      fontSize = 9.sp,
+      fontSize = 11.sp,
       color = TacticalOnSurfaceVariant,
       maxLines = 2,
       overflow = TextOverflow.Ellipsis,
@@ -345,7 +345,7 @@ private fun SafeZoneCard(
     if (evaluation != null && evaluation.isFeasible) {
       Text(
         text = evaluation.rankExplanation,
-        fontSize = 9.sp,
+        fontSize = 11.sp,
         color = TacticalOnSurfaceVariant,
         maxLines = 2,
         overflow = TextOverflow.Ellipsis,

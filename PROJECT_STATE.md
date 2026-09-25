@@ -1022,3 +1022,81 @@ unit-tested JVM logic — **none of it is device-verified yet.**
   never a census claim.
 - Coast grid is coarse (~27 km cells): terrain-level coast signal, not a
   parcel claim; storm-surge modelling is NOT implemented.
+
+---
+
+## 20. UX redesign pass (Sep 2026): Home-first journey
+
+Applying Microsoft's 7 UI principles to the citizen experience (all new code
+unit-tested; nothing in the data layer changed):
+
+- **New `ScreenTab.HOME`, now the default landing tab** — `ui/screens/HomeScreen.kt`:
+  risk hero ("IS MY AREA SAFE RIGHT NOW?" with honest pending/calm/alert/
+  danger states + one CTA that navigates), terrain self-check chip moved here
+  from the map, guidance card mirrors here so danger is actionable without
+  finding the map tab, four labeled next-step rows, quiet DATA STATUS footer.
+- **5-tab bottom nav** (Home/Map/News/Guide/Profile, journey-ordered) with
+  screen-reader semantics (`label + (current tab)`), AutoMirrored icons.
+- **Radar calmed**: bottom sheet starts collapsed to a one-line destination
+  peek; terrain chip removed (it lives on Home now).
+- **Back behaviour**: system back walks console -> tab -> Home instead of
+  exiting from any screen (BackHandler in VippattiAppRoot).
+- **Typography/accessibility on the new surfaces**: no text below 10 sp
+  (most ≥ 11), line-heights ≥ font size, `…` glyph in progress copy.
+- Verified: full suite 55 suites / 459 tests / 0 failures; assembleDebug
+  green; Home UX contracts in `HomeScreenUxTest` (5).
+
+---
+
+## 21. Google-style map redesign (Sep 2026): light canvas, pins, nearby-first
+
+The map was the "wtf is this" surface. It now behaves like Google Maps /
+Google Flood Hub:
+
+- **Light basemap** — CARTO Positron (free, OSM data; attribution updated to
+  "© OpenStreetMap contributors © CARTO · routing OSRM"). Muted grey canvas,
+  colored pins carry ALL the signal. The old dark Mapnik stays one tap away.
+- **Pin-or-area markers** (`PinOrAreaOverlay` + `data/disaster/MapFocus`):
+  below city zoom every hazard/event is a small solid DOT with a white ring
+  (intensity grows the dot; severe items get a soft halo). The honest
+  real-radius pulsing AREA only appears from zoom 9 up — exactly like a flood
+  gauge dot becoming its polygon when you zoom in. Historical EM-DAT dots are
+  dot-only forever (area would over-claim archive precision).
+- **NEARBY FIRST**: at city scale the map shows only what is within 50 km of
+  YOUR location; distant events fold into one honest chip — "214 more alerts
+  farther away — SEE ALL" (tap to unfold). No focus = no filtering (never
+  pretend). Crossing the city-scale threshold re-deploys automatically.
+- **Calm controls**: 6 always-visible floating buttons -> 3 (zoom +/, recentre,
+  route-clear ONLY while a route exists). Chip row de-jargoned: per-provider
+  "USGS Earthquake Hazards Program • LIVE" carpet replaced by one plain chip
+  "Live: 2 of 3 sources" (full per-source provenance remains in detail sheets
+  + Home footer); "SIMULATED DEMO • ON" -> "Demo data: ON"; risk strip
+  "DEVICE GPS / INDIA FALLBACK" -> "your GPS / location approximate".
+- Map opens at CITY zoom (9.5), not country zoom 5.
+- REVERTED after production feedback: the sheet collapsed-by-default made the
+  decision stack look removed. RadarSheetVisibilityTest now pins it EXPANDED.
+  The terrain self-check chip lives on BOTH Home and the map.
+- Contracts: `MapFocusTest` (7). Full suite: 56 suites / 465 tests / 0 failures.
+
+---
+
+## 22. App-wide daylight redesign + basemap reliability fix (Sep 2026)
+
+- **Map fix (device-reported):** CARTO Positron tiles came back watermarked
+  "API KEY REQUIRED" once the shared anonymous quota was hit (and osmdroid
+  cached those tiles forever). Basemap switched to **Esri World Light Grey
+  Base** (keyless, no watermark games; z/y/x URL order handled by an explicit
+  getTileURLString override; attribution updated in code + banner). Esri
+  endpoints verified live from this machine during this pass.
+- **Whole app now opens in the LIGHT palette** (`isDarkTheme = false`,
+  VippattiTheme default flipped). The friend's light onboarding and the light
+  map are one coherent Google-like identity; the tactical dark theme remains
+  a working one-tap switch (Profile > Appearance).
+- **Typography floor app-wide:** every Compose Text under 10 sp raised to
+  10-11.5 sp across all screens (13 files), line-heights kept >= font size.
+- **Jargon sweep on user-facing chrome:** "OSRM VALIDATED" -> "REAL ROADS
+  VERIFIED", "FOOT EVAC" -> "ON FOOT", "CHECKING HAZARDS..." -> "Checking
+  hazards…". Provider provenance stays where it belongs (detail sheets,
+  Home DATA STATUS), not on the map.
+- Verified: full suite re-run (--rerun) 56 suites / 465 tests / 0 failures;
+  assembleDebug green.

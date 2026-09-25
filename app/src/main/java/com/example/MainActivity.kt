@@ -64,6 +64,8 @@ import com.example.data.disaster.ZoneDetailMapper
 import com.example.data.location.AndroidGeocoderPlaceResolver
 import com.example.data.news.NewsFileCache
 import com.example.ui.components.AddContactDialog
+import com.example.ui.components.PlacePickerDialog
+import com.example.ui.components.PlaceViewBanner
 import com.example.ui.components.DisasterEventDetailDialog
 import com.example.ui.components.IncidentReportDialog
 import com.example.ui.components.EditProfileDialog
@@ -78,6 +80,7 @@ import com.example.data.auth.AuthRepository
 import com.example.data.auth.SharedPrefsAuthStorage
 import com.example.ui.screens.AuthorityConsoleScreen
 import com.example.ui.screens.DispatchesScreen
+import com.example.ui.screens.HomeScreen
 import com.example.ui.screens.InstructionsScreen
 import com.example.ui.screens.LoginScreen
 import com.example.ui.screens.ProfileScreen
@@ -157,7 +160,7 @@ class MainActivity : ComponentActivity() {
               newsCache = NewsFileCache(File(cacheDir, "news_cache")),
               disasterCache = DisasterFileCache(File(cacheDir, "disaster_cache")),
               registryDirProvider = { File(cacheDir, "field_registry") },
-              tileCacheDirProvider = { File(cacheDir, "osmdroid/tiles") },
+              tileCacheDirProvider = { File(cacheDir, "osmdroid/tiles-v2") },
               // Dynamic-data rule: district/state names for news scoping are
               // resolved from the device's own coordinates at runtime.
               placeResolver = AndroidGeocoderPlaceResolver(applicationContext),
@@ -247,6 +250,15 @@ fun VippattiAppRoot(
   val uiState by viewModel.uiState.collectAsStateWithLifecycle()
   val snackbarHostState = remember { SnackbarHostState() }
   val context = LocalContext.current
+
+  // Predictable back behaviour (UI principle: user control & freedom):
+  // console -> close it; any tab -> HOME; HOME -> system back (exit prompt).
+  androidx.activity.compose.BackHandler(
+    enabled = uiState.showAuthorityDashboard || uiState.currentTab != ScreenTab.HOME
+  ) {
+    if (uiState.showAuthorityDashboard) viewModel.closeAuthorityDashboard()
+    else viewModel.setTab(ScreenTab.HOME)
+  }
 
   // AUTHORITY CONSOLE (SIH 26191): full-screen operator surface — field
   // registry entry + relocation prioritization dashboard. The citizen tabs
@@ -505,6 +517,19 @@ fun VippattiAppRoot(
             // Screen Content
             Box(modifier = Modifier.weight(1f)) {
                 when (tab) {
+          ScreenTab.HOME -> HomeScreen(
+            uiState = uiState,
+            onOpenRadar = { viewModel.setTab(ScreenTab.RADAR_MAP) },
+            onOpenNews = { viewModel.setTab(ScreenTab.NEWS_DISPATCHES) },
+            onOpenGuide = { viewModel.setTab(ScreenTab.INSTRUCTIONS) },
+            onOpenProfile = { viewModel.setTab(ScreenTab.PROFILE) },
+            onAssessTerrain = { viewModel.assessTerrainHere() },
+            onGuidanceGo = { viewModel.acceptEmergencyGuidance() },
+            onSearchTerrainHaven = { viewModel.searchTerrainHaven() },
+            onRouteToTerrainHaven = { viewModel.routeToTerrainHaven() },
+            onGuidanceDismiss = { viewModel.dismissEmergencyGuidance() },
+            onOpenPlacePicker = { viewModel.openPlacePicker() }
+          )
           ScreenTab.NEWS_DISPATCHES -> DispatchesScreen(
             uiState = uiState,
             onSync = { viewModel.syncData() },
@@ -548,7 +573,11 @@ fun VippattiAppRoot(
             onSearchTerrainHaven = { viewModel.searchTerrainHaven() },
             onRouteToTerrainHaven = { viewModel.routeToTerrainHaven() },
             onAssessTerrain = { viewModel.assessTerrainHere() },
-            onDismissTerrainAssessment = { viewModel.dismissTerrainAssessment() }
+            onDismissTerrainAssessment = { viewModel.dismissTerrainAssessment() },
+            onOpenPlacePicker = { viewModel.openPlacePicker() },
+            onExitPlaceView = { viewModel.exitPlaceView() },
+            onCameraJumpConsumed = { viewModel.consumeCameraJump() },
+            onSelectAlternativeRoute = { viewModel.selectAlternativeRoute(it) }
           )
 
           ScreenTab.INSTRUCTIONS -> InstructionsScreen(
@@ -580,6 +609,17 @@ fun VippattiAppRoot(
 
       // Modal Dialogs
       // Modal Dialogs
+      // PLACE PICKER — "look at another state/city" (Home + Map entry points).
+      PlacePickerDialog(
+        show = uiState.showPlacePicker,
+        query = uiState.placeSearchQuery,
+        isSearching = uiState.isSearchingPlace,
+        candidates = uiState.placeCandidates,
+        error = uiState.placeSearchError,
+        onQueryChange = { viewModel.setPlaceQuery(it) },
+        onPick = { viewModel.viewChosenPlace(it) },
+        onDismiss = { viewModel.closePlacePicker() }
+      )
       // SOS confirmation gate — nothing is broadcast before an explicit YES.
       if (uiState.showSosConfirmDialog) {
         SosConfirmDialog(

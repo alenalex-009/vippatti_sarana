@@ -53,8 +53,14 @@ class DeviceToolsAndRoutingTest {
   private fun firstFeasibleShelter(vm: VippattiViewModel) =
     com.example.data.disaster.PilotRegionData.safeZones.firstNotNullOfOrNull { zone ->
       vm.applyRealGpsFix(zone.lat + 0.004, zone.lon + 0.004)
-      vm.uiState.value.rankedShelters.firstOrNull { it.zone.id == zone.id }
-    } ?: error("demo network exposed no feasible shelter near any simulated site")
+      // DEMO-AROUND-YOU note: with demo ON the generated danger circle now
+      // honestly swallows shelters that sit inside it near the user, so the
+      // fixture asks for ANY genuinely ranked (feasible) shelter instead of
+      // pinning one specific pilot id — the routing tests only need a real
+      // reachable destination, and the demo shelter opposite the hazard
+      // always qualifies.
+      vm.uiState.value.rankedShelters.firstOrNull()
+    } ?: error("no feasible shelter ranked near any simulated site")
 
   private fun viewModel(
     liveRouteFetcher: suspend (

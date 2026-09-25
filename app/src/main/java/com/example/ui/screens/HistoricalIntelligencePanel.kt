@@ -24,6 +24,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.width
+import com.example.ui.theme.EmergencyRedBright
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -115,7 +120,7 @@ fun HistoricalIntelligencePanel(
     catalog?.info?.let { info ->
       Text(
         text = info.attributionLine,
-        fontSize = 9.sp,
+        fontSize = 11.sp,
         color = TacticalOnSurfaceVariant,
         lineHeight = 12.sp
       )
@@ -124,7 +129,7 @@ fun HistoricalIntelligencePanel(
           info.accessLine.ifBlank { null },
           info.sourceUrl
         ).joinToString(" • "),
-        fontSize = 9.sp,
+        fontSize = 11.sp,
         color = TacticalOnSurfaceVariant,
         lineHeight = 12.sp
       )
@@ -175,7 +180,7 @@ fun HistoricalIntelligencePanel(
         Text(
           text = "Off by default. Only records with EM-DAT's own coordinates are " +
             "drawn, as past events — never as current hazard zones.",
-          fontSize = 9.sp,
+          fontSize = 11.sp,
           color = TacticalOnSurfaceVariant,
           lineHeight = 12.sp
         )
@@ -196,7 +201,7 @@ fun HistoricalIntelligencePanel(
     )
     Text(
       text = active.description,
-      fontSize = 9.sp,
+      fontSize = 11.sp,
       color = TacticalOnSurfaceVariant
     )
 
@@ -266,6 +271,9 @@ fun HistoricalIntelligencePanel(
       }
     }
 
+    // ---- Charts FIRST: what people scan before they ever read a row ----
+    HistoricalChartsBlock(uiState.historicalFilteredEvents)
+
     HistoricalImpactSummaryBlock(uiState)
     HistoricalTrendBlock(uiState)
 
@@ -288,7 +296,7 @@ fun HistoricalIntelligencePanel(
       if (events.size > 12) {
         Text(
           text = "Showing the 12 most recent of ${events.size} matching records.",
-          fontSize = 9.sp,
+          fontSize = 11.sp,
           color = TacticalOnSurfaceVariant
         )
       }
@@ -312,7 +320,7 @@ private fun HistoricalEvidenceBlock(context: HistoricalContext) {
       fontWeight = FontWeight.Bold,
       color = TacticalOnSurface
     )
-    Text(text = context.matchMethod, fontSize = 9.sp, color = TacticalOnSurfaceVariant, lineHeight = 12.sp)
+    Text(text = context.matchMethod, fontSize = 11.sp, color = TacticalOnSurfaceVariant, lineHeight = 12.sp)
     context.mostRecent?.let { recent ->
       Text(
         text = "Most recent: ${recent.startYear} — ${recent.type}" +
@@ -325,14 +333,14 @@ private fun HistoricalEvidenceBlock(context: HistoricalContext) {
       Text(
         text = "Evidence based on ${context.eventCount} matched records; " +
           "counts are limited to the loaded dataset.",
-        fontSize = 9.sp,
+        fontSize = 11.sp,
         color = TacticalOnSurfaceVariant
       )
     }
     // The disclaimer is mandatory and never truncated.
     Text(
       text = HistoricalContextService.DISCLAIMER,
-      fontSize = 9.sp,
+      fontSize = 11.sp,
       color = WarningAmber,
       lineHeight = 12.sp
     )
@@ -389,7 +397,7 @@ private fun ImpactLine(label: String, value: String?, coverage: String) {
       )
     }
   }
-  Text(text = coverage, fontSize = 8.sp, color = TacticalOnSurfaceVariant)
+  Text(text = coverage, fontSize = 10.sp, color = TacticalOnSurfaceVariant)
 }
 
 /** Decade bars — the long-range trend of the current selection. */
@@ -418,26 +426,132 @@ private fun HistoricalTrendBlock(uiState: VippattiUiState) {
           horizontalAlignment = Alignment.CenterHorizontally,
           verticalArrangement = Arrangement.Bottom
         ) {
-          Text(text = "${point.eventCount}", fontSize = 8.sp, color = TacticalOnSurfaceVariant)
+          Text(text = "${point.eventCount}", fontSize = 10.sp, color = TacticalOnSurfaceVariant)
           Box(
             modifier = Modifier
               .width(14.dp)
               .height((6 + (34 * point.eventCount / peak)).dp)
               .background(TacticalCyan.copy(alpha = 0.55f), RoundedCornerShape(2.dp))
           )
-          Text(text = "${point.year}s", fontSize = 7.sp, color = TacticalOnSurfaceVariant)
+          Text(text = "${point.year}s", fontSize = 10.sp, color = TacticalOnSurfaceVariant)
         }
       }
     }
     Text(
       text = "Counts come from the loaded dataset and its classification rules; " +
         "they are not a frequency estimate for any single location.",
-      fontSize = 8.sp,
+      fontSize = 10.sp,
       color = TacticalOnSurfaceVariant,
       lineHeight = 11.sp
     )
   }
 }
+
+/**
+ * Compact bar charts over the SAME filtered record list the rows below show:
+ * top disaster types + events per decade + headline totals. Pure aggregation
+ * (HistoricalVisuals) — every number is a count of the records already
+ * present, so chart and list can never disagree. Replaces a wall of text
+ * (user feedback: "historical is filled with matter nobody likes to read").
+ */
+@Composable
+private fun HistoricalChartsBlock(events: List<HistoricalDisasterEvent>) {
+  if (events.isEmpty()) return
+  val summary = com.example.data.historical.HistoricalVisuals.summarize(events)
+  Column(
+    modifier = Modifier
+      .fillMaxWidth()
+      .clip(RoundedCornerShape(12.dp))
+      .background(ObsidianContainerHigh.copy(alpha = 0.5f))
+      .border(1.dp, TacticalOutlineVariant.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
+      .padding(12.dp)
+      .testTag("historical_charts"),
+    verticalArrangement = Arrangement.spacedBy(10.dp)
+  ) {
+    Text(
+      text = "THE PICTURE AT A GLANCE — ${summary.recordCount} ARCHIVED EVENTS",
+      fontSize = 10.sp, fontWeight = FontWeight.Black,
+      color = TacticalOnSurfaceVariant, letterSpacing = 0.6.sp
+    )
+
+if (summary.typeBars.isNotEmpty()) {
+      Text("MOST RECORDED TYPES", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = TacticalOnSurfaceVariant)
+      summary.typeBars.forEach { row ->
+        HistBarRow(
+          label = row.label,
+          count = row.count,
+          fraction = row.fraction,
+          tint = TacticalCyan,
+          tag = "hist_type_bar_${row.label.lowercase().replace(' ', '_')}"
+        )
+      }
+    }
+
+    if (summary.decadeBars.size > 1) {
+      Text("EVENTS PER DECADE", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = TacticalOnSurfaceVariant)
+      Row(
+        modifier = Modifier.fillMaxWidth().height(56.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalAlignment = Alignment.Bottom
+      ) {
+        summary.decadeBars.forEach { row ->
+          Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+              .weight(1f)
+              .testTag("hist_decade_${row.label}")
+          ) {
+            Text("${row.count}", fontSize = 10.sp, color = TacticalOnSurfaceVariant)
+            Box(
+              modifier = Modifier
+                .fillMaxWidth()
+                .height((6 + 30 * row.fraction).dp)
+                .clip(RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp))
+                .background(NeonEmerald.copy(alpha = 0.85f))
+            )
+            Text(row.label, fontSize = 10.sp, color = TacticalOnSurfaceVariant)
+          }
+        }
+      }
+    }
+    Text(
+      text = "Charts count the SAME filtered records listed below — historical data, not current risk.",
+      fontSize = 10.sp, color = TacticalOnSurfaceVariant, lineHeight = 13.sp
+    )
+  }
+}
+
+@Composable
+private fun HistBarRow(label: String, count: Int, fraction: Float, tint: androidx.compose.ui.graphics.Color, tag: String) {
+  Row(
+    modifier = Modifier.fillMaxWidth().testTag(tag),
+    verticalAlignment = Alignment.CenterVertically,
+    horizontalArrangement = Arrangement.spacedBy(6.dp)
+  ) {
+    Text(
+      label, fontSize = 11.sp, color = TacticalOnSurface,
+      maxLines = 1, overflow = TextOverflow.Ellipsis,
+      modifier = Modifier.weight(0.34f)
+    )
+    Box(
+      modifier = Modifier
+        .weight(1f)
+        .height(10.dp)
+        .clip(RoundedCornerShape(5.dp))
+        .background(ObsidianContainer)
+    ) {
+      Box(
+        modifier = Modifier
+          .fillMaxWidth(fraction.coerceIn(0.06f, 1f))
+          .height(10.dp)
+          .clip(RoundedCornerShape(5.dp))
+          .background(tint)
+      )
+    }
+    Text("$count", fontSize = 11.sp, color = TacticalOnSurfaceVariant, modifier = Modifier.width(30.dp))
+  }
+}
+
 
 @Composable
 private fun HistoricalRecordRow(event: HistoricalDisasterEvent, onClick: () -> Unit) {
@@ -466,7 +580,7 @@ private fun HistoricalRecordRow(event: HistoricalDisasterEvent, onClick: () -> U
         event.impacts.totalAffected?.let { "${formatCount(it)} affected" }
       ).joinToString(" • ").ifBlank { "Impact figures: Not available" } +
         " • ${event.spatialPrecision.label} • HISTORICAL",
-      fontSize = 9.sp,
+      fontSize = 11.sp,
       color = TacticalOnSurfaceVariant
     )
   }
@@ -576,7 +690,7 @@ fun HistoricalEventDetailDialog(
         )
         Text(
           text = event.spatialPrecision.explanation,
-          fontSize = 9.sp,
+          fontSize = 11.sp,
           color = TacticalOnSurfaceVariant,
           lineHeight = 12.sp
         )
@@ -584,17 +698,17 @@ fun HistoricalEventDetailDialog(
           Text(
             text = "This record is not mapped: EM-DAT provides no coordinates for it. " +
               "Its location text is kept exactly as the source states it.",
-            fontSize = 9.sp,
+            fontSize = 11.sp,
             color = WarningAmber,
             lineHeight = 12.sp
           )
         }
         event.notes.forEach { note ->
-          Text(text = note, fontSize = 9.sp, color = TacticalOnSurfaceVariant)
+          Text(text = note, fontSize = 11.sp, color = TacticalOnSurfaceVariant)
         }
         Text(
           text = HistoricalContextService.DISCLAIMER,
-          fontSize = 9.sp,
+          fontSize = 11.sp,
           color = WarningAmber,
           lineHeight = 12.sp
         )
