@@ -55,6 +55,62 @@ class MapRotationLifecycleTest {
   }
 
   /**
+   * One archived EM-DAT record that carries the dataset's own coordinates, so
+   * it is genuinely mappable (see HistoricalSpatialPrecision).
+   */
+  private val historicalEvent = com.example.data.historical.HistoricalDisasterEvent(
+    id = "1996-0123-IND",
+    group = "Natural",
+    subgroup = "Meteorological",
+    type = "Storm",
+    subtype = "Tropical cyclone",
+    country = "India",
+    locationText = "Odisha",
+    startDate = com.example.data.historical.HistoricalDate(1996, 6, 6),
+    impacts = com.example.data.historical.HistoricalImpacts(totalDeaths = 1000),
+    latitude = 20.2,
+    longitude = 85.7,
+    source = "EM-DAT, CRED / UCLouvain, Brussels, Belgium",
+    datasetVersion = "2026-09-11",
+    spatialPrecision = com.example.data.historical.HistoricalSpatialPrecision.SOURCE_COORDINATES
+  )
+
+  /**
+   * The HISTORICAL (EM-DAT) markers are pulsing overlays as well. `cleanup()`
+   * used to stop and remove only the hazard / safe-zone / live-event overlays,
+   * so a released map kept the archive layer animating — the same 66 ms
+   * postInvalidate() loop on an already-detached MapView that this teardown
+   * exists to prevent.
+   */
+  @Test
+  fun `cleanup stops and removes the historical em-dat marker overlays`() {
+    val holder = OsmMapControllerHolder(
+      appContext = context,
+      onLiveNavStatusChanged = {}
+    )
+    initMap(holder)
+    val view = requireNotNull(holder.mapView)
+
+    holder.deployHistoricalEvents(listOf(historicalEvent), {})
+
+    val rendered = view.overlays.filterIsInstance<MarkerOverlay>()
+    assertEquals("the archive marker must be drawn before teardown", 1, rendered.size)
+    assertTrue("a drawn pulse overlay animates", rendered.first().isAnimating)
+
+    holder.cleanup()
+
+    assertEquals(
+      "cleanup must remove EVERY pulsing overlay, the EM-DAT layer included",
+      0,
+      view.overlays.count { it is MarkerOverlay }
+    )
+    assertTrue(
+      "no overlay may keep scheduling redraws after the map is released",
+      rendered.none { it.isAnimating }
+    )
+  }
+
+  /**
    * Each rotation previously destroyed the MapView at the WRONG time (while
    * still attached) and then the framework destroyed it AGAIN from
    * onDetachedFromWindow, while the GPS listener kept firing into the dead

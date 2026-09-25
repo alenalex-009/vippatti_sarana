@@ -52,6 +52,8 @@
     <string name="profile_relocation_description">à¤†à¤ªà¤•à¥‡ à¤ªà¤°à¤¿à¤µà¤¾à¤° à¤•à¥‡ à¤µà¤¿à¤µà¤°à¤£ à¤¸à¥‡ à¤¨à¤¿à¤•à¤¾à¤¸à¥€ à¤°à¥ˆà¤‚à¤•à¤¿à¤‚à¤—</string>
     <string name="profile_relocation_assigned_shelter">à¤†à¤µà¤‚à¤Ÿà¤¿à¤¤ à¤¶à¤¿à¤µà¤¿à¤°: %1$s</string>
     <string name="profile_relocation_shelter_capacity">%1$d à¤¸à¥à¤¥à¤¾à¤¨ à¤‰à¤ªà¤²à¤¬à¥à¤§</string>
+    <string name="profile_relocation_priority_note">बुजुर्ग, बच्चे, दिव्यांग जन, गर्भवती महिलाएँ और चिकित्सानिर्भरता — ये सब आपके परिवार की प्राथमिकता बढ़ाते हैं। केवल आपके दर्ज किए गए विवरण ही उपयोग होते हैं — कोई जनसंख्या आँकड़ा नहीं गढ़ा जाता।</string>
+
     <!-- Section 6 â€” contacts -->
     <string name="profile_section_contacts">à¤†à¤ªà¤¾à¤¤à¤•à¤¾à¤²à¥€à¤¨ à¤¸à¤‚à¤ªà¤°à¥à¤•</string>
     <string name="profile_add_contact">à¤¸à¤‚à¤ªà¤°à¥à¤• à¤œà¥‹à¤¡à¤¼à¥‡à¤‚</string>

@@ -67,6 +67,14 @@ class PulsingZoneOverlay(
   }
 
   /**
+   * True while this overlay still schedules pulse redraws.
+   *
+   * Read-only view of [active] so teardown can be verified: a released map must
+   * leave NO animating overlay behind (see OsmMapControllerHolder.cleanup).
+   */
+  override val isAnimating: Boolean get() = active
+
+  /**
    * Base-circle pixel radius derived from two projected points (center and a
    * point radius meters due north) so the zone keeps its real-world size
    * across zooms — a large ground-truth area, never a tiny dot.

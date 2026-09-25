@@ -15,6 +15,9 @@ import kotlin.math.sqrt
 abstract class MarkerOverlay : Overlay() {
   /** Permanently stop animation/invalidation. Must be idempotent. */
   abstract fun stop()
+
+  /** True while the overlay still schedules pulse redraws (teardown test). */
+  abstract val isAnimating: Boolean
 }
 
 /**
@@ -90,6 +93,8 @@ class PinOrAreaOverlay(
   override fun stop() {
     active = false
   }
+
+  override val isAnimating: Boolean get() = active
 
   companion object {
     private const val PULSE_EXPANSION = 0.35f

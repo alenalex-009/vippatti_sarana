@@ -256,6 +256,17 @@ class VippattiViewModel(
   /** Location the current/last route was computed from — guards GPS re-routing. */
   private var lastRouteOrigin: GeoPoint? = null
 
+  /**
+   * Destination the user asked "START EVACUATION ROUTE" for while no route
+   * geometry existed yet. The button cannot start guidance on an empty corridor
+   * (the HUD would have no geometry behind it), so it requests the road route
+   * and remembers the intent — the intent is consumed by the next route that
+   * actually arrives for that zone, which is what makes the button's own promise
+   * ("guidance starts when it arrives") true. A plain route request never sets
+   * it, so browsing shelters can never start guidance on its own.
+   */
+  private var pendingGuidanceZoneId: String? = null
+
   /** Weather reading guard: TTL + movement anchor (see [refreshWeather]). */
   private var weatherFetchedAtMillis = 0L
   private var weatherAnchor: GeoPoint? = null
@@ -1315,6 +1326,7 @@ class VippattiViewModel(
     // real road geometry and can be shown immediately.
     val cached = liveRouteCache.get(cacheKey)
     if (cached != null) {
+      val armGuidance = consumePendingGuidanceFor(zone.id)
       _uiState.update {
         it.copy(
           activeRoute = cached,
@@ -1322,7 +1334,8 @@ class VippattiViewModel(
           isCalculatingRoute = false,
           routeStatus = RouteStatus.READY,
           routeStatusMessage = "Cached OSRM road route to ${zone.name} — hazard-checked. $ROUTE_LIMITATIONS_NOTE",
-          currentNavigationStepIndex = 0
+          currentNavigationStepIndex = 0,
+          isNavigatingLive = it.isNavigatingLive || armGuidance
         )
       }
       return
@@ -1375,6 +1388,7 @@ class VippattiViewModel(
       // Road geometry received -> validate it against the live hazard picture
       // (hazardWarnings / routeSafetyStatus are produced by that check), then
       // publish. Only a READY route is ever drawn by the map.
+      val armGuidance = consumePendingGuidanceFor(zone.id)
       _uiState.update { it.copy(routeStatus = RouteStatus.VALIDATING_HAZARDS) }
       liveRouteCache.put(cacheKey, live)
       _uiState.update {
@@ -1384,10 +1398,25 @@ class VippattiViewModel(
           routeStatus = RouteStatus.READY,
             routeStatusMessage = "Live OSRM road route to ${zone.name} — " +
               "hazard-checked: ${live.routeSafetyStatus.label}. $ROUTE_LIMITATIONS_NOTE",
-          currentNavigationStepIndex = 0
+          currentNavigationStepIndex = 0,
+          isNavigatingLive = it.isNavigatingLive || armGuidance
         )
       }
     }
+  }
+
+  /**
+   * Consumes the "start guidance when the route arrives" intent for [zoneId].
+   *
+   * Called exactly once per arriving route (from [calculateRouteToSelectedZone]),
+   * OUTSIDE the `_uiState.update {}` lambda so a retried atomic update can never
+   * observe the flag twice. Returns true only when the user had asked to start
+   * guidance for this same destination.
+   */
+  private fun consumePendingGuidanceFor(zoneId: String): Boolean {
+    val armed = pendingGuidanceZoneId == zoneId
+    pendingGuidanceZoneId = null
+    return armed
   }
 
   /**
@@ -1539,6 +1568,8 @@ class VippattiViewModel(
     routingJob?.cancel()
     routingJob = null
     lastRouteOrigin = null
+    // "Start guidance when it arrives" must not survive an explicit Clear Route.
+    pendingGuidanceZoneId = null
     _uiState.update {
       it.copy(
         activeRoute = null,
@@ -1596,8 +1627,11 @@ class VippattiViewModel(
     val target = zone
 
     // Guidance may only start on a route that actually exists. Starting it on an
-    // empty corridor produced a HUD with no geometry behind it.
+    // empty corridor produced a HUD with no geometry behind it — so the request
+    // is remembered instead of silently promised: the arriving route for THIS
+    // zone arms guidance (see consumePendingGuidanceFor).
     if (_uiState.value.activeRoute == null) {
+      pendingGuidanceZoneId = target.id
       _uiState.update {
         it.copy(
           currentTab = ScreenTab.RADAR_MAP,

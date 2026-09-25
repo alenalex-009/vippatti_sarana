@@ -307,6 +307,88 @@ class DeviceToolsAndRoutingTest {
     )
   }
 
+  /**
+   * START EVACUATION ROUTE pressed while no corridor exists yet: the button
+   * cannot start guidance on empty geometry (the HUD would have nothing behind
+   * it), so it requests the route and PROMISES "guidance starts when it
+   * arrives". The arriving route must therefore arm guidance by itself.
+   */
+  @Test
+  fun `starting evacuation arms guidance as soon as the requested route arrives`() = runTest(mainDispatcherRule.dispatcher) {
+    val live = com.example.data.routing.RouteResult(
+      distanceMeters = 2500.0,
+      durationSeconds = 1800.0,
+      pathPoints = listOf(
+        com.example.data.routing.GeoPoint(9.85, 76.94),
+        com.example.data.routing.GeoPoint(9.86, 76.95)
+      ),
+      steps = emptyList(),
+      isLiveOsrm = true,
+      summary = "OSRM test route",
+      travelMode = "foot"
+    )
+    val gate = kotlinx.coroutines.CompletableDeferred<Unit>()
+    val vm = viewModel { _, _, _, _, _, _ -> gate.await(); listOf(live) }
+    val best = firstFeasibleShelter(vm)
+    vm.selectSafeZone(best.zone, autoRoute = false)
+
+    vm.startEvacuationRoute()
+    // Guidance must never start on an empty corridor, but the request must be
+    // visibly in flight with nothing drawable yet.
+    assertEquals(REQUESTING, vm.uiState.value.routeStatus)
+    assertNull("no geometry may be drawn while requesting", vm.uiState.value.activeRoute)
+    assertFalse("guidance cannot start before the route exists", vm.uiState.value.isNavigatingLive)
+
+    gate.complete(Unit)
+    advanceUntilIdle()
+
+    val arrived = vm.uiState.value
+    assertEquals(com.example.viewmodel.RouteStatus.READY, arrived.routeStatus)
+    assertNotNull(arrived.activeRoute)
+    assertTrue(
+      "the promised start must happen by itself when the route arrives",
+      arrived.isNavigatingLive
+    )
+
+    // The intent is consumed exactly once: a second arrival (travel-mode
+    // change, GPS re-route) never re-arms guidance after the user stopped it.
+    vm.stopLiveNavigation()
+    assertFalse(vm.uiState.value.isNavigatingLive)
+    vm.startEvacuationRoute() // route already exists -> starts immediately
+    assertTrue(vm.uiState.value.isNavigatingLive)
+  }
+
+  /**
+   * Selecting a shelter and letting the route compute (without ever pressing
+   * START EVACUATION ROUTE) must never start guidance by itself — only the
+   * explicit start requests the automatic start.
+   */
+  @Test
+  fun `a plain route request never starts guidance on its own`() = runTest(mainDispatcherRule.dispatcher) {
+    val live = com.example.data.routing.RouteResult(
+      distanceMeters = 2500.0,
+      durationSeconds = 1800.0,
+      pathPoints = listOf(
+        com.example.data.routing.GeoPoint(9.85, 76.94),
+        com.example.data.routing.GeoPoint(9.86, 76.95)
+      ),
+      steps = emptyList(),
+      isLiveOsrm = true,
+      summary = "OSRM test route",
+      travelMode = "foot"
+    )
+    val vm = viewModel(liveRouteFetcher = { _, _, _, _, _, _ -> listOf(live) })
+    val best = firstFeasibleShelter(vm)
+    vm.selectSafeZone(best.zone, autoRoute = true)
+    advanceUntilIdle()
+
+    assertEquals(com.example.viewmodel.RouteStatus.READY, vm.uiState.value.routeStatus)
+    assertFalse(
+      "browsing/routing to a shelter must not silently start turn-by-turn guidance",
+      vm.uiState.value.isNavigatingLive
+    )
+  }
+
   @Test
   fun `validated live geometry passes the hasValidatedRoute gate`() {
     val live = com.example.data.routing.RouteResult(

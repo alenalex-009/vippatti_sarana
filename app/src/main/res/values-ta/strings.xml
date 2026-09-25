@@ -47,6 +47,8 @@
     <string name="profile_relocation_description">à®‰à®™à¯à®•à®³à¯ à®•à¯à®Ÿà¯à®®à¯à®ª à®µà®¿à®µà®°à®™à¯à®•à®³à®¿à®©à¯ à®…à®Ÿà®¿à®ªà¯à®ªà®Ÿà¯ˆà®¯à®¿à®²à¯ à®µà¯†à®³à®¿à®¯à¯‡à®±à¯à®± à®¤à®°à®µà®°à®¿à®šà¯ˆ</string>
     <string name="profile_relocation_assigned_shelter">à®’à®¤à¯à®•à¯à®•à®ªà¯à®ªà®Ÿà¯à®Ÿ à®®à¯à®•à®¾à®®à¯: %1$s</string>
     <string name="profile_relocation_shelter_capacity">%1$d à®‡à®Ÿà®™à¯à®•à®³à¯ à®‰à®³à¯à®³à®©</string>
+    <string name="profile_relocation_priority_note">முதியோர், குழந்தைகள், மாற்றுத்திறனாளர்கள், கர்ப்பிணிப் பெண்கள், மருத்துவச்சார்பு ஆகியவை அனைத்தும் உங்கள் குடும்பத்தின் முன்னுரிமையை உயர்த்துகின்றன. நீங்கள் உள்ளிட்ட விவரங்கள் மட்டுமே பயன்படுத்தப்படுகின்றன — மக்கள்தொகைப் புள்ளிவிவரங்கள் எதுவும் கற்பனை செய்யப்படுவதில்லை.</string>
+
     <string name="profile_section_contacts">à®…à®µà®šà®° à®¤à¯Šà®Ÿà®°à¯à®ªà¯à®•à®³à¯</string>
     <string name="profile_add_contact">à®¤à¯Šà®Ÿà®°à¯à®ªà¯ à®šà¯‡à®°à¯</string>
     <string name="profile_contact_role">%1$s (%2$s)</string>
