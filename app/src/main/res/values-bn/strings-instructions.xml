@@ -167,6 +167,14 @@
     <string name="gobag_kit_title">ইন্টারঅ্যাকটিভ সরণীকরণ কিট</string>
     <string name="gobag_kin_contact_title">জরুরি পরিবার যোগাযোগ যোগ করুন</string>
     <string name="gobag_save_button">জরুরি নেটওয়ার্কে সংরক্ষণ করুন</string>
-    <string name="gobag_done_complete">কিট সম্পূর্ণ — হয়ে গেছে</string>
-    <string name="gobag_mark_complete">সম্পূর্ণ হিসেবে চিহ্নিত করুন</string>
+
+    <!-- Login redesign: new supporting copy. Existing login_* keys are reused. -->
+    <string name="login_welcome_title">আবার স্বাগতম</string>
+    <string name="login_welcome_subtitle">ভিপ্পত্তি সারণ নিরাপত্তা নেটওয়ার্কে সাইন ইন করুন</string>
+    <string name="login_create_welcome_title">আপনার অ্যাকাউন্ট খুলুন</string>
+    <string name="login_create_welcome_subtitle">আপনার নিরাপত্তা সরঞ্জামের অফলাইন অ্যাক্সেস সেট করুন</string>
+    <string name="login_brand_tagline">প্রস্তুতি বিপর্যয়ের আগেই শুরু</string>
+    <string name="login_error_title">সাইন ইন করা যায়নি</string>
+    <string name="login_demo_hint">ডেমোর তথ্য পূরণ করতে ট্যাপ করুন</string>
+    <string name="login_a11y_logo">ভিপ্পত্তি সারণ লোগো</string>
 </resources>

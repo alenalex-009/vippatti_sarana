@@ -28,6 +28,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessibleForward
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Call
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.CloudSync
 import androidx.compose.material.icons.filled.DarkMode
@@ -49,9 +56,16 @@ import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Vaccines
 import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -75,6 +89,10 @@ import com.example.ui.theme.EmergencyRed
 import com.example.ui.theme.EmergencyRedBright
 import com.example.ui.theme.EmergencyRedContainer
 import com.example.ui.theme.NeonEmerald
+import com.example.ui.theme.ColorTheme
+import com.example.ui.theme.OnSafeGreen
+import com.example.ui.theme.SafeGreen
+import com.example.ui.theme.SafeGreen
 import com.example.ui.theme.ObsidianContainer
 import com.example.ui.theme.ObsidianContainerHigh
 import com.example.ui.theme.ObsidianContainerLow
@@ -84,6 +102,7 @@ import com.example.ui.theme.TacticalCyan
 import com.example.ui.theme.TacticalOnSurface
 import com.example.ui.theme.TacticalOnSurfaceVariant
 import com.example.ui.theme.TacticalOutlineVariant
+import com.example.ui.theme.ThemeMode
 import com.example.ui.theme.WarningAmber
 import com.example.data.news.NewsPresentation
 import com.example.viewmodel.VippattiUiState
@@ -103,6 +122,17 @@ fun ProfileScreen(
   accountEmail: String? = null,
   onSignOut: () -> Unit = {},
   onToggleTheme: () -> Unit,
+  /**
+   * Explicit appearance choice (System / Light / Dark) from the Profile
+   * Appearance row. Defaults to a no-op so existing test call sites that pass
+   * only [onToggleTheme] keep compiling.
+   */
+  onSetThemeMode: (ThemeMode) -> Unit = {},
+  /**
+   * Brand colour theme selection from the Profile "Color theme" row. Defaults
+   * to a no-op so existing test call sites keep compiling.
+   */
+  onSetColorTheme: (ColorTheme) -> Unit = {},
   onSetSafety: (Boolean) -> Unit,
   onBroadcastSos: () -> Unit,
   onOpenAddContact: () -> Unit,
@@ -225,8 +255,10 @@ fun ProfileScreen(
       }
       item {
         PreferencesCard(
-          isDarkTheme = uiState.isDarkTheme,
-          onToggleTheme = onToggleTheme
+          themeMode = uiState.themeMode,
+          onSetThemeMode = onSetThemeMode,
+          colorTheme = uiState.colorTheme,
+          onSetColorTheme = onSetColorTheme
         )
       }
       item {
@@ -281,8 +313,8 @@ internal fun SafetyStatusCard(
         selected = userIsSafe,
         label = stringResource(R.string.profile_safety_safe),
         icon = Icons.Default.CheckCircle,
-        selectedContainer = NeonEmerald,
-        selectedContent = OnNeonEmerald,
+        selectedContainer = SafeGreen,
+        selectedContent = OnSafeGreen,
         onClick = { onSetSafety(true) },
         modifier = Modifier.weight(1f)
       )
@@ -955,8 +987,10 @@ internal fun AppDataCard(uiState: VippattiUiState) {
 
 @Composable
 internal fun PreferencesCard(
-  isDarkTheme: Boolean,
-  onToggleTheme: () -> Unit
+  themeMode: ThemeMode,
+  onSetThemeMode: (ThemeMode) -> Unit,
+  colorTheme: ColorTheme,
+  onSetColorTheme: (ColorTheme) -> Unit
 ) {
   val context = LocalContext.current
   val appLocale = androidx.compose.ui.platform.LocalConfiguration.current.locales[0]
@@ -965,21 +999,37 @@ internal fun PreferencesCard(
       if (first.isLowerCase()) first.titlecase(appLocale) else first.toString()
     }
   }
+  // Dialog visibility is transient UI state; the SELECTED MODE itself lives in
+  // the ViewModel and is persisted to SharedPreferences, so it survives
+  // navigation and process death.
+  var showThemeDialog by remember { mutableStateOf(false) }
+  var showColorDialog by remember { mutableStateOf(false) }
 
   SectionCard {
     SettingsRow(
       icon = Icons.Default.DarkMode,
       title = stringResource(R.string.profile_theme_label),
       description = stringResource(R.string.profile_theme_appearance),
-      value = if (isDarkTheme) {
-        stringResource(R.string.profile_theme_on)
-      } else {
-        stringResource(R.string.profile_theme_off)
-      },
-      valueColor = if (isDarkTheme) WarningAmber else TacticalOnSurfaceVariant,
+      value = stringResource(themeMode.labelRes()),
+      valueColor = if (themeMode == ThemeMode.DARK) WarningAmber else TacticalOnSurfaceVariant,
       leadingTint = WarningAmber,
-      onClick = onToggleTheme,
+      onClick = { showThemeDialog = true },
       modifier = Modifier.testTag("profile_theme_toggle_button")
+    )
+
+    RowDivider()
+
+    // COLOR THEME. Independent of the Light/Dark row above: that one picks the
+    // appearance, this one picks the brand palette. Both are persisted.
+    SettingsRow(
+      icon = Icons.Default.Palette,
+      title = stringResource(R.string.profile_color_theme_label),
+      description = stringResource(R.string.profile_color_theme_description),
+      value = stringResource(colorTheme.labelRes()),
+      valueColor = colorTheme.lightPalette.neonEmerald,
+      leadingTint = colorTheme.lightPalette.neonEmerald,
+      onClick = { showColorDialog = true },
+      modifier = Modifier.testTag("profile_color_theme_button")
     )
 
     RowDivider()
@@ -1032,6 +1082,275 @@ internal fun PreferencesCard(
       )
     }
   }
+
+  if (showColorDialog) {
+    ColorThemeDialog(
+      selected = colorTheme,
+      onSelect = {
+        onSetColorTheme(it)
+        showColorDialog = false
+      },
+      onDismiss = { showColorDialog = false }
+    )
+  }
+
+  if (showThemeDialog) {
+    ThemeModeDialog(
+      selected = themeMode,
+      onSelect = {
+        onSetThemeMode(it)
+        showThemeDialog = false
+      },
+      onDismiss = { showThemeDialog = false }
+    )
+  }
+}
+
+/** Localized label for an appearance option, in the user's current locale. */
+private fun ThemeMode.labelRes(): Int = when (this) {
+  ThemeMode.SYSTEM -> R.string.profile_theme_mode_system
+  ThemeMode.LIGHT -> R.string.profile_theme_mode_light
+  ThemeMode.DARK -> R.string.profile_theme_mode_dark
+}
+
+/** Localized name of a brand colour theme. */
+private fun ColorTheme.labelRes(): Int = when (this) {
+  ColorTheme.VIPPATTI_BLUE -> R.string.profile_color_theme_blue
+  ColorTheme.FOREST_GREEN -> R.string.profile_color_theme_forest
+  ColorTheme.SUNSET_ORANGE -> R.string.profile_color_theme_sunset
+  ColorTheme.ROYAL_PURPLE -> R.string.profile_color_theme_purple
+  ColorTheme.OCEAN_CYAN -> R.string.profile_color_theme_cyan
+  ColorTheme.SLATE -> R.string.profile_color_theme_slate
+}
+
+/** Stable test tag for one colour theme option row. */
+private fun colorThemeTag(theme: ColorTheme): String = when (theme) {
+  ColorTheme.VIPPATTI_BLUE -> "profile_color_theme_blue"
+  ColorTheme.FOREST_GREEN -> "profile_color_theme_forest"
+  ColorTheme.SUNSET_ORANGE -> "profile_color_theme_sunset"
+  ColorTheme.ROYAL_PURPLE -> "profile_color_theme_purple"
+  ColorTheme.OCEAN_CYAN -> "profile_color_theme_cyan"
+  ColorTheme.SLATE -> "profile_color_theme_slate"
+}
+
+/**
+ * Brand colour theme selector.
+ *
+ * A compact, scannable list - one full-width row per theme, each with a real
+ * two-tone swatch of that theme's own primary/secondary. Deliberately NOT large
+ * preview cards: the row is short enough to fit a small portrait phone without
+ * scrolling being required for the common case, and the dialog scrolls if the
+ * locale's names are long.
+ *
+ * Accessibility:
+ *  - Selection is shown by a RadioButton, a check icon AND bold weight, so it
+ *    is never communicated by colour alone (Phase 5 requirement).
+ *  - The swatch has a content description, and each row is >= 48dp tall.
+ *  - Material3 dialog, so it inherits the active palette in light and dark.
+ *  - The applied theme is live, so the dialog itself restyles on selection.
+ */
+@Composable
+private fun ColorThemeDialog(
+  selected: ColorTheme,
+  onSelect: (ColorTheme) -> Unit,
+  onDismiss: () -> Unit
+) {
+  AlertDialog(
+    onDismissRequest = onDismiss,
+    containerColor = ObsidianSurface,
+    titleContentColor = TacticalOnSurface,
+    textContentColor = TacticalOnSurfaceVariant,
+    title = {
+      Text(
+        text = stringResource(R.string.profile_color_theme_dialog_title),
+        style = MaterialTheme.typography.titleMedium
+      )
+    },
+    text = {
+      Column(
+        modifier = Modifier.verticalScroll(rememberScrollState())
+      ) {
+        Text(
+          text = stringResource(R.string.profile_color_theme_dialog_hint),
+          style = MaterialTheme.typography.bodySmall
+        )
+        Spacer(Modifier.height(8.dp))
+        ColorTheme.entries.forEach { theme ->
+          val isSelected = theme == selected
+          Row(
+            modifier = Modifier
+              .fillMaxWidth()
+              .heightIn(min = 48.dp)
+              .clip(RoundedCornerShape(10.dp))
+              .clickable { onSelect(theme) }
+              .padding(horizontal = 8.dp, vertical = 6.dp)
+              .testTag(colorThemeTag(theme)),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+          ) {
+            RadioButton(selected = isSelected, onClick = null)
+            ThemeSwatch(theme)
+            Text(
+              text = stringResource(theme.labelRes()),
+              style = MaterialTheme.typography.bodyLarge,
+              fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+              color = if (isSelected) TacticalOnSurface else TacticalOnSurfaceVariant,
+              // weight(1f) + ellipsis: a long translated name wraps or ellipses
+              // instead of overflowing on a narrow phone (Phase 10).
+              maxLines = 2,
+              overflow = TextOverflow.Ellipsis,
+              modifier = Modifier.weight(1f)
+            )
+            if (isSelected) {
+              Icon(
+                imageVector = Icons.Default.Check,
+                contentDescription = stringResource(R.string.profile_theme_selected),
+                tint = TacticalOnSurface,
+                modifier = Modifier.size(20.dp)
+              )
+            }
+          }
+        }
+      }
+    },
+    confirmButton = {
+      TextButton(onClick = onDismiss) {
+        Text(
+          text = stringResource(R.string.profile_theme_close),
+          color = TacticalOnSurface
+        )
+      }
+    }
+  )
+}
+
+/**
+ * Two-tone preview of a theme's own primary and secondary colours.
+ *
+ * Reads from [ColorTheme.previewColors] (the real palette values) rather than
+ * hardcoded literals, so a swatch can never drift from what actually gets
+ * installed.
+ */
+@Composable
+private fun ThemeSwatch(theme: ColorTheme) {
+  val (primary, secondary) = theme.previewColors
+  val name = stringResource(theme.labelRes())
+  Box(
+    modifier = Modifier
+      .size(width = 34.dp, height = 22.dp)
+      .clip(RoundedCornerShape(6.dp))
+      .background(primary)
+      .border(
+        width = 1.dp,
+        color = theme.lightPalette.tacticalOutline,
+        shape = RoundedCornerShape(6.dp)
+      )
+      .semantics { contentDescription = name },
+    contentAlignment = Alignment.CenterEnd
+  ) {
+    Box(
+      modifier = Modifier
+        .fillMaxHeight()
+        .width(11.dp)
+        .background(secondary)
+    )
+  }
+}
+
+/**
+ * Appearance selector.
+ *
+ * Only the three standard light/dark choices are offered, all of which reuse the
+ * app's EXISTING light and dark palettes - no new colours are introduced and no
+ * disaster/hazard semantic colour is made user-configurable.
+ *
+ * Accessibility:
+ *  - Selection is shown by a RadioButton AND a check icon AND the row's
+ *    bold weight, never by colour alone.
+ *  - The dialog is Material3, so it inherits the active VippattiTheme palette
+ *    and is automatically readable in Light and Dark.
+ *  - Every option is a full-width row of at least 48dp touch height.
+ */
+@Composable
+private fun ThemeModeDialog(
+  selected: ThemeMode,
+  onSelect: (ThemeMode) -> Unit,
+  onDismiss: () -> Unit
+) {
+  AlertDialog(
+    onDismissRequest = onDismiss,
+    containerColor = ObsidianSurface,
+    titleContentColor = TacticalOnSurface,
+    textContentColor = TacticalOnSurfaceVariant,
+    title = {
+      Text(
+        text = stringResource(R.string.profile_theme_dialog_title),
+        style = MaterialTheme.typography.titleMedium
+      )
+    },
+    text = {
+      Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Text(
+          text = stringResource(R.string.profile_theme_dialog_hint),
+          style = MaterialTheme.typography.bodySmall
+        )
+        Spacer(Modifier.height(8.dp))
+        ThemeMode.entries.forEach { mode ->
+          val isSelected = mode == selected
+          Row(
+            modifier = Modifier
+              .fillMaxWidth()
+              .heightIn(min = 48.dp)
+              .clip(RoundedCornerShape(10.dp))
+              .clickable { onSelect(mode) }
+              .padding(horizontal = 8.dp, vertical = 8.dp)
+              .testTag(themeModeTag(mode)),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+          ) {
+            RadioButton(
+              selected = isSelected,
+              // A null callback: the whole row handles the click, and the
+              // RadioButton is the non-colour selection indicator.
+              onClick = null
+            )
+            Text(
+              text = stringResource(mode.labelRes()),
+              style = MaterialTheme.typography.bodyLarge,
+              fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+              color = if (isSelected) TacticalOnSurface else TacticalOnSurfaceVariant,
+              modifier = Modifier.weight(1f)
+            )
+            if (isSelected) {
+              // Redundant, shape-based confirmation for users who cannot
+              // distinguish the accent colour.
+              Icon(
+                imageVector = Icons.Default.Check,
+                contentDescription = stringResource(R.string.profile_theme_selected),
+                tint = TacticalOnSurface,
+                modifier = Modifier.size(20.dp)
+              )
+            }
+          }
+        }
+      }
+    },
+    confirmButton = {
+      TextButton(onClick = onDismiss) {
+        Text(
+          text = stringResource(R.string.profile_theme_close),
+          color = TacticalOnSurface
+        )
+      }
+    }
+  )
+}
+
+/** Stable test tag for one appearance option row. */
+private fun themeModeTag(mode: ThemeMode): String = when (mode) {
+  ThemeMode.SYSTEM -> "profile_theme_option_system"
+  ThemeMode.LIGHT -> "profile_theme_option_light"
+  ThemeMode.DARK -> "profile_theme_option_dark"
 }
 
 /** Opens the system per-app language screen; silently no-ops when unavailable. */

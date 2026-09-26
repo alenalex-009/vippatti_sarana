@@ -168,6 +168,14 @@
     <string name="gobag_kit_title">इंटरैक्टिव निकास किट</string>
     <string name="gobag_kin_contact_title">आपातकालीन परिवार संपर्क जोड़ें</string>
     <string name="gobag_save_button">आपातकालीन नेटवर्क में सहेजें</string>
-    <string name="gobag_done_complete">किट पूरी — हो गया</string>
-    <string name="gobag_mark_complete">पूर्ण के रूप में चिह्नित करें</string>
+
+    <!-- Login redesign: new supporting copy. Existing login_* keys are reused. -->
+    <string name="login_welcome_title">वापसी पर स्वागत है</string>
+    <string name="login_welcome_subtitle">विप्पट्टी सारणा सुरक्षा नेटवर्क में साइन इन करें</string>
+    <string name="login_create_welcome_title">अपना खाता बनाएँ</string>
+    <string name="login_create_welcome_subtitle">अपने सुरक्षा उपकरणों के लिए ऑफ़लाइन पहुँच तैयार करें</string>
+    <string name="login_brand_tagline">तैयारी आपदा से पहले शुरू होती है</string>
+    <string name="login_error_title">साइन इन नहीं हो सका</string>
+    <string name="login_demo_hint">डेमो जानकारी भरने के लिए टैप करें</string>
+    <string name="login_a11y_logo">विप्पट्टी सारणा लोगो</string>
 </resources>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Launch / splash colours.
+
+  splash_background is the SAME near-white (254,254,254) that the existing
+  Vippatti Sarana logo artwork is itself drawn on (see
+  drawable-nodpi/onboarding_hero_logo.png). Matching that exact value is what
+  makes the logo sit on the startup screen with no visible box, no white square
+  and no seam.
+
+  It deliberately does NOT use the brand green. A saturated full-screen green
+  was what made the startup read as an unwanted green popup, and it also fought
+  the logo: the mark is a vividly coloured badge that needs a neutral field
+  behind it to stay legible.
+-->
+<resources>
+    <!-- Matches the logo artwork background: RGB(254,254,254). -->
+    <color name="splash_background">#FEFEFE</color>
+</resources>

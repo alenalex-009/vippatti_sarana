@@ -144,6 +144,14 @@
     <string name="gobag_kit_title">INTERACTIVE EVACUATION KIT</string>
     <string name="gobag_kin_contact_title">Add Emergency Kin Contact</string>
     <string name="gobag_save_button">Save to Emergency Net</string>
-    <string name="gobag_done_complete">Kit Complete — Done</string>
-    <string name="gobag_mark_complete">Mark as Complete</string>
+
+    <!-- Login redesign: new supporting copy. Existing login_* keys are reused. -->
+    <string name="login_welcome_title">Welcome back</string>
+    <string name="login_welcome_subtitle">Sign in to the Vippatti Sarana safety network</string>
+    <string name="login_create_welcome_title">Create your account</string>
+    <string name="login_create_welcome_subtitle">Set up offline access to your safety tools</string>
+    <string name="login_brand_tagline">Preparedness starts before the emergency</string>
+    <string name="login_error_title">Could not sign in</string>
+    <string name="login_demo_hint">Tap to fill the demo credentials</string>
+    <string name="login_a11y_logo">Vippatti Sarana logo</string>
 </resources>

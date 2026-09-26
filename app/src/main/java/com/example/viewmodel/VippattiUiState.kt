@@ -8,6 +8,8 @@ import com.example.data.disaster.MockDisasterRepository
 import com.example.data.disaster.PilotRegionData
 import com.example.data.disaster.dataStatus
 import com.example.data.model.DataStatus
+import com.example.ui.theme.ColorTheme
+import com.example.ui.theme.ThemeMode
 import com.example.data.model.UserProfile
 import com.example.data.disaster.WeatherMetrics
 import com.example.data.reports.EmergencyReport
@@ -129,7 +131,23 @@ enum class RouteStatus {
 data class VippattiUiState(
   // --- App chrome ---
   val currentTab: ScreenTab = ScreenTab.HOME,
-  val isDarkTheme: Boolean = false,
+  /**
+   * Which palette the user selected (System / Light / Dark).
+   *
+   * Replaces the previous transient `isDarkTheme: Boolean`, which was never
+   * persisted and reset on every process restart. The choice is now backed by
+   * [com.example.ui.theme.ThemePreferenceStore]. [isDarkTheme] is kept below as
+   * a derived, read-only view so existing call sites keep working.
+   */
+  val themeMode: ThemeMode = ThemeMode.SYSTEM,
+  /**
+   * The user-selected brand colour palette (Vippatti Blue / Forest Green / ...).
+   *
+   * Independent of [themeMode]: that one chooses light vs dark, this one
+   * chooses the colours. Both are persisted. Defaults to the brand default so
+   * a fresh install opens in the approved palette.
+   */
+  val colorTheme: ColorTheme = ColorTheme.DEFAULT,
   /**
    * Offline-first display preference. There is NO bulk offline download in this
    * build, so this flag only says "I intend to work offline"; the Profile pack
@@ -363,6 +381,26 @@ data class VippattiUiState(
   val hazardDetailZone: HazardZone? = null,
   val safeZoneDetail: SafeZone? = null
 ) {
+
+  // --- Appearance ---
+
+  /**
+   * Effective dark flag for the currently selected [themeMode], resolved
+   * against the device setting.
+   *
+   * MainActivity feeds this to [com.example.ui.theme.VippattiTheme]; the
+   * theme is recomposed in place, so no Activity recreation is required.
+   */
+  fun isDark(systemPrefersDark: Boolean): Boolean = themeMode.isDark(systemPrefersDark)
+
+  /**
+   * Read-only view of "is the DARK palette explicitly pinned".
+   *
+   * Retained so the existing call sites (Instructions quick toggle icon, Profile
+   * row) keep compiling. Note that under [ThemeMode.SYSTEM] this reports the
+   * user's PINNED choice, not the device state - use [isDark] for that.
+   */
+  val isDarkTheme: Boolean get() = themeMode == ThemeMode.DARK
 
   // --- Derived broadcast labels (REAL battery/GPS/relays - no hardcoded 84%) ---
 

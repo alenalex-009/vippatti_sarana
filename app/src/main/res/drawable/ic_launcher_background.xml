@@ -1,7 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Launcher background for the disaster-management logo: solid near-white
-     sampled from the logo's own margins (#FEFEFE), so the foreground artwork
-     blends seamlessly on adaptive launchers. -->
+<!--
+  Brand background for the launcher icon AND the launch/splash window.
+
+  Changed from #FEFEFE (near-white) to the Vippatti Sarana brand green #008459,
+  the same primary used by the app theme in both light and dark. Two reasons:
+
+  1. The launch window inherited DeviceDefault's implicit LIGHT background and
+     showed a pale / greenish surface behind the logo before Compose drew its
+     first frame. Pinning the brand green (see themes.xml -> splash_background)
+     makes launch read as one continuous surface.
+  2. The icon background and the splash are now the SAME colour, so the logo
+     does not sit as a white square next to a green screen.
+
+  This is a branding change only. It does not alter the foreground artwork.
+-->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
@@ -9,5 +21,5 @@
     android:viewportHeight="108">
     <path
         android:pathData="M0,0h108v108h-108z"
-        android:fillColor="#FEFEFE" />
+        android:fillColor="#008459" />
 </vector>

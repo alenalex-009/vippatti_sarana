@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Launch / startup window background for API 24-30.
+
+  A flat splash_background colour with the EXISTING Vippatti Sarana logo centred
+  on it. No gradient, no animation: the mark is already detailed and colourful,
+  so a plain neutral field is what keeps it clean and legible.
+
+  splash_logo is the same official artwork used by onboarding
+  (drawable-nodpi/onboarding_hero_logo.png), pre-padded on to a square canvas so
+  it is never stretched or cropped and sits inside the platform splash icon safe
+  area. See res/values-v31/themes.xml for the Android 12+ path.
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:drawable="@color/splash_background" />
+
+    <item
+        android:width="160dp"
+        android:height="160dp"
+        android:gravity="center"
+        android:drawable="@drawable/splash_logo" />
+
+</layer-list>
