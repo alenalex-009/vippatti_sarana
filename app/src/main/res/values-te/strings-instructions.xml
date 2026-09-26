@@ -167,6 +167,8 @@
     <string name="gobag_kit_title">ఇంటరాక్టివ్ తరలింపు కిట్</string>
     <string name="gobag_kin_contact_title">అత్యవసర కుటుంబ సంబంధం జోడించండి</string>
     <string name="gobag_save_button">అత్యవసర నెట్‌వర్క్‌లో సేవ్ చేయండి</string>
+    <string name="gobag_done_complete">కిట్ పూర్తైంది — అయింది</string>
+    <string name="gobag_mark_complete">పూర్తిగా గుర్తించండి</string>
 
     <!-- Login redesign: new supporting copy. Existing login_* keys are reused. -->
     <string name="login_welcome_title">తిరిగి స్వాగతం</string>

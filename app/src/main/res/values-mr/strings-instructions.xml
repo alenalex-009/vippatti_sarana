@@ -167,6 +167,8 @@
     <string name="gobag_kit_title">संवादी स्थलांतन किट</string>
     <string name="gobag_kin_contact_title">आणीबाणी कुटुंब संपर्क जोडा</string>
     <string name="gobag_save_button">आणीबाणी जाळ्यात जतन करा</string>
+    <string name="gobag_done_complete">किट पूर्ण — झाले</string>
+    <string name="gobag_mark_complete">पूर्ण म्हणून चिन्हांकित करा</string>
 
     <!-- Login redesign: new supporting copy. Existing login_* keys are reused. -->
     <string name="login_welcome_title">पुन्हा स्वागत</string>
