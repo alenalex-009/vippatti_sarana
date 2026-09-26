@@ -192,7 +192,7 @@ fun SituationReportDialog(
         }
 
         // --- Quick situation tags -------------------------------------------
-        // FlowRow wraps tags naturally ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â no overflow at 360dp or large font scales.
+        // FlowRow wraps tags naturally — no overflow at 360dp or large font scales.
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
           Text(stringResource(R.string.report_quick_tags), fontSize = 10.sp, fontWeight = FontWeight.Bold, color = TacticalOnSurfaceVariant, letterSpacing = 0.5.sp)
           FlowRow(
@@ -340,5 +340,4 @@ private fun QuickTagChip(label: String, onAppend: (String) -> Unit) {
     Text(label, fontSize = 11.sp, color = TacticalOnSurface, fontWeight = FontWeight.SemiBold)
   }
 }
-
 

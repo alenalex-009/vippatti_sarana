@@ -160,7 +160,15 @@ public final class MojibakeRepair {
     byte[] raw = Files.readAllBytes(file);
     boolean bom = raw.length >= 3
         && (raw[0] & 0xFF) == 0xEF && (raw[1] & 0xFF) == 0xBB && (raw[2] & 0xFF) == 0xBF;
-    String text = new String(raw, StandardCharsets.UTF_8);
+    String text;
+    try {
+      CharsetDecoder dec = StandardCharsets.UTF_8.newDecoder()
+          .onMalformedInput(CodingErrorAction.REPORT)
+          .onUnmappableCharacter(CodingErrorAction.REPORT);
+      text = dec.decode(ByteBuffer.wrap(raw)).toString();
+    } catch (CharacterCodingException e) {
+      throw new IOException("invalid UTF-8 in " + file, e);
+    }
     if (bom && !text.isEmpty() && text.charAt(0) == '\uFEFF') {
       text = text.substring(1);
     }
@@ -206,7 +214,14 @@ public final class MojibakeRepair {
     try (Stream<Path> s = Files.walk(res)) {
       s.filter(Files::isRegularFile)
           .filter(p -> p.getFileName().toString().endsWith(".xml"))
-          .filter(p -> p.getParent().getFileName().toString().startsWith("values"))
+          .filter(p -> {
+            Path parent = p.getParent();
+            if (parent == null) {
+              return false;
+            }
+            String dir = parent.getFileName().toString();
+            return dir.equals("values") || dir.matches("values-[a-z]{2}");
+          })
           .forEach(files::add);
     }
     files.sort(Comparator.comparing(Path::toString));
