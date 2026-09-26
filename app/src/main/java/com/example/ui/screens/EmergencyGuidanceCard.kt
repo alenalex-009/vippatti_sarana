@@ -32,6 +32,7 @@ import com.example.data.shelters.EmergencyGuidance
 import com.example.data.shelters.SafeHaven
 import com.example.ui.theme.EmergencyRedBright
 import com.example.ui.theme.NeonEmerald
+import com.example.ui.theme.SafeGreen
 import com.example.ui.theme.ObsidianContainerLowest
 import com.example.ui.theme.TacticalCyan
 import com.example.ui.theme.TacticalOnSurface
@@ -39,7 +40,7 @@ import com.example.ui.theme.TacticalOnSurfaceVariant
 import com.example.ui.theme.WarningAmber
 
 /**
- * EMERGENCY GUIDANCE CARD — "a disaster is happening; where do I go?"
+ * EMERGENCY GUIDANCE CARD â€” "a disaster is happening; where do I go?"
  *
  * Renders the pure EmergencyGuidance decision from the ViewModel. Every
  * variant states exactly what is known and what is not:
@@ -71,7 +72,7 @@ internal fun EmergencyGuidanceCard(
     haven != null || isSearchingHaven
   AnimatedVisibility(visible = hasContent) {
     val accent = when (guidance) {
-      is EmergencyGuidance.SuggestShelter -> NeonEmerald
+      is EmergencyGuidance.SuggestShelter -> SafeGreen
       is EmergencyGuidance.NoShelterEligible -> WarningAmber
       is EmergencyGuidance.NoShelterKnown -> EmergencyRedBright
       else -> TacticalCyan
@@ -97,7 +98,7 @@ internal fun EmergencyGuidanceCard(
         )
         is EmergencyGuidance.NoShelterEligible -> GuidanceRow(
           headline = guidance.headline,
-          detail = guidance.rejections.joinToString(" • "),
+          detail = guidance.rejections.joinToString(" â€¢ "),
           accent = accent,
           actionLabel = if (isSearchingHaven) null else "FIND SAFE TERRAIN",
           onAction = onSearchHaven,
@@ -120,7 +121,7 @@ internal fun EmergencyGuidanceCard(
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
           CircularProgressIndicator(modifier = Modifier.size(14.dp), strokeWidth = 2.dp, color = TacticalCyan)
           Text(
-            "Probing terrain around you (slope + rain + coast)…",
+            "Probing terrain around you (slope + rain + coast)â€¦",
             fontSize = 10.sp, color = TacticalOnSurfaceVariant
           )
         }
@@ -142,7 +143,7 @@ internal fun EmergencyGuidanceCard(
           Column(Modifier.weight(1f)) {
             Text(h.headline, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = TacticalCyan, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Text(
-              "DERIVED open terrain • not a registered shelter • ${h.verdict.reasons.firstOrNull().orEmpty()}",
+              "DERIVED open terrain â€¢ not a registered shelter â€¢ ${h.verdict.reasons.firstOrNull().orEmpty()}",
               fontSize = 11.sp, color = TacticalOnSurfaceVariant, maxLines = 2, overflow = TextOverflow.Ellipsis
             )
           }

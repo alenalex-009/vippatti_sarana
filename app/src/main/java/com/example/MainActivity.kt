@@ -24,6 +24,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -193,13 +194,30 @@ class MainActivity : ComponentActivity() {
                     null
                   }
                 }
+              ),
+              // APPEARANCE: persist the user's System/Light/Dark choice so it
+              // survives navigation, Activity recreation and process death.
+              // Read once here, on every cold start.
+              themePreferences = com.example.ui.theme.SharedPreferencesThemePreferenceStore(
+                applicationContext.getSharedPreferences(
+                  com.example.ui.theme.SharedPreferencesThemePreferenceStore.PREFS_NAME,
+                  MODE_PRIVATE
+                )
               )
             ) as T
         }
       )
       val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-      VippattiTheme(darkTheme = uiState.isDarkTheme) {
+      // Appearance: the user picks System / Light / Dark in Profile. The choice
+      // is persisted (SharedPreferencesThemePreferenceStore) and re-read on
+      // every cold start, and it is applied live through recomposition - no
+      // Activity recreation, so navigation and scroll state are preserved.
+      val systemPrefersDark = isSystemInDarkTheme()
+      VippattiTheme(
+        darkTheme = uiState.isDark(systemPrefersDark),
+        colorTheme = uiState.colorTheme
+      ) {
         // HISTORICAL (EM-DAT) record sheet. Opened only from the historical
         // panel or a historical map marker, never from a live hazard marker.
         uiState.historicalDetailEvent?.let { historical ->
@@ -595,6 +613,8 @@ fun VippattiAppRoot(
             accountEmail = accountEmail,
             onSignOut = onSignOut,
             onToggleTheme = { viewModel.toggleTheme() },
+            onSetThemeMode = { viewModel.setThemeMode(it) },
+            onSetColorTheme = { viewModel.setColorTheme(it) },
             onSetSafety = { viewModel.setUserSafety(it) },
             onBroadcastSos = { viewModel.triggerSosBroadcast() },
             onOpenAddContact = { viewModel.openAddContactDialog() },

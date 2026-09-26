@@ -53,6 +53,7 @@ import com.example.ui.theme.EmergencyRed
 import com.example.ui.theme.EmergencyRedBright
 import com.example.ui.theme.EmergencyRedContainer
 import com.example.ui.theme.NeonEmerald
+import com.example.ui.theme.SafeGreen
 import com.example.ui.theme.ObsidianContainer
 import com.example.ui.theme.ObsidianContainerLow
 import com.example.ui.theme.ObsidianContainerLowest
@@ -65,7 +66,7 @@ import com.example.ui.theme.WarningAmber
 import com.example.viewmodel.VippattiUiState
 
 // ============================================================================
-// INSTRUCTIONS — TWO CLEAR LEVELS, NOTHING MORE
+// INSTRUCTIONS â€” TWO CLEAR LEVELS, NOTHING MORE
 // ============================================================================
 //   HOME     ->  header, offline switch, FOUR full-width disaster cards
 //                (approved poster thumbnail + name + short description) and
@@ -76,13 +77,13 @@ import com.example.viewmodel.VippattiUiState
 //
 // No horizontally scrolling selector, no duplicate disaster pickers, no
 // decorative layers. Back always pops exactly one level. Every label is a
-// localized string resource and every piece of existing guidance is kept —
+// localized string resource and every piece of existing guidance is kept â€”
 // only the old generated pictograms were removed in favour of the approved
 // InstructionImages artwork.
 // ============================================================================
 
 /**
- * INSTRUCTIONS HOME — the disaster chooser. Four obvious choices plus the
+ * INSTRUCTIONS HOME â€” the disaster chooser. Four obvious choices plus the
  * essential resources; nothing competes with them.
  */
 @Composable
@@ -95,7 +96,7 @@ internal fun InstructionsHome(
   onNavigate: (String) -> Unit
 ) {
   Column(modifier = Modifier.fillMaxWidth()) {
-    // 1. Compact header — SURVIVAL MANUAL + theme toggle.
+    // 1. Compact header â€” SURVIVAL MANUAL + theme toggle.
     Row(
       modifier = Modifier
         .fillMaxWidth()
@@ -156,7 +157,7 @@ internal fun InstructionsHome(
     }
 
 
-    // 2. Offline-first mode — compact functional card (switch stays functional).
+    // 2. Offline-first mode â€” compact functional card (switch stays functional).
     Row(
       modifier = Modifier
         .fillMaxWidth()
@@ -201,7 +202,7 @@ internal fun InstructionsHome(
       )
     }
 
-    // 3. Choose a disaster — four full-width cards. No horizontal scrolling,
+    // 3. Choose a disaster â€” four full-width cards. No horizontal scrolling,
     //    no chips to hunt for: the four choices are the whole screen.
     Text(
       text = stringResource(R.string.instructions_choose_disaster).uppercase(),
@@ -216,7 +217,7 @@ internal fun InstructionsHome(
     }
 
 
-    // 4. Essential resources — contacts, evacuation module, kit + interactive.
+    // 4. Essential resources â€” contacts, evacuation module, kit + interactive.
     Text(
       text = stringResource(R.string.instructions_section_resources).uppercase(),
       fontSize = 11.sp,
@@ -347,12 +348,12 @@ private fun DisasterCard(category: DisasterCategory, onClick: () -> Unit) {
 
 
 /**
- * DISASTER DETAIL — one disaster on one screen:
+ * DISASTER DETAIL â€” one disaster on one screen:
  * [Back] [disaster title + short description] [approved poster]
  * [BEFORE | DURING | AFTER] [critical actions now] [instruction categories].
  *
  * The approved poster already carries the whole Before/During/After journey,
- * so it is the visual summary and the written guidance below stays concise —
+ * so it is the visual summary and the written guidance below stays concise â€”
  * no heading is repeated for its own sake, and no existing guidance is lost
  * (every item still lives in its category detail screen).
  */
@@ -369,7 +370,7 @@ internal fun DisasterDetailHome(
 ) {
   val (disasterName, disasterSummary) = disasterCategoryLabels(category.id, category.title)
   Column(modifier = Modifier.fillMaxWidth()) {
-    // 1. Predictable back — one tap returns to the Instructions home.
+    // 1. Predictable back â€” one tap returns to the Instructions home.
     DetailHeader(
       icon = categoryIcon(category.id),
       iconTint = NeonEmerald,
@@ -378,7 +379,7 @@ internal fun DisasterDetailHome(
       onBack = onBack
     )
 
-    // 2. The approved disaster poster — full width, natural aspect ratio,
+    // 2. The approved disaster poster â€” full width, natural aspect ratio,
     //    nothing stretched or cropped away. Tap to zoom into the captions.
     DisasterInstructionPoster(
       categoryId = category.id,
@@ -386,7 +387,7 @@ internal fun DisasterDetailHome(
       onOpen = onOpenPoster
     )
 
-    // 3. BEFORE | DURING | AFTER — one compact localized segmented control.
+    // 3. BEFORE | DURING | AFTER â€” one compact localized segmented control.
     Row(
       modifier = Modifier
         .fillMaxWidth()
@@ -426,7 +427,7 @@ internal fun DisasterDetailHome(
     }
 
 
-    // 4. Critical actions now — top flagged items for THIS phase, plus the
+    // 4. Critical actions now â€” top flagged items for THIS phase, plus the
     //    REAL personal risk level on the same scannable row.
     Row(
       verticalAlignment = Alignment.CenterVertically,
@@ -467,7 +468,7 @@ internal fun DisasterDetailHome(
       criticalItems.take(3).forEach { item -> CriticalActionRow(item) }
     }
 
-    // 5. Instruction categories — the detailed existing guidance, one tap away.
+    // 5. Instruction categories â€” the detailed existing guidance, one tap away.
     Text(
       text = stringResource(R.string.instructions_section_categories).uppercase(),
       fontSize = 11.sp,
@@ -491,7 +492,7 @@ internal fun DisasterDetailHome(
   }
 }
 
-/** Disaster icon by category id — preserved from the existing module. */
+/** Disaster icon by category id â€” preserved from the existing module. */
 private fun categoryIcon(categoryId: String): ImageVector = when (categoryId) {
   "flood" -> Icons.Default.Tsunami
   "landslide" -> Icons.Default.Landslide
@@ -522,7 +523,7 @@ private fun DisasterRiskBadge(riskLevel: RiskLevel?) {
         when (riskLevel) {
           RiskLevel.RED, RiskLevel.ORANGE -> EmergencyRed.copy(alpha = 0.85f)
           RiskLevel.YELLOW -> WarningAmber.copy(alpha = 0.85f)
-          RiskLevel.GREEN -> NeonEmerald.copy(alpha = 0.85f)
+          RiskLevel.GREEN -> SafeGreen.copy(alpha = 0.85f)
           null -> ObsidianContainer
         }
       )
@@ -534,7 +535,7 @@ private fun DisasterRiskBadge(riskLevel: RiskLevel?) {
       fontWeight = FontWeight.Black,
       color = when (riskLevel) {
         RiskLevel.RED, RiskLevel.ORANGE -> Color.White
-        // Near-black on the amber fill — readable in BOTH themes (the old
+        // Near-black on the amber fill â€” readable in BOTH themes (the old
         // theme-aware value vanished on amber in dark mode and light mode).
         RiskLevel.YELLOW -> Color(0xFF201500)
         RiskLevel.GREEN -> OnNeonEmerald

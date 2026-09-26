@@ -167,4 +167,14 @@
     <string name="gobag_kit_title">संवादी स्थलांतन किट</string>
     <string name="gobag_kin_contact_title">आणीबाणी कुटुंब संपर्क जोडा</string>
     <string name="gobag_save_button">आणीबाणी जाळ्यात जतन करा</string>
+
+    <!-- Login redesign: new supporting copy. Existing login_* keys are reused. -->
+    <string name="login_welcome_title">पुन्हा स्वागत</string>
+    <string name="login_welcome_subtitle">विप्पट्टी सारण सुरक्षा जाळ्यात साइन इन करा</string>
+    <string name="login_create_welcome_title">तुमचे खाते तयार करा</string>
+    <string name="login_create_welcome_subtitle">तुमच्या सुरक्षा अवजारांसाठी ऑफलाइन प्रवेश सेट करा</string>
+    <string name="login_brand_tagline">सवयत आपत्तीच्या आधीपासून सुरू होते</string>
+    <string name="login_error_title">साइन इन करता आले नाही</string>
+    <string name="login_demo_hint">डेमो तपशील भरण्यासाठी टॅप करा</string>
+    <string name="login_a11y_logo">विप्पट्टी सारण लोगो</string>
 </resources>

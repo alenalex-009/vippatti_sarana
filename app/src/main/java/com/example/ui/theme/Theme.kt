@@ -70,11 +70,20 @@ private fun vippattiLightScheme(p: VippattiColors) = lightColorScheme(
 @Composable
 fun VippattiTheme(
   darkTheme: Boolean = false, // Daylight-first: the light palette matches the light map
+  /**
+   * The user-selected brand palette. Defaults to [ColorTheme.DEFAULT] so every
+   * existing call site (and every Robolectric test that wraps content in
+   * `VippattiTheme { }`) keeps the approved default appearance.
+   */
+  colorTheme: ColorTheme = ColorTheme.DEFAULT,
   content: @Composable () -> Unit,
 ) {
   val remoteConfig by ConfigRegistry.manager.configState.collectAsStateWithLifecycle()
-  
-  val basePalette = if (darkTheme) DarkVippattiColors else LightVippattiColors
+
+  // Pick the theme's own light/dark palette, then let the existing remote
+  // config override primary/secondary on top - so both feature paths keep
+  // working and neither is a duplicate of the other.
+  val basePalette = colorTheme.palette(darkTheme)
   
   val primaryOverride = try {
       if (remoteConfig.primaryColorHex.isNotBlank()) Color(parseColor(remoteConfig.primaryColorHex)) else basePalette.neonEmerald

@@ -167,4 +167,14 @@
     <string name="gobag_kit_title">இடைவினை நகர்ச்சி பொதி</string>
     <string name="gobag_kin_contact_title">அவசர குடும்பத் தொடர்பைச் சேர்க்கவும்</string>
     <string name="gobag_save_button">அவசர வலையில் சேமிக்கவும்</string>
+
+    <!-- Login redesign: new supporting copy. Existing login_* keys are reused. -->
+    <string name="login_welcome_title">மீண்டும் வருக</string>
+    <string name="login_welcome_subtitle">விப்பட்டி சரண பாதுகாப்பு வலையில் உள்நுழையவும்</string>
+    <string name="login_create_welcome_title">உங்கள் கணக்கை உருவாக்குங்கள்</string>
+    <string name="login_create_welcome_subtitle">உங்கள் பாதுகாப்புக் கருவிகளுக்கு இணையமில்லா அணுகலை அமைக்கவும்</string>
+    <string name="login_brand_tagline">அன்பு நிகழ்வதற்கு முன்பே தயார்</string>
+    <string name="login_error_title">உள்நுழைய முடியவில்லை</string>
+    <string name="login_demo_hint">டெமோ விவரங்களை நிரப்ப டேப் செய்யவும்</string>
+    <string name="login_a11y_logo">விப்பட்டி சரண லோகோ</string>
 </resources>

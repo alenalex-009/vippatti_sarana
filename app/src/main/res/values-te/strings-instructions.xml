@@ -167,4 +167,14 @@
     <string name="gobag_kit_title">ఇంటరాక్టివ్ తరలింపు కిట్</string>
     <string name="gobag_kin_contact_title">అత్యవసర కుటుంబ సంబంధం జోడించండి</string>
     <string name="gobag_save_button">అత్యవసర నెట్‌వర్క్‌లో సేవ్ చేయండి</string>
+
+    <!-- Login redesign: new supporting copy. Existing login_* keys are reused. -->
+    <string name="login_welcome_title">తిరిగి స్వాగతం</string>
+    <string name="login_welcome_subtitle">విప్పట్టి సారణ భద్రత నెట్‌వర్క్‌లో సైన్ ఇన్ చేయండి</string>
+    <string name="login_create_welcome_title">మీ ఖాతాను సృష్టించండి</string>
+    <string name="login_create_welcome_subtitle">మీ భద్రత సనువారాలకు ఆఫ్‌లైన్ యాక్సెస్ సెట్ చేయండి</string>
+    <string name="login_brand_tagline">సన్నద్ధత అపదాకంటే ముందే</string>
+    <string name="login_error_title">సైన్ ఇన్ చేయలేకపోయాము</string>
+    <string name="login_demo_hint">డెమో వివరాలు నమోదు చేయడానికి నొక్కండి</string>
+    <string name="login_a11y_logo">విప్పట్టి సారణ లోగో</string>
 </resources>

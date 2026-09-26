@@ -53,6 +53,10 @@ import com.example.data.risk.RelocationPlan
 import com.example.data.risk.RelocationPlanner
 import com.example.data.risk.RiskAssessmentEngine
 import com.example.data.shelters.SafeZoneEvaluation
+import com.example.ui.theme.ColorTheme
+import com.example.ui.theme.InMemoryThemePreferenceStore
+import com.example.ui.theme.ThemeMode
+import com.example.ui.theme.ThemePreferenceStore
 import com.example.data.shelters.SafeZoneEvaluator
 import com.example.data.disaster.DisasterCache
 import com.example.data.disaster.DisasterDataRepository
@@ -235,7 +239,13 @@ class VippattiViewModel(
     hazards: List<HazardZone>,
     destinationName: String,
     wantAlternatives: Int
-  ) -> List<RouteResult> = OsrmRoutingService::fetchLiveRoutesAsync
+  ) -> List<RouteResult> = OsrmRoutingService::fetchLiveRoutesAsync,
+  /**
+   * Appearance preference store. Injected by MainActivity so the user's
+   * System/Light/Dark choice is READ BACK on every cold start; defaults to an
+   * in-memory store so unit tests stay free of Android Context.
+   */
+  private val themePreferences: ThemePreferenceStore = InMemoryThemePreferenceStore()
 ) : ViewModel() {
 
   /** Real GNews disaster-news pipeline (live API + offline cache). */
@@ -246,7 +256,12 @@ class VippattiViewModel(
       apiKeyProvider = { BuildConfig.GNEWS_API_KEY }
     )
 
-  private val _uiState = MutableStateFlow(VippattiUiState())
+  private val _uiState = MutableStateFlow(
+    VippattiUiState(
+      themeMode = themePreferences.load(),
+      colorTheme = themePreferences.loadColorTheme()
+    )
+  )
   val uiState: StateFlow<VippattiUiState> = _uiState.asStateFlow()
 
   private var audioJob: Job? = null
@@ -1701,7 +1716,46 @@ class VippattiViewModel(
   }
 
   fun toggleTheme() {
-    _uiState.update { it.copy(isDarkTheme = !it.isDarkTheme) }
+    // Cycles the appearance option for the existing quick toggle on the
+    // Instructions screen. SYSTEM -> LIGHT -> DARK -> SYSTEM.
+    val next = when (_uiState.value.themeMode) {
+      ThemeMode.SYSTEM -> ThemeMode.LIGHT
+      ThemeMode.LIGHT -> ThemeMode.DARK
+      ThemeMode.DARK -> ThemeMode.SYSTEM
+    }
+    setThemeMode(next)
+  }
+
+  /**
+   * Applies the user's appearance choice.
+   *
+   * The selection is persisted through [themePreferences] (SharedPreferences,
+   * the same local storage the app already uses for the onboarding flag and the
+   * auth session) so it survives navigation, Activity recreation and process
+   * death. Recomposition is immediate: VippattiTheme reads `themeMode` from the
+   * collected uiState, so no Activity recreation is needed.
+   */
+  fun setThemeMode(mode: ThemeMode) {
+    themePreferences.save(mode)
+    _uiState.update { it.copy(themeMode = mode) }
+  }
+
+  /**
+   * Applies the user's brand colour theme (Vippatti Blue, Forest Green, ...).
+   *
+   * Persisted through [themePreferences] so the choice survives navigation,
+   * Activity recreation and process death, and applied live: MainActivity feeds
+   * `colorTheme` straight into VippattiTheme, which re-provides the palette and
+   * triggers recomposition. No Activity recreation, so no restart prompt and no
+   * lost navigation state.
+   *
+   * This only ever changes general UI (surfaces, accents, buttons, cards, nav).
+   * Disaster semantics - danger red, warning amber, the safe green and the
+   * map's hazard colours - are identical in every theme.
+   */
+  fun setColorTheme(theme: ColorTheme) {
+    themePreferences.saveColorTheme(theme)
+    _uiState.update { it.copy(colorTheme = theme) }
   }
 
   fun toggleOfflineCache(active: Boolean) {

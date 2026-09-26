@@ -48,6 +48,7 @@ import com.example.data.risk.RiskLevel
 import com.example.data.shelters.EmergencyGuidance
 import com.example.ui.theme.EmergencyRedBright
 import com.example.ui.theme.NeonEmerald
+import com.example.ui.theme.SafeGreen
 import com.example.ui.theme.ObsidianContainerLow
 import com.example.ui.theme.ObsidianSurface
 import com.example.ui.theme.TacticalCyan
@@ -227,7 +228,7 @@ private fun RiskHero(
     RiskLevel.RED -> EmergencyRedBright
     RiskLevel.ORANGE -> WarningAmber
     RiskLevel.YELLOW -> WarningAmber
-    RiskLevel.GREEN -> NeonEmerald
+    RiskLevel.GREEN -> SafeGreen
     null -> TacticalOnSurfaceVariant
   }
   val headline = when (risk?.level) {

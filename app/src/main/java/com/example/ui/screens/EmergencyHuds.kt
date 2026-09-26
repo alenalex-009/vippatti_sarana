@@ -36,13 +36,15 @@ import androidx.compose.ui.unit.sp
 import com.example.data.routing.OsrmRoutingService
 import com.example.ui.theme.EmergencyRed
 import com.example.ui.theme.NeonEmerald
+import com.example.ui.theme.OnSafeGreen
+import com.example.ui.theme.SafeGreen
 import com.example.ui.theme.ObsidianContainerLowest
 import com.example.ui.theme.OnNeonEmerald
 import com.example.ui.theme.TacticalOnSurface
 import com.example.viewmodel.VippattiUiState
 
 // ============================================================================
-// EVACUATION CTA — large one-hand control, always bound to the SELECTED zone
+// EVACUATION CTA â€” large one-hand control, always bound to the SELECTED zone
 // ============================================================================
 
 @Composable
@@ -60,7 +62,7 @@ internal fun EvacuationCta(
       .fillMaxWidth()
       .padding(horizontal = 14.dp, vertical = 4.dp)
       .clip(RoundedCornerShape(14.dp))
-      .background(if (uiState.isNavigatingLive) Color(0xFF0284C7) else NeonEmerald)
+      .background(if (uiState.isNavigatingLive) Color(0xFF0284C7) else SafeGreen)
       .clickable {
         if (uiState.isNavigatingLive) onStopEvacuation() else onStartEvacuation()
       }
@@ -78,13 +80,13 @@ internal fun EvacuationCta(
         modifier = Modifier
           .size(38.dp)
           .clip(RoundedCornerShape(8.dp))
-          .background(if (uiState.isNavigatingLive) Color.White else OnNeonEmerald),
+          .background(if (uiState.isNavigatingLive) Color.White else OnSafeGreen),
         contentAlignment = Alignment.Center
       ) {
         Icon(
           imageVector = if (uiState.isNavigatingLive) Icons.Default.Check else Icons.Default.Navigation,
           contentDescription = null,
-          tint = if (uiState.isNavigatingLive) Color(0xFF0284C7) else NeonEmerald,
+          tint = if (uiState.isNavigatingLive) Color(0xFF0284C7) else SafeGreen,
           modifier = Modifier.size(20.dp)
         )
       }
@@ -93,28 +95,28 @@ internal fun EvacuationCta(
           text = if (uiState.isNavigatingLive) "ACTIVE GUIDANCE RUNNING" else "START EVACUATION ROUTE",
           fontSize = 10.sp,
           fontWeight = FontWeight.Bold,
-          color = if (uiState.isNavigatingLive) Color.White.copy(alpha = 0.85f) else OnNeonEmerald.copy(alpha = 0.85f),
+          color = if (uiState.isNavigatingLive) Color.White.copy(alpha = 0.85f) else OnSafeGreen.copy(alpha = 0.85f),
           letterSpacing = 0.8.sp
         )
         Text(
           text = "To ${uiState.selectedSafeZone?.name ?: "selected safe zone"}",
           fontSize = 13.sp,
           fontWeight = FontWeight.Bold,
-          color = if (uiState.isNavigatingLive) Color.White else OnNeonEmerald,
+          color = if (uiState.isNavigatingLive) Color.White else OnSafeGreen,
           maxLines = 1,
           overflow = TextOverflow.Ellipsis
         )
       }
     }
     Column(horizontalAlignment = Alignment.End) {
-      Text(distanceStr, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = if (uiState.isNavigatingLive) Color.White else OnNeonEmerald)
-      Text(durationStr, fontSize = 10.sp, fontWeight = FontWeight.Medium, color = if (uiState.isNavigatingLive) Color.White.copy(alpha = 0.8f) else OnNeonEmerald.copy(alpha = 0.8f))
+      Text(distanceStr, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = if (uiState.isNavigatingLive) Color.White else OnSafeGreen)
+      Text(durationStr, fontSize = 10.sp, fontWeight = FontWeight.Medium, color = if (uiState.isNavigatingLive) Color.White.copy(alpha = 0.8f) else OnSafeGreen.copy(alpha = 0.8f))
     }
   }
 }
 
 // ============================================================================
-// LIVE TURN-BY-TURN HUD — guidance always follows the SELECTED destination
+// LIVE TURN-BY-TURN HUD â€” guidance always follows the SELECTED destination
 // ============================================================================
 
 @Composable
