@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!--
   Bengali (bn) profile strings — same keys as values/strings.xml.
   Missing keys fall back to the English resource automatically.
@@ -72,6 +72,24 @@
     <string name="profile_section_preferences">পছন্দসমূহ</string>
     <string name="profile_theme_label">ডার্ক থিম</string>
     <string name="profile_theme_appearance">রূপ</string>
+
+    <string name="profile_color_theme_label">রঙের থিম</string>
+    <string name="profile_color_theme_description">অ্যাপের রং</string>
+    <string name="profile_color_theme_dialog_title">রঙের থিম</string>
+    <string name="profile_color_theme_dialog_hint">অ্যাপের রং বেছে নিন। দুর্যোগ, সতর্কতা ও নিরাপত্তার রং কখনও বদলায় না।</string>
+    <string name="profile_color_theme_blue">বিপ্পাট্টি নীল</string>
+    <string name="profile_color_theme_forest">বন সবুজ</string>
+    <string name="profile_color_theme_sunset">সানসেট কমলা</string>
+    <string name="profile_color_theme_purple">রয়্যাল বেগুনি</string>
+    <string name="profile_color_theme_cyan">মহাসাগর সায়ান</string>
+    <string name="profile_color_theme_slate">স্লেট</string>
+    <string name="profile_theme_mode_system">সিস্টেম ডিফল্ট</string>
+    <string name="profile_theme_mode_light">লাইট</string>
+    <string name="profile_theme_mode_dark">ডার্ক</string>
+    <string name="profile_theme_dialog_title">চেহারা</string>
+    <string name="profile_theme_dialog_hint">অ্যাপটি কেমন দেখাবে তা বেছে নিন। এতে দুর্যোগের রং বা সতর্কতা পরিবর্তন হয় না।</string>
+    <string name="profile_theme_selected">নির্বাচিত</string>
+    <string name="profile_theme_close">বন্ধ করুন</string>
     <string name="profile_theme_on">চালু</string>
     <string name="profile_theme_off">বন্ধ</string>
     <string name="profile_language_label">ভাষা</string>
@@ -156,4 +174,8 @@
   <string name="nav_guide">নির্দেশিকা</string>
   <string name="nav_profile">প্রোফাইল</string>
   <string name="nav_current_suffix"> (বর্তমান ট্যাব)</string>
+    <string name="profile_section_authority">কর্তৃপক্ষ কেন্দ্র</string>
+    <string name="profile_authority_open">খুলুন</string>
+    <string name="profile_authority_description">ক্ষেত্রীয় আশ্রয় ও বসতির রেকর্ড লিখুন এবং তাৎক্ষণিক / স্বল্পমেয়াদি / মধ্যমেয়াদি স্থানান্তরের জন্য বসতিগুলোকে সরাসরি বিপদ পরিস্থিতির (SIH 26191) ভিত্তিতে সাজান। রেকর্ড এই ডিভাইসেই থাকে; ডেমো সারিগুলো SIMULATED থাকেই।</string>
+    <string name="profile_contacts_empty">এখনও কোনো জরুরি যোগাযোগ নেই — আপনার স্থানীয় SOS রেকর্ড তাদের উল্লেখ করতে পারে, তাই পরিবার বা প্রতিবেশীদের যোগ করুন। যোগাযোগগুলো শুধু এই ডিভাইসেই থাকে।</string>
 </resources>

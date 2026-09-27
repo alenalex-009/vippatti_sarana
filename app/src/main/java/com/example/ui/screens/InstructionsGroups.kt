@@ -77,6 +77,52 @@ internal fun groupLabels(groupId: String, disasterTitle: String): Pair<String, S
   return title to subtitle
 }
 
+/**
+ * Localized display labels for a disaster category.
+ *
+ * The safety copy inside [com.example.data.instructions.DisasterInstructions]
+ * stays the single English source of truth and is deliberately not modified.
+ * Only the user-visible category heading and its one-line summary are
+ * localized, resolved from the existing stable category id so no content
+ * structure changes. Unknown ids fall back to the model's own text.
+ */
+@Composable
+internal fun disasterCategoryLabels(categoryId: String, fallback: String): Pair<String, String> {
+  val title = when (categoryId) {
+    "flood" -> stringResource(R.string.instructions_disaster_flood)
+    "landslide" -> stringResource(R.string.instructions_disaster_landslide)
+    "fire" -> stringResource(R.string.instructions_disaster_fire)
+    "earthquake" -> stringResource(R.string.instructions_disaster_earthquake)
+    else -> fallback
+  }
+  val subtitle = when (categoryId) {
+    "flood" -> stringResource(R.string.instructions_disaster_flood_subtitle)
+    "landslide" -> stringResource(R.string.instructions_disaster_landslide_subtitle)
+    "fire" -> stringResource(R.string.instructions_disaster_fire_subtitle)
+    "earthquake" -> stringResource(R.string.instructions_disaster_earthquake_subtitle)
+    else -> ""
+  }
+  return title to subtitle
+}
+
+/** Localized display labels for a common instruction module, by module id. */
+@Composable
+internal fun commonModuleLabels(moduleId: String, fallbackTitle: String, fallbackSubtitle: String): Pair<String, String> {
+  val title = when (moduleId) {
+    "emergency_contacts" -> stringResource(R.string.instructions_module_contacts)
+    "evacuation" -> stringResource(R.string.instructions_module_evacuation)
+    "emergency_kit" -> stringResource(R.string.instructions_module_kit)
+    else -> fallbackTitle
+  }
+  val subtitle = when (moduleId) {
+    "emergency_contacts" -> stringResource(R.string.instructions_module_contacts_subtitle)
+    "evacuation" -> stringResource(R.string.instructions_module_evacuation_subtitle)
+    "emergency_kit" -> stringResource(R.string.instructions_module_kit_subtitle)
+    else -> fallbackSubtitle
+  }
+  return title to subtitle
+}
+
 internal fun buildInstructionGroups(
   category: DisasterCategory,
   phase: InstructionPhase

@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -41,10 +42,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.example.R
 import com.example.ui.theme.EmergencyRed
 import com.example.ui.theme.NeonEmerald
 import com.example.ui.theme.ObsidianContainerLow
@@ -121,7 +124,7 @@ fun SosBroadcastDialog(
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-          text = "SOS ACTIVE — RECORDED ON THIS DEVICE",
+          text = stringResource(R.string.sos_active_title),
           fontSize = 16.sp,
           fontWeight = FontWeight.Black,
           color = EmergencyRed,
@@ -129,8 +132,7 @@ fun SosBroadcastDialog(
         )
 
         Text(
-          text = "No authority has been notified automatically. Dial 112 to reach " +
-            "emergency services, or send the saved SOS SMS to your kin network.",
+          text = stringResource(R.string.sos_active_notice),
           fontSize = 12.sp,
           color = TacticalOnSurfaceVariant,
           modifier = Modifier.padding(top = 4.dp)
@@ -146,32 +148,54 @@ fun SosBroadcastDialog(
             .padding(14.dp),
           verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
+          // The label takes the flexible half so a longer translated label
+          // wraps under itself instead of shoving the value off the row.
           Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
           ) {
-            Text("GPS Location", fontSize = 12.sp, color = TacticalOnSurfaceVariant)
+            Text(
+              stringResource(R.string.sos_label_gps),
+              fontSize = 12.sp,
+              color = TacticalOnSurfaceVariant,
+              modifier = Modifier.weight(1f)
+            )
             Text(locationLabel, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = NeonEmerald)
           }
           Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
           ) {
-            Text("Battery Level", fontSize = 12.sp, color = TacticalOnSurfaceVariant)
+            Text(
+              stringResource(R.string.sos_label_battery),
+              fontSize = 12.sp,
+              color = TacticalOnSurfaceVariant,
+              modifier = Modifier.weight(1f)
+            )
             Text(batteryLabel, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TacticalOnSurface)
           }
           Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
           ) {
-            Text("Medical Tag", fontSize = 12.sp, color = TacticalOnSurfaceVariant)
+            Text(
+              stringResource(R.string.sos_label_medical),
+              fontSize = 12.sp,
+              color = TacticalOnSurfaceVariant,
+              modifier = Modifier.weight(1f)
+            )
             Text(medicalTagLabel, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TacticalCyan)
           }
           Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
           ) {
-            Text("Delivery", fontSize = 12.sp, color = TacticalOnSurfaceVariant)
+            Text(
+              stringResource(R.string.sos_label_delivery),
+              fontSize = 12.sp,
+              color = TacticalOnSurfaceVariant,
+              modifier = Modifier.weight(1f)
+            )
             Text(relaysLabel, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TacticalOnSurface)
           }
         }
@@ -184,7 +208,7 @@ fun SosBroadcastDialog(
           shape = RoundedCornerShape(14.dp),
           modifier = Modifier
             .fillMaxWidth()
-            .height(48.dp)
+            .heightIn(min = 48.dp)
             .testTag("sos_call_112_button")
         ) {
           Icon(
@@ -194,7 +218,11 @@ fun SosBroadcastDialog(
             modifier = Modifier.size(18.dp)
           )
           Spacer(modifier = Modifier.width(8.dp))
-          Text("CALL 112 NOW", fontWeight = FontWeight.Black, color = EmergencyRed)
+          Text(
+            stringResource(R.string.sos_call_112_now),
+            fontWeight = FontWeight.Black,
+            color = EmergencyRed
+          )
         }
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -205,10 +233,14 @@ fun SosBroadcastDialog(
           shape = RoundedCornerShape(14.dp),
           modifier = Modifier
             .fillMaxWidth()
-            .height(48.dp)
+            .heightIn(min = 48.dp)
             .testTag("sos_keep_broadcasting_button")
         ) {
-          Text("Keep The Local SOS Active", fontWeight = FontWeight.Bold, color = Color.White)
+          Text(
+            stringResource(R.string.sos_keep_active),
+            fontWeight = FontWeight.Bold,
+            color = Color.White
+          )
         }
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -219,7 +251,11 @@ fun SosBroadcastDialog(
             .fillMaxWidth()
             .testTag("sos_cancel_broadcast_button")
         ) {
-          Text("Cancel SOS / False Alarm", color = TacticalOnSurfaceVariant, fontSize = 13.sp)
+          Text(
+            stringResource(R.string.sos_cancel_false_alarm),
+            color = TacticalOnSurfaceVariant,
+            fontSize = 13.sp
+          )
         }
       }
     }
@@ -261,7 +297,7 @@ fun SosConfirmDialog(
         Spacer(modifier = Modifier.height(12.dp))
 
         Text(
-          text = "START A LOCAL SOS RECORD?",
+          text = stringResource(R.string.sos_confirm_title),
           fontSize = 16.sp,
           fontWeight = FontWeight.Black,
           color = EmergencyRed,
@@ -269,10 +305,7 @@ fun SosConfirmDialog(
         )
 
         Text(
-          text = "This saves a distress record on THIS DEVICE with your location, device " +
-            "battery and medical tags so it is ready to relay. It does NOT contact " +
-            "NDRF, SARANA or any authority — this build has no relief-network backend. " +
-            "Dial 112 for real help.",
+          text = stringResource(R.string.sos_confirm_body),
           fontSize = 12.sp,
           color = TacticalOnSurfaceVariant,
           lineHeight = 16.sp,
@@ -291,16 +324,26 @@ fun SosConfirmDialog(
         ) {
           Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
           ) {
-            Text("GPS Location", fontSize = 12.sp, color = TacticalOnSurfaceVariant)
+            Text(
+              stringResource(R.string.sos_label_gps),
+              fontSize = 12.sp,
+              color = TacticalOnSurfaceVariant,
+              modifier = Modifier.weight(1f)
+            )
             Text(locationLabel, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = NeonEmerald)
           }
           Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
           ) {
-            Text("Battery Level", fontSize = 12.sp, color = TacticalOnSurfaceVariant)
+            Text(
+              stringResource(R.string.sos_label_battery),
+              fontSize = 12.sp,
+              color = TacticalOnSurfaceVariant,
+              modifier = Modifier.weight(1f)
+            )
             Text(batteryLabel, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TacticalOnSurface)
           }
         }
@@ -313,10 +356,14 @@ fun SosConfirmDialog(
           shape = RoundedCornerShape(14.dp),
           modifier = Modifier
             .fillMaxWidth()
-            .height(48.dp)
+            .heightIn(min = 48.dp)
             .testTag("sos_confirm_button")
         ) {
-          Text("SAVE LOCAL SOS", fontWeight = FontWeight.Black, color = Color.White)
+          Text(
+            stringResource(R.string.sos_save_local),
+            fontWeight = FontWeight.Black,
+            color = Color.White
+          )
         }
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -327,7 +374,7 @@ fun SosConfirmDialog(
           shape = RoundedCornerShape(14.dp),
           modifier = Modifier
             .fillMaxWidth()
-            .height(48.dp)
+            .heightIn(min = 48.dp)
             .testTag("sos_confirm_call_112_button")
         ) {
           Icon(
@@ -337,7 +384,11 @@ fun SosConfirmDialog(
             modifier = Modifier.size(18.dp)
           )
           Spacer(modifier = Modifier.width(8.dp))
-          Text("CALL 112 NOW", fontWeight = FontWeight.Black, color = EmergencyRed)
+          Text(
+            stringResource(R.string.sos_call_112_now),
+            fontWeight = FontWeight.Black,
+            color = EmergencyRed
+          )
         }
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -348,7 +399,11 @@ fun SosConfirmDialog(
             .fillMaxWidth()
             .testTag("sos_confirm_cancel_button")
         ) {
-          Text("CANCEL - I AM SAFE", color = TacticalOnSurfaceVariant, fontSize = 13.sp)
+          Text(
+            stringResource(R.string.sos_cancel_i_am_safe),
+            color = TacticalOnSurfaceVariant,
+            fontSize = 13.sp
+          )
         }
       }
     }

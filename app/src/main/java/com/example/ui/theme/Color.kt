@@ -72,7 +72,23 @@ data class VippattiColors(
   val statusSuccessText: Color,
   val statusStaleText: Color,
   val statusErrorText: Color,
-  val statusHistoricalText: Color
+  val statusHistoricalText: Color,
+  /**
+   * SEMANTIC "safe / low risk / proceed" green.
+   *
+   * This is deliberately NOT a themeable brand colour. A handful of surfaces
+   * use green to mean "you are safe" rather than "this is the app accent" - the
+   * Profile safety status, RiskLevel.GREEN, the shelter "GO" guidance and the
+   * evacuation action. Those must keep the exact same green in every theme, or
+   * a safety signal would silently change meaning when the user picks a
+   * different palette.
+   *
+   * General chrome that merely wants "the accent colour" uses [neonEmerald].
+   */
+  val safeGreen: Color,
+  /** Content colour that meets contrast on top of [safeGreen]. */
+  val onSafeGreen: Color
+
 )
 
 /** Dark theme palette — the established Vippatti Sarana tactical identity. */
@@ -111,7 +127,11 @@ val DarkVippattiColors = VippattiColors(
   statusSuccessText = Color(0xFF6DFFBA),
   statusStaleText = Color(0xFFF59E0B),
   statusErrorText = Color(0xFFFF5449),
-  statusHistoricalText = Color(0xFF7C9AA6)
+  statusHistoricalText = Color(0xFF7C9AA6),
+  // Fixed across every theme (see VippattiColors.safeGreen).
+  safeGreen = Color(0xFF34D399),
+  onSafeGreen = Color(0xFF00301C)
+
 )
 
 /**
@@ -120,7 +140,9 @@ val DarkVippattiColors = VippattiColors(
  * red/amber containers with dark content for contrast.
  */
 val LightVippattiColors = VippattiColors(
-  neonEmerald = Color(0xFF008459),
+  // Kept in step with ColorTheme.FOREST_GREEN.lightPalette, which is the same
+  // green deepened to clear WCAG AA (see ColorTheme).
+  neonEmerald = Color(0xFF00714C),
   neonEmeraldContainer = Color(0xFFB9F4D9),
   onNeonEmerald = Color(0xFFEFFCF6),
   onNeonEmeraldContainer = Color(0xFF004D33),
@@ -158,7 +180,11 @@ val LightVippattiColors = VippattiColors(
   statusSuccessText = Color(0xFF004D33),
   statusStaleText = Color(0xFF8A5300),
   statusErrorText = Color(0xFFA80011),
-  statusHistoricalText = Color(0xFF3F5D75)
+  statusHistoricalText = Color(0xFF3F5D75),
+  // Fixed across every theme (see VippattiColors.safeGreen).
+  safeGreen = Color(0xFF047857),
+  onSafeGreen = Color(0xFFFFFFFF)
+
 )
 
 // ============================================================================
@@ -213,4 +239,8 @@ val WarningAmber: Color @Composable get() = LocalVippattiColors.current.warningA
 val StatusSuccessText: Color @Composable get() = LocalVippattiColors.current.statusSuccessText
 val StatusStaleText: Color @Composable get() = LocalVippattiColors.current.statusStaleText
 val StatusErrorText: Color @Composable get() = LocalVippattiColors.current.statusErrorText
-val StatusHistoricalText: Color @Composable get() = LocalVippattiColors.current.statusHistoricalText
+val StatusHistoricalText: Color @Composable get() = LocalVippattiColors.current.statusHistoricalText// Semantic "safe / proceed" green - intentionally NOT themeable, so a safety
+// signal never changes meaning when the user picks a different color theme.
+val SafeGreen: Color @Composable get() = LocalVippattiColors.current.safeGreen
+val OnSafeGreen: Color @Composable get() = LocalVippattiColors.current.onSafeGreen
+

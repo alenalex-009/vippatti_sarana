@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!--
   Tamil (ta) profile strings — same keys as values/strings.xml.
   Missing keys fall back to the English resource automatically.
@@ -72,6 +72,24 @@
     <string name="profile_section_preferences">விருப்பங்கள்</string>
     <string name="profile_theme_label">இருண்ட தீம்</string>
     <string name="profile_theme_appearance">தோற்றம்</string>
+
+    <string name="profile_color_theme_label">வண்ணத் தீம்</string>
+    <string name="profile_color_theme_description">பயன்பாட்டு வண்ணங்கள்</string>
+    <string name="profile_color_theme_dialog_title">வண்ணத் தீம்</string>
+    <string name="profile_color_theme_dialog_hint">பயன்பாட்டின் வண்ணங்களைத் தேர்ந்தெடுக்கவும். பேரிடர், எச்சரிக்கை மற்றும் பாதுகாப்பு வண்ணங்கள் ஒருபோதும் மாறாது.</string>
+    <string name="profile_color_theme_blue">விப்பட்டி நீலம்</string>
+    <string name="profile_color_theme_forest">காட்டுப் பச்சை</string>
+    <string name="profile_color_theme_sunset">சன் செட் ஆரஞ்சு</string>
+    <string name="profile_color_theme_purple">ராயல் ஊதா</string>
+    <string name="profile_color_theme_cyan">ஆழ்கடல் சயான்</string>
+    <string name="profile_color_theme_slate">ஸ்லேட்</string>
+    <string name="profile_theme_mode_system">தானமய்வானது</string>
+    <string name="profile_theme_mode_light">ஒளி</string>
+    <string name="profile_theme_mode_dark">இருள்</string>
+    <string name="profile_theme_dialog_title">தோற்றம்</string>
+    <string name="profile_theme_dialog_hint">பயன்பாடு எப்படிப் பார்க்க வேண்டும் என்பதைத் தேர்ந்தெடுக்கவும். இது பேரிடர் வண்ணங்கள் அல்லது எச்சரிக்கைகளை மாற்றாது.</string>
+    <string name="profile_theme_selected">தேர்ந்தெடுக்கப்பட்டது</string>
+    <string name="profile_theme_close">மூடு</string>
     <string name="profile_theme_on">இயக்கம்</string>
     <string name="profile_theme_off">நிறுத்தம்</string>
     <string name="profile_language_label">மொழி</string>
@@ -156,4 +174,8 @@
   <string name="nav_guide">வழிகாட்டி</string>
   <string name="nav_profile">சுயவிவரம்</string>
   <string name="nav_current_suffix"> (தற்போதைய தாவல்)</string>
+    <string name="profile_section_authority">அதிகார மையம்</string>
+    <string name="profile_authority_open">திற</string>
+    <string name="profile_authority_description">பகுதி அடிதலங்கள் மற்றும் குடியேற்றப் பதிவுகளை உள்ளிட்டு, உடனடி / குறுகிய கால / நடுப்பட்ட கால நகர்விற்காக குடியேற்றங்களை நேரடி அபாய நிலைக்கு (SIH 26191) ஏற்ப வகைப்படுத்துங்கள். பதிவுகள் இந்தச் சாதனத்திலேயே இருக்கும்; டெமோ வரிசைகள் SIMULATED என்றே இருக்கும்.</string>
+    <string name="profile_contacts_empty">இன்னும் அவசர தொடர்புகள் இல்லை — உங்கள் உள்ளூர் SOS பதிவு அவற்றைக் குறிப்பிட உறும்பங்கள் அல்லது அருகுள்ளவர்களைச் சேர்க்கவும். தொடர்புகள் இந்தச் சாதனத்திலேயே தக்கவைக்கப்படும்.</string>
 </resources>

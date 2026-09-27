@@ -51,11 +51,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import coil.compose.AsyncImage
+import com.example.R
 import com.example.ui.theme.NeonEmerald
 import com.example.ui.theme.ObsidianContainerHigh
 import com.example.ui.theme.ObsidianContainerLow
@@ -142,19 +144,19 @@ fun SituationReportDialog(
         ) {
           Column {
             Text(
-              text = "Report My Situation",
+              text = stringResource(R.string.report_title),
               fontSize = 16.sp,
               fontWeight = FontWeight.Bold,
               color = TacticalOnSurface
             )
             Text(
-              text = "Voice | Form | Photo - saved as a local report",
+              text = stringResource(R.string.report_subtitle),
               fontSize = 12.sp,
               color = TacticalOnSurfaceVariant
             )
           }
           IconButton(onClick = onDismiss) {
-            Icon(Icons.Default.Close, contentDescription = "Close", tint = TacticalOnSurfaceVariant)
+            Icon(Icons.Default.Close, contentDescription = stringResource(R.string.dialog_close_content_desc), tint = TacticalOnSurfaceVariant)
           }
         }
 
@@ -183,7 +185,7 @@ fun SituationReportDialog(
         ) {
           Icon(Icons.Default.Mic, contentDescription = null, tint = TacticalCyan, modifier = Modifier.size(18.dp))
           Spacer(modifier = Modifier.width(6.dp))
-          Text("DICTATE MY SITUATION (VOICE)", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+          Text(stringResource(R.string.report_dictate), fontSize = 12.sp, fontWeight = FontWeight.Bold)
         }
         voiceNote?.let { note ->
           Text(note, fontSize = 10.sp, color = WarningAmber)
@@ -192,7 +194,7 @@ fun SituationReportDialog(
         // --- Quick situation tags -------------------------------------------
         // FlowRow wraps tags naturally — no overflow at 360dp or large font scales.
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-          Text("QUICK TAGS", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = TacticalOnSurfaceVariant, letterSpacing = 0.5.sp)
+          Text(stringResource(R.string.report_quick_tags), fontSize = 10.sp, fontWeight = FontWeight.Bold, color = TacticalOnSurfaceVariant, letterSpacing = 0.5.sp)
           FlowRow(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -210,7 +212,7 @@ fun SituationReportDialog(
         OutlinedTextField(
           value = description,
           onValueChange = { description = it },
-          label = { Text("Situation description (voice or typed)", fontSize = 12.sp) },
+          label = { Text(stringResource(R.string.report_description), fontSize = 12.sp) },
           minLines = 3,
           colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = NeonEmerald,
@@ -240,7 +242,7 @@ fun SituationReportDialog(
           ) {
             Icon(Icons.Default.PhotoLibrary, contentDescription = null, tint = WarningAmber, modifier = Modifier.size(18.dp))
             Spacer(modifier = Modifier.width(6.dp))
-            Text("ATTACH PHOTO EVIDENCE", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.report_attach_photo), fontSize = 12.sp, fontWeight = FontWeight.Bold)
           }
         } else {
           Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -273,7 +275,7 @@ fun SituationReportDialog(
                 Icon(Icons.Default.Close, contentDescription = "Remove photo", tint = TacticalOnSurface, modifier = Modifier.size(16.dp))
               }
             }
-            Text("Photo reference saved locally with the report", fontSize = 12.sp, color = NeonEmerald)
+            Text(stringResource(R.string.report_photo_saved), fontSize = 12.sp, color = NeonEmerald)
           }
         }
 
@@ -288,15 +290,15 @@ fun SituationReportDialog(
           verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
           Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text("Reporting as", fontSize = 11.sp, color = TacticalOnSurfaceVariant)
+            Text(stringResource(R.string.report_reporting_as), fontSize = 11.sp, color = TacticalOnSurfaceVariant)
             Text(reporterName, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = TacticalOnSurface)
           }
           Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text("GPS Location", fontSize = 11.sp, color = TacticalOnSurfaceVariant)
+            Text(stringResource(R.string.sos_label_gps), fontSize = 11.sp, color = TacticalOnSurfaceVariant)
             Text(locationLabel, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = NeonEmerald)
           }
           Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text("Battery Level", fontSize = 11.sp, color = TacticalOnSurfaceVariant)
+            Text(stringResource(R.string.sos_label_battery), fontSize = 11.sp, color = TacticalOnSurfaceVariant)
             Text(batteryLabel, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = TacticalOnSurface)
           }
         }
@@ -338,5 +340,4 @@ private fun QuickTagChip(label: String, onAppend: (String) -> Unit) {
     Text(label, fontSize = 11.sp, color = TacticalOnSurface, fontWeight = FontWeight.SemiBold)
   }
 }
-
 

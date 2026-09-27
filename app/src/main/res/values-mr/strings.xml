@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!--
   Marathi (mr) profile strings — same keys as values/strings.xml.
   Missing keys fall back to the English resource automatically.
@@ -72,6 +72,24 @@
     <string name="profile_section_preferences">प्राधान्ये</string>
     <string name="profile_theme_label">डार्क थीम</string>
     <string name="profile_theme_appearance">स्वरूप</string>
+
+    <string name="profile_color_theme_label">रंग थीम</string>
+    <string name="profile_color_theme_description">अ‍ॅपचे रंग</string>
+    <string name="profile_color_theme_dialog_title">रंग थीम</string>
+    <string name="profile_color_theme_dialog_hint">अ‍ॅपचे रंग निवडा. आपत्ती, सूचना आणि सुरक्षिततेचे रंग कधीही बदलत नाहीत.</string>
+    <string name="profile_color_theme_blue">विप्पट्टी निळा</string>
+    <string name="profile_color_theme_forest">जंगली हिरवा</string>
+    <string name="profile_color_theme_sunset">सनसेट ऑरेंज</string>
+    <string name="profile_color_theme_purple">रॉयल पुरा</string>
+    <string name="profile_color_theme_cyan">महासागर सायन</string>
+    <string name="profile_color_theme_slate">स्लेट</string>
+    <string name="profile_theme_mode_system">सिस्टम डीफॉल्ट</string>
+    <string name="profile_theme_mode_light">उजळ</string>
+    <string name="profile_theme_mode_dark">गडद</string>
+    <string name="profile_theme_dialog_title">दिसावत</string>
+    <string name="profile_theme_dialog_hint">अ‍ॅप कसे दिसे ते निवडा. याने आपत्ती रंग किंवा सूचना बदलल्या जात नाहीत.</string>
+    <string name="profile_theme_selected">निवडलेले</string>
+    <string name="profile_theme_close">बंद करा</string>
     <string name="profile_theme_on">चालू</string>
     <string name="profile_theme_off">बंद</string>
     <string name="profile_language_label">भाषा</string>
@@ -156,4 +174,8 @@
   <string name="nav_guide">मार्गदर्शिका</string>
   <string name="nav_profile">प्रोफाइल</string>
   <string name="nav_current_suffix"> (सध्याचे टॅब)</string>
+    <string name="profile_section_authority">प्राधिकार केंद्र</string>
+    <string name="profile_authority_open">उघडा</string>
+    <string name="profile_authority_description">स्थानिक आश्रय व इग्रह नोंदी भरा आणि तातडीत / अल्पकालीन / मध्यकालीन स्थलांतरासाठी इग्रहांना थेट धोका स्थिती (SIH 26191) अनुसार वर्गीकृत करा. नोंदी याच डिव्हाइसवरच राहतात; डेमो ओळी SIMULATED म्हणूनच राहतात.</string>
+    <string name="profile_contacts_empty">अद्यापर्यंत आणीबाणी संपर्क नाहीत — कुटुंब किंवा शेजारी जोडा जेणेकरून तुमचा स्थानिक SOS रेकॉर्ड त्यांचा उल्लेख करू शको. संपर्क केवळ याच डिव्हाइसवर राहतात.</string>
 </resources>

@@ -1,5 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<!--
+  Pre-Android-12 launch window (API 24-30).
 
-    <style name="Theme.MyApplication" parent="android:Theme.DeviceDefault.NoActionBar" />
+  Android 12+ uses the platform SplashScreen API instead - see
+  res/values-v31/themes.xml. Below API 31 there is no splash API, so the
+  system shows this windowBackground as the app starts; it is replaced by the
+  first Compose frame, so it adds no delay of its own.
+
+  Before this change the window had NO explicit background and inherited
+  DeviceDefault's implicit light surface, while the launch colour was pulled
+  from the brand green - which is what produced the green startup flash.
+
+  The background is now the neutral near-white the logo is drawn on, with the
+  real Vippatti Sarana mark centred on it.
+-->
+<resources>
+    <style name="Theme.MyApplication" parent="android:Theme.DeviceDefault.NoActionBar">
+        <item name="android:windowBackground">@drawable/splash_background</item>
+    </style>
 </resources>

@@ -67,15 +67,28 @@ private fun vippattiLightScheme(p: VippattiColors) = lightColorScheme(
 @Composable
 fun VippattiTheme(
   darkTheme: Boolean = false, // Daylight-first: the light palette matches the light map
+  /**
+   * Remote brand override (audit B3). Passed IN rather than read from the
+   * ConfigRegistry here so this composable has no Firebase side effect and
+   * the override is testable in isolation; MainActivity supplies the live
+   * value. Defaults keep every existing call site and Robolectric test intact.
+   */
   config: AppRemoteConfig = AppRemoteConfig(),
+  /**
+   * The user-selected brand palette. Defaults to [ColorTheme.DEFAULT] so every
+   * existing call site keeps the approved default appearance.
+   */
+  colorTheme: ColorTheme = ColorTheme.DEFAULT,
   content: @Composable () -> Unit,
 ) {
-  // The base palette, then the remote brand applied as a full quartet. Passing
-  // `config` in (rather than reading ConfigRegistry here) keeps this composable
-  // free of any Firebase side effect and makes the override testable in isolation.
-  val palette = remember(darkTheme, config) {
+  // Two independent feature paths, composed in one place: the user's chosen
+  // brand palette (colorTheme, per light/dark) forms the base, and the remote
+  // config brand hexes - when present - are applied over it as a FULL
+  // contrast-safe quartet by ThemeOverride (re-derives on-primary/container
+  // roles + validates the hex; B3). Never a bare single-colour swap.
+  val palette = remember(darkTheme, config, colorTheme) {
     ThemeOverride.apply(
-      base = if (darkTheme) DarkVippattiColors else LightVippattiColors,
+      base = colorTheme.palette(darkTheme),
       primaryHex = config.primaryColorHex,
       secondaryHex = config.secondaryColorHex,
       dark = darkTheme
