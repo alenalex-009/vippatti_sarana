@@ -134,6 +134,40 @@ class NewsPipelineUnitTest {
     val filtered = NewsFilter.filterForDisaster(listOf(disaster, general))
     assertEquals(listOf("d"), filtered.map { it.id })
   }
+  // ------------------------------------------- BUG 7: relevance is stricter
+  @Test
+  fun `a routine civic story is NOT presented as disaster coverage`() {
+    // BUG 7: "rain"/"assistance"/"shelter" appearing only in the body used to be
+    // enough to pass the filter, so general news filled the disaster feed.
+    val civic = NewsArticle(
+      id = "civic", title = "Corporation opens new library",
+      description = "The city corporation announced the opening. Residents were advised of the new timings and support assistance.",
+      content = "A routine civic update with no hazard involved.",
+      url = "https://example.com/library", imageUrl = null,
+      publishedAtIso = "", publishedAtMillis = 3L, language = "en",
+      sourceName = "Civic Times", sourceUrl = "https://x.com", scope = NewsScope.INDIA,
+      category = NewsCategory.GENERAL
+    )
+    assertFalse(
+      "general civic news must not be claimed as disaster coverage",
+      NewsFilter.isDisasterRelevant(civic)
+    )
+  }
+
+  @Test
+  fun `a genuine hazard story is still kept`() {
+    val flood = article("f2", "Landslide blocks highway, NDRF teams rescue villagers", 4L, NewsScope.INDIA)
+    val cyclone = article("c2", "Cyclone warning issued for coastal districts", 5L, NewsScope.INDIA)
+    assertTrue(NewsFilter.isDisasterRelevant(flood))
+    assertTrue(NewsFilter.isDisasterRelevant(cyclone))
+  }
+
+  @Test
+  fun `a weak hazard word in the HEADLINE still keeps the story`() {
+    val headline = article("w1", "Evacuation begins after river crosses the embankment", 6L, NewsScope.INDIA)
+    assertTrue("headline relevance must still count", NewsFilter.isDisasterRelevant(headline))
+  }
+
 
   // ---------------------------------------------------- Merge / dedupe
   @Test

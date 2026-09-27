@@ -15,32 +15,53 @@ package com.example.data.news
  */
 object NewsFilter {
 
-  /** Resilience vocabulary — matching any one keeps the article actionable. */
-  private val DISASTER_TERMS = listOf(
-    // Event types
-    "flood", "cyclone", "landslide", "mudslide", "earthquake", "quake",
-    "tsunami", "avalanche", "drought", "wildfire", "cloudburst", "heatwave",
-    "heat wave", "heatwave", "cold wave", "coldwave", "squall", "hail",
-    "lightning", "gale", "storm", "heavy rain", "downpour", "monsoon",
-    "glacial", "eruption", "tremor", "aftershock", "dam breach", "embankment",
-    "rain", "rainfall",
-    // Response / impact
-    "evacuat", "rescue", "relief", "shelter", "displaced", "victim",
-    "casualt", "death", "injur", "affected", "stranded", "trapped",
-    "NDRF", "SDRF", "relief camp", "emergency", "advisory", "warning",
-    "alert", "restoration", "rehabilitation", "assistance", "recover")
-    // "disaster"/"crisis" handled implicitly by queries + classifier
+  /**
+   * BUG 7 FIX — evidence is split into two tiers.
+
+   * The previous single list mixed specific hazard vocabulary ("cyclone",
+   * "landslide", "NDRF") with words that appear in almost any general article
+   * ("rain", "alert", "warning", "shelter", "affected", "assistance"). Because
+   * ANY of them anywhere in title+description+content passed, routine civic and
+   * general news was presented to the user as disaster coverage.
+   *
+   * An article now counts as disaster-related when it carries a STRONG term, or
+   * when a weaker term appears in the TITLE. A weak term buried in body text
+   * alone no longer proves relevance.
+   */
+
+  /** Specific hazards, agencies and response vocabulary: decisive on its own. */
+  private val STRONG_TERMS = listOf(
+    "flood", "flash flood", "cyclone", "hurricane", "typhoon", "landslide",
+    "landslip", "mudslide", "earthquake", "quake", "aftershock", "tsunami",
+    "avalanche", "wildfire", "forest fire", "cloudburst", "blizzard",
+    "storm surge", "dam breach", "embankment breach", "eruption", "volcano",
+    "NDRF", "SDRF", "relief camp", "evacuation", "evacuat",
+    "rescue operation", "search and rescue", "first responder",
+    "death toll", "casualt", "swept away", "washed away", "tremor", "landslips"
+  )
+
+  /**
+   * Weaker, high-frequency words. On their own these prove nothing, so they only
+   * count when they appear in the headline.
+   */
+  private val WEAK_TERMS = listOf(
+    "rain", "rainfall", "storm", "squall", "hail", "lightning", "gale", "monsoon",
+    "drought", "heatwave", "heat wave", "coldwave", "cold wave",
+    "rescue", "relief", "shelter", "displaced", "victim", "injur",
+    "affected", "stranded", "trapped", "emergency", "advisory", "warning", "alert",
+    "restoration", "rehabilitation", "assistance", "recover", "response"
+  )
 
   /** True when the article's own text signals disaster relevance. */
   fun isDisasterRelevant(article: NewsArticle): Boolean {
-    val haystack = buildString {
-      append(article.title.lowercase())
-      append(' ')
+    val title = article.title.lowercase()
+    val body = buildString {
       append(article.description.lowercase())
       append(' ')
       append(article.content.lowercase())
     }
-    return DISASTER_TERMS.any { haystack.contains(it) }
+    if (STRONG_TERMS.any { body.contains(it) || title.contains(it) }) return true
+    return WEAK_TERMS.any { title.contains(it) }
   }
 
   /** Filters a list, keeping disabled/unmatched articles out. */
