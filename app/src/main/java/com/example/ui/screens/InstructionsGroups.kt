@@ -27,7 +27,7 @@ import com.example.ui.theme.TacticalCyan
 import com.example.ui.theme.WarningAmber
 
 // ============================================================================
-// CATEGORY GROUPING â€” classifies EXISTING instruction items into meaningful
+// CATEGORY GROUPING — classifies EXISTING instruction items into meaningful
 // categories. No content is invented; every item of the selected phase lands
 // in exactly one group (fallback: "More Safety Steps"). "After" phases get a
 // single Recovery group (recovery wording dominates the data).
@@ -40,7 +40,7 @@ internal data class InstructionGroup(
   val items: List<InstructionItem>
 )
 
-/** Theme-aware visual (icon + accent) for a group id â€” resolved in composition. */
+/** Theme-aware visual (icon + accent) for a group id — resolved in composition. */
 @Composable
 internal fun groupVisual(groupId: String): Pair<ImageVector, Color> = when (groupId) {
   "immediate_safety" -> Icons.Default.Shield to EmergencyRed
@@ -113,7 +113,7 @@ internal fun buildInstructionGroups(
     }
   }
 
-  // "After" phases: recovery terminology dominates â€” one clean Recovery group
+  // "After" phases: recovery terminology dominates — one clean Recovery group
   // holding ALL of that phase's items (nothing dropped).
   if (phase.title.equals("After", ignoreCase = true)) {
     return listOf(
@@ -148,4 +148,4 @@ internal fun buildInstructionGroups(
   return groups
 }
 
-/** Disaster icon by category id â€” preserved from the existing module. */
+/** Disaster icon by category id — preserved from the existing module. */

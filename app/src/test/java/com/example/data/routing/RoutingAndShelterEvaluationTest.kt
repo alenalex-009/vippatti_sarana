@@ -29,10 +29,10 @@ class RoutingAndShelterEvaluationTest {
     // Deterministic geometry: no hazard detours (they depend on wall-clock
     // pulse offsets inside the fallback corridor builder).
     val a = OsrmRoutingService.calculateOfflineTacticalRoute(
-      origin, dest, "foot", emptyList(), "Cheruthoni Hall"
+      origin, dest, TravelMode.FOOT, emptyList(), "Cheruthoni Hall"
     )
     val b = OsrmRoutingService.calculateOfflineTacticalRoute(
-      origin, dest, "foot", emptyList(), "Cheruthoni Hall"
+      origin, dest, TravelMode.FOOT, emptyList(), "Cheruthoni Hall"
     )
     // Two distinct instances representing the SAME corridor must share an id —
     // alternative chips compare by routeId, not ===.
@@ -45,7 +45,7 @@ class RoutingAndShelterEvaluationTest {
     val origin = GeoPoint(9.84778, 76.94222)
     val dest = GeoPoint(9.77361, 77.03528)
     val straight = OsrmRoutingService.calculateOfflineTacticalRoute(
-      origin, dest, "foot", emptyList(), "Zone"
+      origin, dest, TravelMode.FOOT, emptyList(), "Zone"
     )
     val detoured = straight.copy(pathPoints = listOf(origin, GeoPoint(9.80, 76.99), dest))
     assertNotEquals(straight.routeId, detoured.routeId)

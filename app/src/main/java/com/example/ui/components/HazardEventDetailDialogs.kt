@@ -701,5 +701,5 @@ fun IncidentReportDialog(
 }
 
 // ============================================================================
-// SAFE ZONE DETAIL ? full carrying-capacity & resource intelligence
+// SAFE ZONE DETAI — ull carrying-capacity & resource intelligence
 // ============================================================================

@@ -5,7 +5,7 @@ import com.example.data.routing.GeoPoint
 /**
  * Extensible disaster-type registry. New Indian disaster types (cyclone,
  * earthquake, heat wave, drought, tsunami...) can be appended without touching
- * any engine code ? every consumer is type-driven.
+ * any engine cod — very consumer is type-driven.
  */
 enum class HazardType(val label: String) {
   FLOOD("Flood"),
@@ -26,6 +26,14 @@ enum class HazardSeverity(val label: String) {
   HIGH("High"),
   EXTREME("Extreme");
 
+  /**
+   * Rank weight for "which hazard dominates the verdict". NOTE (audit B6
+   * review): this is ordinal-based, so DECLARATION ORDER IS THE MODEL - the
+   * scale is intentionally monotonic (Low < Moderate < High < Extreme) and
+   * reordering the entries would silently change risk outcomes. Any future
+   * severity change must keep this order or replace weight with an explicit
+   * value. (Documented, not changed: no verified defect requires it.)
+   */
   val weight: Int get() = ordinal + 1
 }
 
@@ -38,7 +46,7 @@ enum class HazardTrend(val label: String) {
 
 /**
  * One active hazard area. Hazard zones are rendered as LARGE translucent
- * circular areas with a subtle expanding/fading pulse ? never tiny dots.
+ * circular areas with a subtle expanding/fading puls — ever tiny dots.
  */
 data class HazardZone(
   val id: String,
@@ -46,13 +54,13 @@ data class HazardZone(
   val type: HazardType,
   val severity: HazardSeverity,
   val center: GeoPoint,
-  /** Affected-area radius in meters ? drives the size of the translucent zone. */
+  /** Affected-area radius in meter — rives the size of the translucent zone. */
   val radiusMeters: Double,
   val riskLevel: String,
   val trend: HazardTrend,
   /** Free-form source/status field (provenance label shown in UI). */
   val sourceStatus: String,
-  /** Timestamp/freshness ? epoch millis of last update; 0 = field record data. */
+  /** Timestamp/freshnes — poch millis of last update; 0 = field record data. */
   val lastUpdatedMillis: Long,
   val provenance: DataProvenance
 )

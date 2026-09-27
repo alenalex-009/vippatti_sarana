@@ -93,7 +93,10 @@ internal fun CollapsedSheetContent(uiState: VippattiUiState) {
           maxLines = 1
         )
         Text(
-          text = route?.let { OsrmRoutingService.formatDuration(it.durationSeconds) } ?: "no route",
+          text = route?.let {
+            // B11: estimated offline times carry an explicit tilde.
+            (if (it.isLiveOsrm) "" else "~") + OsrmRoutingService.formatDuration(it.durationSeconds)
+          } ?: "no route",
           fontSize = 11.sp,
           color = TacticalOnSurfaceVariant,
           maxLines = 1
@@ -109,7 +112,7 @@ internal fun ExpandedSheetContent(
   uiState: VippattiUiState,
   onSelectBestSafeZone: () -> Unit,
   onSelectSafeZone: (SafeZone) -> Unit,
-  onSetTravelMode: (String) -> Unit,
+  onSetTravelMode: (com.example.data.routing.TravelMode) -> Unit,
   onStartEvacuation: () -> Unit,
   onStopEvacuation: () -> Unit,
   onLoadAlternativeRoutes: () -> Unit,

@@ -11,7 +11,7 @@ import kotlinx.coroutines.withContext
  *    (<= 30 min) is served on cold start without spending any request;
  *  - deduped by article id AND normalized title, newest first, with the
  *    closest scope winning duplicates;
- *  - honest errors only â€” cached articles survive offline, nothing is
+ *  - honest errors only — cached articles survive offline, nothing is
  *    fabricated.
  */
 class NewsRepository(
@@ -19,7 +19,7 @@ class NewsRepository(
   private val cache: NewsCache,
   private val apiKeyProvider: () -> String,
   private val clock: () -> Long = System::currentTimeMillis,
-  /** Storage I/O dispatcher â€” tests inject the scheduler's dispatcher so runs are deterministic. */
+  /** Storage I/O dispatcher — tests inject the scheduler's dispatcher so runs are deterministic. */
   private val storageDispatcher: kotlinx.coroutines.CoroutineDispatcher = Dispatchers.IO
 ) {
 
@@ -45,14 +45,14 @@ class NewsRepository(
       when (val call = service.search(scope, scoped.query, apiKey)) {
         is GNewsCall.Success -> {
           collected += call.articles
-          // Never overwrite a useful shard with an empty live result â€” an
+          // Never overwrite a useful shard with an empty live result — an
           // empty scope keeps its previous (past) coverage for the fallback.
           if (call.articles.isNotEmpty()) {
             withContext(storageDispatcher) { cache.write(scope, call.articles, now) }
           }
         }
         is GNewsCall.Failure -> {
-          // Quota/auth/network failure â€” stop the cascade; remaining scopes
+          // Quota/auth/network failure — stop the cascade; remaining scopes
           // fall back to their cache shards inside cachedOnlyFeed.
           error = call.error
           break

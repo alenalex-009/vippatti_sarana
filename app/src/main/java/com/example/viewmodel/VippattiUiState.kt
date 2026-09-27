@@ -95,7 +95,7 @@ enum class ScreenTab {
  */
 enum class TorchState { OFF, ON, UNAVAILABLE, PERMISSION_DENIED }
 
-enum class SirenState { IDLE, PLAYING }
+enum class SirenState { IDLE, PLAYING, UNAVAILABLE }
 
 /**
  * Explicit route lifecycle. A route is only ever DRAWN in [READY]; a straight
@@ -166,6 +166,8 @@ data class VippattiUiState(
   /** Human-readable reason shown under the Light control when it cannot turn on. */
   val torchMessage: String? = null,
   val sirenState: SirenState = SirenState.IDLE,
+  /** Why the siren could not run, shown in place of the "active" claim. */
+  val sirenMessage: String? = null,
   /** Seconds left before the siren auto-stops (drives the visible countdown). */
   val sirenSecondsLeft: Int = 0,
   val contactsList: List<EmergencyContact> = emptyList(),
@@ -355,7 +357,7 @@ data class VippattiUiState(
   /** Honest, user-facing explanation of the current [routeStatus]. */
   val routeStatusMessage: String? = null,
   /** True when the drawn route is the explicitly-requested offline estimate. */
-  val travelMode: String = "foot", // "foot" or "driving"
+  val travelMode: com.example.data.routing.TravelMode = com.example.data.routing.TravelMode.FOOT,
   val isNavigatingLive: Boolean = false,
   val currentNavigationStepIndex: Int = 0,
 

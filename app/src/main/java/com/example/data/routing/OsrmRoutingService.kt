@@ -37,7 +37,7 @@ data class RouteResult(
   val steps: List<RouteStep>,
   val isLiveOsrm: Boolean,
   val summary: String,
-  val travelMode: String,
+  val travelMode: TravelMode,
   /** Human warnings for each hazard the route passes near/through. */
   val hazardWarnings: List<RouteHazardWarning> = emptyList(),
   /** SAFE / CAUTION / DANGER for the selected route. */
@@ -48,15 +48,35 @@ data class RouteResult(
   val destinationName: String = "Safe Zone"
 ) {
   /**
-   * Stable content-derived identity (derived once from distance, path length
-   * and path content). List UI must compare routes by this id — never by
-   * object identity (===), because state copies create equal-but-distinct
-   * instances.
+   * Stable, FULLY content-addressed identity (audit B7). Derived from a
+   * SHA-256 over every field that makes the route what it is — travel mode,
+   * destination, live-vs-estimate origin, distance, duration, safety verdict,
+   * and the ordered path coordinates quantised to ~1 m. The previous
+   * "distance + size + list.hashCode()" id could theoretically collide
+   * (List.hashCode is 31-weighted and not injective) and ignored mode +
+   * destination entirely, so two different corridors to two different places
+   * could share an id. List UI compares routes by this id — never by object
+   * identity (===), because state copies create equal-but-distinct instances.
    */
   val routeId: String
 
   init {
-    routeId = "route-${distanceMeters.roundToInt()}-${pathPoints.size}-${pathPoints.hashCode()}"
+    val digest = java.security.MessageDigest.getInstance("SHA-256")
+    val identity = buildString {
+      append(travelMode).append('|').append(destinationName).append('|')
+      append(isLiveOsrm).append('|')
+      append(distanceMeters.toLong()).append('|').append(durationSeconds.toLong()).append('|')
+      append(routeSafetyStatus).append('|').append(routeSafetyScore).append('|')
+      // ~1 m quantisation: stable under floating-point noise, distinct for
+      // any real geometry change.
+      pathPoints.forEach { p ->
+        append((p.lat * 100_000).toLong()).append(',').append((p.lon * 100_000).toLong()).append(';')
+      }
+    }
+    val hex = digest.digest(identity.toByteArray(Charsets.UTF_8))
+      .joinToString("") { "%02x".format(it) }
+      .substring(0, 16)
+    routeId = "route-$hex"
   }
 
   val isReroutable: Boolean get() = hazardWarnings.any { it.isBlocking }
@@ -230,7 +250,7 @@ object OsrmRoutingService {
   fun fetchLiveRoutes(
     origin: GeoPoint,
     destination: GeoPoint,
-    mode: String,
+    mode: TravelMode,
     hazards: List<HazardZone>,
     destinationName: String,
     wantAlternatives: Int,
@@ -240,7 +260,10 @@ object OsrmRoutingService {
     // only the car profile — a /foot/ request there silently returns car
     // geometry. The FOSSGIS community server runs dedicated foot + car
     // instances, so each travel mode queries its own profile.
-    val endpoint = if (mode == "driving") "https://routing.openstreetmap.de/routed-car/route/v1/driving" else "https://routing.openstreetmap.de/routed-foot/route/v1/foot"
+    val endpoint = when (mode) {
+      TravelMode.DRIVING -> "https://routing.openstreetmap.de/routed-car/route/v1/driving"
+      TravelMode.FOOT -> "https://routing.openstreetmap.de/routed-foot/route/v1/foot"
+    }
 
     // First attempt honours the requested overview. ACTIVE corridors ask for
     // full road geometry (exact route lines); the ALTERNATIVES button asks for
@@ -264,7 +287,7 @@ object OsrmRoutingService {
   /** One OSRM request attempt; null when the attempt fully failed. */
   private fun tryRequestRoutes(
     url: String,
-    mode: String,
+    mode: TravelMode,
     hazards: List<HazardZone>,
     destinationName: String,
     wantAlternatives: Int
@@ -298,7 +321,7 @@ object OsrmRoutingService {
   suspend fun fetchLiveRoutesAsync(
     origin: GeoPoint,
     destination: GeoPoint,
-    mode: String,
+    mode: TravelMode,
     hazards: List<HazardZone>,
     destinationName: String,
     wantAlternatives: Int
@@ -314,7 +337,7 @@ object OsrmRoutingService {
   suspend fun calculateRoute(
     origin: GeoPoint,
     destination: GeoPoint,
-    mode: String = "foot", // "foot" or "driving"
+    mode: TravelMode = TravelMode.FOOT,
     hazards: List<HazardZone> = emptyList(),
     destinationName: String = "Safe Zone"
   ): RouteResult = withContext(Dispatchers.IO) {
@@ -325,7 +348,7 @@ object OsrmRoutingService {
 
   private fun parseOsrmRoute(
     routeObj: JSONObject,
-    mode: String,
+    mode: TravelMode,
     hazards: List<HazardZone>,
     destinationName: String
   ): RouteResult? {
@@ -385,7 +408,7 @@ object OsrmRoutingService {
   fun calculateOfflineTacticalRoute(
     origin: GeoPoint,
     destination: GeoPoint,
-    mode: String,
+    mode: TravelMode,
     hazards: List<HazardZone> = emptyList(),
     destinationName: String = "Safe Zone"
   ): RouteResult {
@@ -433,7 +456,7 @@ object OsrmRoutingService {
     }
 
     // Walking pace ~4.8 km/h; driving ~30 km/h during evacuation conditions.
-    val speedMps = if (mode == "driving") 8.33 else 1.35
+    val speedMps = mode.estimateSpeedMps
     val durationSeconds = totalMeters / speedMps
 
     // Guidance is derived from the corridor actually built, not from invented
@@ -482,7 +505,7 @@ object OsrmRoutingService {
   suspend fun calculateAlternativeRoutes(
     origin: GeoPoint,
     destination: GeoPoint,
-    mode: String,
+    mode: TravelMode,
     hazards: List<HazardZone> = emptyList(),
     destinationName: String = "Safe Zone",
     maxAlternatives: Int = 2

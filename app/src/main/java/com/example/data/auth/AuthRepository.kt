@@ -2,6 +2,8 @@ package com.example.data.auth
 
 import android.content.Context
 import java.security.MessageDigest
+import javax.crypto.SecretKeyFactory
+import javax.crypto.spec.PBEKeySpec
 import java.util.Locale
 import kotlin.random.Random
 
@@ -53,7 +55,7 @@ class SharedPrefsAuthStorage(context: Context) : AuthStorage {
   override fun isLoggedIn(): Boolean = prefs.getBoolean(KEY_LOGGED_IN, false)
   override fun setLoggedIn(value: Boolean) { prefs.edit().putBoolean(KEY_LOGGED_IN, value).apply() }
 
-  override fun isStaySignedIn(): Boolean = prefs.getBoolean(KEY_STAY_SIGNED_IN, true)
+  override fun isStaySignedIn(): Boolean = prefs.getBoolean(KEY_STAY_SIGNED_IN, false)
   override fun setStaySignedIn(value: Boolean) { prefs.edit().putBoolean(KEY_STAY_SIGNED_IN, value).apply() }
 
   override fun lastEmail(): String? = prefs.getString(KEY_LAST_EMAIL, null)
@@ -97,15 +99,76 @@ class InMemoryAuthStorage : AuthStorage {
   }
 }
 
-/** Salted SHA-256 password hashing (pure JVM; no secret is stored in plaintext). */
+/**
+ * Local password hashing. AUDIT B12 HARDENING (2026-09-25):
+ *
+ * NEW credentials are stored as "pbkdf2$<iter>$<saltHex>$<hashHex>" - 120k
+ * iterations of PBKDF2-HMAC-SHA256 with a fresh 16-byte salt (the previous
+ * single-round SHA-256 over an 8-byte salt is fast to brute-force if the app
+ * private data is ever extracted).
+ *
+ * EXISTING credentials keep the legacy "saltHex:sha256Hex" shape and are
+ * VERIFIED against the legacy algorithm, then transparently upgraded on next
+ * successful login (see AuthRepository.login). Nobody is locked out, and no
+ * plaintext or recoverable secret is ever stored. Verification of both shapes
+ * is constant-time.
+ */
 object PasswordHasher {
 
-  fun newSalt(): String = Random.Default.nextBytes(8).joinToString("") { "%02x".format(it) }
+  private const val PBKDF2_ITERATIONS = 120_000
+  private const val PBKDF2_KEY_BITS = 256
+  private const val PREFIX = "pbkdf2"
 
-  fun hash(password: String, salt: String): String {
+  fun newSalt(): String = Random.Default.nextBytes(16).joinToString("") { "%02x".format(it) }
+
+  /** Modern hash: the full versioned string, salt embedded. */
+  fun hashNew(password: String): String {
+    val salt = newSalt()
+    val hash = pbkdf2(password, salt, PBKDF2_ITERATIONS)
+    return PREFIX + "$" + PBKDF2_ITERATIONS + "$" + salt + "$" + hash
+  }
+
+  /** Legacy shape kept ONLY so existing stored credentials stay verifiable. */
+  fun legacyHash(password: String, salt: String): String {
     val digest = MessageDigest.getInstance("SHA-256")
     digest.update((salt + ":" + password).toByteArray(Charsets.UTF_8))
     return digest.digest().joinToString("") { "%02x".format(it) }
+  }
+
+  private fun pbkdf2(password: String, saltHex: String, iterations: Int): String {
+    val saltBytes = saltHex.chunked(2).map { it.toInt(16).toByte() }.toByteArray()
+    val spec = PBEKeySpec(password.toCharArray(), saltBytes, iterations, PBKDF2_KEY_BITS)
+    val key = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
+      .generateSecret(spec).encoded
+    return key.joinToString("") { "%02x".format(it) }
+  }
+
+  /** Verify a candidate password against a stored credential of EITHER shape. */
+  fun verify(password: String, stored: String): Boolean {
+    if (stored.startsWith("$PREFIX$")) {
+      val parts = stored.split("$")
+      if (parts.size != 4) return false
+      val iterations = parts[1].toIntOrNull() ?: return false
+      val computed = pbkdf2(password, parts[2], iterations)
+      return MessageDigest.isEqual(
+        computed.toByteArray(Charsets.UTF_8), parts[3].toByteArray(Charsets.UTF_8)
+      )
+    }
+    val separator = stored.indexOf(':')
+    if (separator <= 0) return false
+    val salt = stored.substring(0, separator)
+    val expected = stored.substring(separator + 1)
+    return constantTimeEquals(legacyHash(password, salt), expected)
+  }
+
+  /** True when a stored credential is legacy and should be upgraded on login. */
+  fun needsUpgrade(stored: String): Boolean = !stored.startsWith("$PREFIX$")
+
+  private fun constantTimeEquals(a: String, b: String): Boolean {
+    if (a.length != b.length) return false
+    var diff = 0
+    for (i in a.indices) diff = diff or (a[i].code xor b[i].code)
+    return diff == 0
   }
 }
 
@@ -130,12 +193,14 @@ class AuthRepository(private val storage: AuthStorage) {
     val clean = normalizeEmail(email) ?: return AuthResult.failure(AuthError.INVALID_EMAIL)
     val stored = storage.readCredential(clean)
       ?: return AuthResult.failure(AuthError.ACCOUNT_NOT_FOUND)
-    val separator = stored.indexOf(':')
-    if (separator <= 0) return AuthResult.failure(AuthError.WRONG_CREDENTIALS)
-    val salt = stored.substring(0, separator)
-    val expected = stored.substring(separator + 1)
-    if (!constantTimeEquals(PasswordHasher.hash(password, salt), expected)) {
+    if (!PasswordHasher.verify(password, stored)) {
       return AuthResult.failure(AuthError.WRONG_CREDENTIALS)
+    }
+    // Transparent hardening (audit B12): a legacy SHA-256 credential that
+    // just authenticated correctly is rewritten as PBKDF2 on the spot. The
+    // user notices nothing; extracted files get progressively stronger.
+    if (PasswordHasher.needsUpgrade(stored)) {
+      storage.writeCredential(clean, PasswordHasher.hashNew(password))
     }
     processLoggedIn = true
     storage.setLoggedIn(true)
@@ -152,8 +217,7 @@ class AuthRepository(private val storage: AuthStorage) {
     if (storage.readCredential(clean) != null) {
       return AuthResult.failure(AuthError.EMAIL_TAKEN)
     }
-    val salt = PasswordHasher.newSalt()
-    storage.writeCredential(clean, "$salt:${PasswordHasher.hash(password, salt)}")
+    storage.writeCredential(clean, PasswordHasher.hashNew(password))
     processLoggedIn = true
     storage.setLoggedIn(true)
     storage.setStaySignedIn(staySignedIn)
@@ -170,8 +234,7 @@ class AuthRepository(private val storage: AuthStorage) {
   /** Seeds the demo account on first run so the app is usable immediately. */
   fun seedDemoAccount() {
     if (storage.readCredential(DEMO_EMAIL) == null) {
-      val salt = PasswordHasher.newSalt()
-      storage.writeCredential(DEMO_EMAIL, "$salt:${PasswordHasher.hash(DEMO_PASSWORD, salt)}")
+      storage.writeCredential(DEMO_EMAIL, PasswordHasher.hashNew(DEMO_PASSWORD))
     }
   }
 
@@ -180,17 +243,10 @@ class AuthRepository(private val storage: AuthStorage) {
     return email.takeIf { EMAIL_REGEX.matches(it) }
   }
 
-  private fun constantTimeEquals(a: String, b: String): Boolean {
-    if (a.length != b.length) return false
-    var diff = 0
-    for (i in a.indices) diff = diff or (a[i].code xor b[i].code)
-    return diff == 0
-  }
-
   companion object {
     const val DEMO_EMAIL = "demo@vippatti.in"
     const val DEMO_PASSWORD = "vippatti123"
-    const val MIN_PASSWORD_LENGTH = 6
+    const val MIN_PASSWORD_LENGTH = 8
     private val EMAIL_REGEX =
       Regex("^[A-Za-z0-9.+_-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")
   }

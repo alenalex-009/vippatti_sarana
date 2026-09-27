@@ -148,7 +148,7 @@ enum class GpsRequestState {
 }
 
 /**
- * THE single map engine of the application ? OSMDroid + OpenStreetMap with
+ * THE single map engine of the applicatio — SMDroid + OpenStreetMap with
  * OSRM road routing.
  *
  * Visual language (no tiny dot markers for zones):
@@ -165,7 +165,7 @@ fun OsmDroidRadarMapView(
   safeZones: List<SafeZone>,
   selectedSafeZone: SafeZone?,
   activeRoute: RouteResult?,
-  travelMode: String, // "foot" or "driving"
+  travelMode: com.example.data.routing.TravelMode,
   onClearRoute: () -> Unit,
   onHazardZoneTapped: (HazardZone) -> Unit,
   onSafeZoneTapped: (SafeZone) -> Unit,
@@ -212,10 +212,6 @@ fun OsmDroidRadarMapView(
     )
   }
 
-  // Permission result becomes user-visible state: denial must never silently
-  // degrade to the India-fallback view without explanation (audit item 11).
-  var showPermissionRationale by remember { mutableStateOf(false) }
-
   // Tracks whether a permission request was ever launched: without this, a
   // first-ever press (shouldShowRationale == false) is indistinguishable from
   // a permanently-denied ("don't ask again") press.
@@ -227,20 +223,6 @@ fun OsmDroidRadarMapView(
     hasLocationPermission = (permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true) ||
       (permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true)
     locationPermissionAsked = true
-    // Only nag with the rationale after an explicit denial (not on first ask).
-    showPermissionRationale = !hasLocationPermission
-  }
-
-  LaunchedEffect(Unit) {
-    if (!hasLocationPermission) {
-      locationPermissionAsked = true
-      permissionLauncher.launch(
-        arrayOf(
-          Manifest.permission.ACCESS_FINE_LOCATION,
-          Manifest.permission.ACCESS_COARSE_LOCATION
-        )
-      )
-    }
   }
 
   val mapState = remember {
@@ -360,9 +342,11 @@ fun OsmDroidRadarMapView(
       modifier = Modifier.fillMaxSize()
     )
 
-    // GPS-permission rationale (audit item 11): a denial must be explained,
-    // with a real retry action — never a silent India-fallback.
-    if (showPermissionRationale && !hasLocationPermission) {
+    // GPS permission (audit B9 + item 11): the app NEVER asks by itself when
+    // the map merely opens. The user chooses: an unasked state shows a calm
+    // opt-in banner (Turn on location); an explicit denial shows the
+    // rationale with a real retry - never a silent India-fallback.
+    if (!hasLocationPermission) {
       Row(
         modifier = Modifier
           .align(Alignment.TopCenter)
@@ -375,14 +359,20 @@ fun OsmDroidRadarMapView(
         horizontalArrangement = Arrangement.spacedBy(8.dp)
       ) {
         Text(
-          text = "Location OFF — risk & routes use a generic India-centre view, not your position.",
-          fontSize = 10.sp,
+          text = if (locationPermissionAsked) {
+            "Location OFF — risk & routes use a generic India-centre view, not your position."
+          } else {
+            "Turn on location to see hazards near YOU"
+          },
+          fontSize = 11.sp,
           fontWeight = FontWeight.Medium,
           color = TacticalOnSurface,
           modifier = Modifier.weight(1f, fill = false)
         )
         IconButton(
           onClick = {
+            // Only THIS explicit tap may open the system dialog.
+            locationPermissionAsked = true
             permissionLauncher.launch(
               arrayOf(
                 Manifest.permission.ACCESS_FINE_LOCATION,
@@ -390,11 +380,15 @@ fun OsmDroidRadarMapView(
               )
             )
           },
-          modifier = Modifier.size(30.dp)
+          modifier = Modifier.size(36.dp).testTag(
+            if (locationPermissionAsked) "location_permission_retry_button"
+            else "location_permission_enable_button"
+          )
         ) {
           Icon(
             Icons.Default.MyLocation,
-            contentDescription = "Retry location permission",
+            contentDescription = if (locationPermissionAsked) "Retry location permission"
+            else "Turn on location",
             tint = NeonEmerald,
             modifier = Modifier.size(18.dp)
           )
@@ -595,7 +589,7 @@ class OsmMapControllerHolder(
     private set
 
   private var locationOverlay: MyLocationNewOverlay? = null
-  private var currentTravelMode: String = "foot"
+  private var currentTravelMode: com.example.data.routing.TravelMode = com.example.data.routing.TravelMode.FOOT
   private var currentRoutePolyline: Polyline? = null
 
   /** Archived (EM-DAT) markers — kept separate from every live overlay list. */
@@ -687,7 +681,7 @@ class OsmMapControllerHolder(
     osmConfig.cacheMapTileCount = 256.toShort()
     osmConfig.tileFileSystemThreads = 4
 
-    // 2. Create MapView ? opens directly on the India network region.
+    // 2. Create MapVie — pens directly on the India network region.
     val view = MapView(context).apply {
       // Disable osmdroid's auto-detach-on-removal so teardown happens EXACTLY
       // once, from AndroidView.onRelease (OsmMapControllerHolder.cleanup).
@@ -759,7 +753,7 @@ class OsmMapControllerHolder(
       override fun onScroll(event: org.osmdroid.events.ScrollEvent): Boolean = false
     })
 
-    // 3. Hardware GPS location overlay ? REAL fixes reported to the ViewModel.
+    // 3. Hardware GPS location overla — EAL fixes reported to the ViewModel.
     val myLoc = object : MyLocationNewOverlay(GpsMyLocationProvider(context), view) {
       override fun onLocationChanged(
         location: android.location.Location?,
@@ -1072,8 +1066,8 @@ class OsmMapControllerHolder(
 
   // ------------------------------------------------------------ controls
 
-  fun setTravelMode(mode: String) {
-    currentTravelMode = if (mode == "driving") "driving" else "foot"
+  fun setTravelMode(mode: com.example.data.routing.TravelMode) {
+    currentTravelMode = mode
   }
 
   fun enableLocationTracking() {

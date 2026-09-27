@@ -322,5 +322,5 @@ fun AddContactDialog(
 }
 
 // ============================================================================
-// HAZARD ZONE DETAIL ? opens from a map hazard-circle tap
+// HAZARD ZONE DETAI — pens from a map hazard-circle tap
 // ============================================================================

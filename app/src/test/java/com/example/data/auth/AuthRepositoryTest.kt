@@ -116,4 +116,51 @@ class AuthRepositoryTest {
     assertTrue(restarted.isLoggedIn())
     assertEquals(AuthRepository.DEMO_EMAIL, restarted.currentUserEmail)
   }
+
+  // ------------------------------------------------ B12: hashing hardening
+
+  @Test
+  fun `a legacy sha-256 credential still logs in and is upgraded to pbkdf2`() {
+    val storage = InMemoryAuthStorage()
+    val legacySalt = PasswordHasher.newSalt()
+    val legacy = "$legacySalt:" + PasswordHasher.legacyHash("old-style-pw", legacySalt)
+    storage.writeCredential("legacy@example.com", legacy)
+
+    val repo = AuthRepository(storage)
+    assertTrue("legacy credential must still authenticate",
+      repo.login("legacy@example.com", "old-style-pw", staySignedIn = false).ok)
+
+    // And on that successful login it was transparently replaced by PBKDF2.
+    val storedAfter = storage.readCredential("legacy@example.com")!!
+    assertTrue("credential should now be pbkdf2-shaped, was: ${storedAfter.take(12)}",
+      storedAfter.startsWith("pbkdf2$"))
+    assertFalse("legacy shape must be gone", PasswordHasher.needsUpgrade(storedAfter))
+    // Re-login with the upgraded record still works.
+    val again = AuthRepository(storage)
+    assertTrue(again.login("legacy@example.com", "old-style-pw", staySignedIn = false).ok)
+    // Wrong password against the upgraded record fails.
+    assertFalse(AuthRepository(storage).login("legacy@example.com", "nope", staySignedIn = false).ok)
+  }
+
+  @Test
+  fun `registration stores pbkdf2 and enforces the 8-char minimum`() {
+    val storage = InMemoryAuthStorage()
+    val repo = AuthRepository(storage)
+    assertTrue(repo.register("a.b@example.com", "longenough7", staySignedIn = false).ok)
+    val stored = storage.readCredential("a.b@example.com")!!
+    assertTrue("new accounts must use the hardened shape", stored.startsWith("pbkdf2$"))
+    assertTrue("registered password must authenticate",
+      AuthRepository(storage).login("a.b@example.com", "longenough7", staySignedIn = false).ok)
+    val seven = repo.register("short@example.com", "1234567", staySignedIn = false)
+    assertFalse("7-char passwords are now rejected: ${seven.error}", seven.ok)
+    assertEquals(AuthError.WEAK_PASSWORD, seven.error)
+  }
+
+  @Test
+  fun `hashNew produces pbkdf2 shape and verify round-trips`() {
+    val h = PasswordHasher.hashNew("hunter2-hunter2")
+    assertTrue(h.startsWith("pbkdf2$"))
+    assertTrue(PasswordHasher.verify("hunter2-hunter2", h))
+    assertFalse(PasswordHasher.verify("wrong", h))
+  }
 }

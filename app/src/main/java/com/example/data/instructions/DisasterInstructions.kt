@@ -365,7 +365,7 @@ object DisasterInstructions {
           ),
           InstructionItem(
             "Get medical help when needed",
-            "Smoke inhalation and burns can worsen hours later â go to a hospital even if injuries look minor."
+            "Smoke inhalation and burns can worsen hours later — go to a hospital even if injuries look minor."
           ),
           InstructionItem(
             "Follow official instructions",

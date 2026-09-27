@@ -61,12 +61,28 @@ defaultConfig {
 
 signingConfigs {
     create("release") {
-        val keystorePath =
-            System.getenv("KEYSTORE_PATH") ?: "${rootDir}/my-upload-key.jks"
+        // AUDIT B12: a release build must FAIL CLEARLY when the signing
+        // material is absent, instead of silently producing an UNSIGNED or
+        // half-configured APK. Debug builds never touch this block.
+        val keystorePath = System.getenv("KEYSTORE_PATH") ?: "${rootDir}/my-upload-key.jks"
+        val storePw = System.getenv("STORE_PASSWORD")
+        val keyPw = System.getenv("KEY_PASSWORD")
+        val missing = buildList {
+            if (!file(keystorePath).isFile) add("keystore file $keystorePath")
+            if (storePw.isNullOrBlank()) add("env STORE_PASSWORD")
+            if (keyPw.isNullOrBlank()) add("env KEY_PASSWORD")
+        }
+        if (missing.isNotEmpty()) {
+            logger.warn(
+                "RELEASE SIGNING INCOMPLETE - assembleRelease/bundleRelease will fail. " +
+                    "Missing: " + missing.joinToString(", ") + ". " +
+                    "Debug builds are unaffected."
+            )
+        }
         storeFile = file(keystorePath)
-        storePassword = System.getenv("STORE_PASSWORD")
+        storePassword = storePw
         keyAlias = "upload"
-        keyPassword = System.getenv("KEY_PASSWORD")
+        keyPassword = keyPw
     }
 
     create("debugConfig") {

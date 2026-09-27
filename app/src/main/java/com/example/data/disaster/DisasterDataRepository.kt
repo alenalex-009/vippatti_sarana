@@ -36,7 +36,7 @@ data class DisasterFeed(
 
 /**
  * ============================================================================
- * DISASTER DATA REPOSITORY â€” the single data layer between providers and UI.
+ * DISASTER DATA REPOSITORY — the single data layer between providers and UI.
  * ============================================================================
  *
  * Pipeline per provider:
@@ -45,21 +45,21 @@ data class DisasterFeed(
  *
  * LIVE vs MOCK: the repository only ever holds REAL fetched events (plus
  * explicitly submitted user reports). Mock-network hazards are NEVER mixed
- * in here â€” they remain a separate, clearly labeled concept owned by the
+ * in here — they remain a separate, clearly labeled concept owned by the
  * ViewModel (mock toggle).
  */
 class DisasterDataRepository(
   private val providers: List<DisasterDataProvider>,
   private val cache: DisasterCache,
   private val clock: () -> Long = System::currentTimeMillis,
-  /** Cache I/O dispatcher â€” tests inject the scheduler's dispatcher so runs are deterministic. */
+  /** Cache I/O dispatcher — tests inject the scheduler's dispatcher so runs are deterministic. */
   private val cacheDispatcher: kotlinx.coroutines.CoroutineDispatcher = Dispatchers.IO
 ) {
 
   /** Manual sync: query every provider in parallel, update cache, return the merged feed. */
   suspend fun refresh(): DisasterFeed {
     val now = clock()
-    // Fire all provider fetches concurrently â€” wait time = slowest provider,
+    // Fire all provider fetches concurrently — wait time = slowest provider,
     // not the sum (USGS + NASA FIRMS + IMD each have their own client/timeouts).
     val results = coroutineScope {
       providers.map { provider -> async { provider.providerId to provider.fetchIndiaEvents() } }
@@ -129,7 +129,7 @@ class DisasterDataRepository(
   /**
    * Cold start: serve usable cached shards instantly (offline survival); a
    * fresh (< 15 min) cache avoids network entirely (quota/battery friendly).
-   * Returns null when nothing usable is cached â€” the ViewModel then fetches.
+   * Returns null when nothing usable is cached — the ViewModel then fetches.
    */
   suspend fun loadCachedOnly(): DisasterFeed? {
     val now = clock()

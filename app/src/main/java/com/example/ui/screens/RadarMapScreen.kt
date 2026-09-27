@@ -133,7 +133,7 @@ fun RadarMapScreen(
   uiState: VippattiUiState,
   onSelectBestSafeZone: () -> Unit,
   onSelectSafeZone: (SafeZone) -> Unit,
-  onSetTravelMode: (String) -> Unit,
+  onSetTravelMode: (com.example.data.routing.TravelMode) -> Unit,
   onStartEvacuation: () -> Unit,
   onStopEvacuation: () -> Unit,
   onNextNavigationStep: () -> Unit,

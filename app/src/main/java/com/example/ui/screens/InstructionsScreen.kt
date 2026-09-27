@@ -67,6 +67,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -253,6 +255,9 @@ fun InstructionsScreen(
       EmergencyQuickTrigger(
         isFlashlightOn = uiState.isFlashlightOn,
         isSirenOn = uiState.isSirenOn,
+        isSirenUnavailable = uiState.sirenState == com.example.viewmodel.SirenState.UNAVAILABLE,
+        torchMessage = uiState.torchMessage,
+        sirenMessage = uiState.sirenMessage,
         onToggleFlashlight = onToggleFlashlight,
         onToggleSiren = onToggleSiren
       )
@@ -282,6 +287,12 @@ fun InstructionsScreen(
 private fun EmergencyQuickTrigger(
   isFlashlightOn: Boolean,
   isSirenOn: Boolean,
+  /** True when the platform refused the tone generator; the button says so. */
+  isSirenUnavailable: Boolean,
+  /** Why the torch refused, shown in place under the Light control. */
+  torchMessage: String?,
+  /** Why the siren refused, shown in place so "ACTIVE" is never a false claim. */
+  sirenMessage: String?,
   onToggleFlashlight: () -> Unit,
   onToggleSiren: () -> Unit
 ) {
@@ -298,22 +309,24 @@ private fun EmergencyQuickTrigger(
     ) {
       Icon(
         imageVector = Icons.Default.Emergency,
-        contentDescription = null,
+        contentDescription = null, // the heading beside it names this group
         tint = Color.White,
         modifier = Modifier.size(18.dp)
       )
       Text(
         text = "EMERGENCY QUICK TRIGGER",
-        fontSize = 11.sp,
+        fontSize = 12.sp,
         fontWeight = FontWeight.Black,
         color = Color.White,
         letterSpacing = 0.6.sp
       )
     }
     Text(
+      // Full-strength white: the previous 85% alpha measured 3.81:1 on the red
+      // bar, under AA for a line this small.
       text = "Get help instantly, anytime",
-      fontSize = 10.sp,
-      color = Color.White.copy(alpha = 0.85f)
+      fontSize = 12.sp,
+      color = Color.White
     )
     Row(
       modifier = Modifier.fillMaxWidth(),
@@ -324,8 +337,12 @@ private fun EmergencyQuickTrigger(
         modifier = Modifier
           .weight(1f)
           .clip(RoundedCornerShape(10.dp))
-          .background(if (isFlashlightOn) Color.White else Color.White.copy(alpha = 0.18f))
+          .background(if (isFlashlightOn) Color.White else Color.Black.copy(alpha = 0.25f))
           .clickable { onToggleFlashlight() }
+          .heightIn(min = 48.dp)
+          .semantics(mergeDescendants = true) {
+            contentDescription = "Flashlight, " + if (isFlashlightOn) "on" else "off"
+          }
           .padding(horizontal = 12.dp, vertical = 10.dp)
           .testTag("emergency_flashlight_button"),
         verticalAlignment = Alignment.CenterVertically,
@@ -350,8 +367,16 @@ private fun EmergencyQuickTrigger(
         modifier = Modifier
           .weight(1f)
           .clip(RoundedCornerShape(10.dp))
-          .background(if (isSirenOn) Color.Yellow else Color.White.copy(alpha = 0.18f))
+          .background(if (isSirenOn) Color.White else Color.Black.copy(alpha = 0.25f))
           .clickable { onToggleSiren() }
+          .heightIn(min = 48.dp)
+          .semantics(mergeDescendants = true) {
+            contentDescription = "SOS siren, " + when {
+              isSirenUnavailable -> "unavailable"
+              isSirenOn -> "on"
+              else -> "off"
+            }
+          }
           .padding(horizontal = 12.dp, vertical = 10.dp)
           .testTag("emergency_siren_button"),
         verticalAlignment = Alignment.CenterVertically,
@@ -359,18 +384,38 @@ private fun EmergencyQuickTrigger(
       ) {
         Icon(
           imageVector = Icons.Default.VolumeUp,
-          contentDescription = "Toggle SOS siren",
-          tint = if (isSirenOn) Color.Black else Color.White,
+          contentDescription = null, // the merged row semantics carry state
+          tint = if (isSirenOn) EmergencyRed else Color.White,
           modifier = Modifier.size(18.dp)
         )
         Text(
-          text = if (isSirenOn) "SIREN ON" else "SOS SIREN",
+          text = when {
+            isSirenUnavailable -> "SIREN UNAVAILABLE"
+            isSirenOn -> "SIREN ON"
+            else -> "SOS SIREN"
+          },
           fontSize = 12.sp,
           fontWeight = FontWeight.Black,
-          color = if (isSirenOn) Color.Black else Color.White,
+          color = if (isSirenOn) EmergencyRed else Color.White,
           letterSpacing = 0.4.sp
         )
       }
     }
+    // Hardware refusals are reported here, inside the bar they belong to, so the
+    // user is never left with a control that looks armed but did nothing.
+    listOfNotNull(torchMessage?.let { "Flashlight: $it" }, sirenMessage?.let { "Siren: $it" })
+      .forEach { why ->
+        Text(
+          text = why,
+          fontSize = 12.sp,
+          fontWeight = FontWeight.Bold,
+          color = Color.White,
+          modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
+            .background(Color.Black.copy(alpha = 0.35f))
+            .padding(horizontal = 10.dp, vertical = 6.dp)
+        )
+      }
   }
 }

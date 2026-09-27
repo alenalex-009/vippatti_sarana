@@ -25,8 +25,22 @@ data class HazardExposure(
 object HazardAnalysisService {
 
   /**
-   * All hazards affecting [point]: a hazard affects the point when the point
-   * lies inside the hazard radius (or within the safety margin of its edge).
+   * All hazards affecting [point]. A hazard affects the point when and ONLY
+   * when the point lies inside the hazard's published radius:
+   *   distance(center) <= radiusMeters
+   *
+   * DOCUMENTED DECISION (audit item B6, reconciled 2026-09-25): this service
+   * deliberately applies NO extra safety margin. Earlier wording here claimed
+   * "or within the safety margin of its edge" - the implementation never had
+   * one, and inventing one now would silently change risk levels without a
+   * hazard-science basis, violating the no-fabrication rule. The margin idea
+   * lives where it was actually built: ROUTE safety, which uses the provider
+   * geometry only to raise a CAUTION band near a zone edge (see
+   * OsrmRoutingService CAUTION_BAND_FACTOR). A user standing just OUTSIDE a
+   * zone stays non-exposed here and their route toward/along it still shows
+   * CAUTION - the two systems stay complementary, not duplicated.
+   * If a real caution band is ever wanted for personal risk, it must come
+   * from a documented IMD/NDMA buffer rule, not from a constant of ours.
    */
   fun affectingHazards(point: GeoPoint, hazards: List<HazardZone>): List<HazardExposure> =
     hazards.map { hazard ->

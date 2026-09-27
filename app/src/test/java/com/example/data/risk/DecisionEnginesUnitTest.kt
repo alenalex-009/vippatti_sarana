@@ -135,4 +135,55 @@ class DecisionEnginesUnitTest {
     assertTrue(HazardSeverity.HIGH.weight > HazardSeverity.MODERATE.weight)
     assertTrue(HazardSeverity.MODERATE.weight > HazardSeverity.LOW.weight)
   }
+
+  // ------------------------------------------------ B6: exposure boundary
+  // The chosen behavior (documented in HazardAnalysisService): a point is
+  // affected ONLY inside the published radius - no invented safety margin.
+  // These tests PIN that boundary so a future "margin" cannot be added
+  // silently without changing the risk model on purpose.
+
+  private fun zoneAt(lat: Double, lon: Double, radiusM: Double) =
+    com.example.data.model.HazardZone(
+      id = "b6-test-zone",
+      name = "B6 test zone",
+      type = com.example.data.model.HazardType.FLOOD,
+      severity = com.example.data.model.HazardSeverity.HIGH,
+      center = GeoPoint(lat, lon),
+      radiusMeters = radiusM,
+      riskLevel = "test",
+      trend = com.example.data.model.HazardTrend.STABLE,
+      sourceStatus = "test",
+      lastUpdatedMillis = 0L,
+      provenance = com.example.data.model.DataProvenance(source = "test")
+    )
+
+  @Test
+  fun `point just inside the radius is exposed, just outside is NOT (no margin)`() {
+    val zone = zoneAt(20.0, 80.0, radiusM = 10_000.0)
+    // 0.089 deg lat ~= 9.9 km: inside the radius -> exposed
+    val insideExposure = HazardAnalysisService.affectingHazards(
+      GeoPoint(20.0 + 0.089, 80.0), listOf(zone)
+    )
+    assertEquals("inside radius must expose the point", 1, insideExposure.size)
+    // ~10.1 km out: OUTSIDE the zone and NO extra margin -> not exposed.
+    val outside = GeoPoint(20.0 + 0.091, 80.0)
+    val d = GeoMath.distanceMeters(outside, zone.center)
+    assertTrue("fixture sanity: outside point at ${d}m must be > radius", d > 10_000.0)
+    assertEquals(
+      "a point outside the published radius must NOT be exposed (no hidden margin)",
+      0, HazardAnalysisService.affectingHazards(outside, listOf(zone)).size
+    )
+    // ...and the risk engine agrees: GREEN while nearestHazard still informs.
+    val risk = RiskAssessmentEngine.assess(outside, listOf(zone), "b6-test")
+    assertEquals(RiskLevel.GREEN, risk.level)
+    assertTrue(risk.explanation.contains("Nearest watched area"))
+  }
+
+  @Test
+  fun `severity ranking follows declaration order low to extreme`() {
+    // Documents the ordinal-weight model (B6 review): reordering the enum
+    // would silently change which hazard dominates; weights are monotonic.
+    val weights = com.example.data.model.HazardSeverity.entries.map { it.weight }
+    assertEquals(listOf(1, 2, 3, 4), weights)
+  }
 }

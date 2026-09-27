@@ -114,7 +114,7 @@ class MapGpsAndRouteTest {
       steps = emptyList(),
       isLiveOsrm = true,
       summary = "Test corridor",
-      travelMode = "foot",
+      travelMode = com.example.data.routing.TravelMode.FOOT,
       routeSafetyStatus = RouteSafetyStatus.DANGER,
       routeSafetyScore = 12
     )

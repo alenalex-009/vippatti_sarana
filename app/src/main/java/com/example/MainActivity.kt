@@ -76,6 +76,7 @@ import com.example.ui.components.SafeZoneDetailDialog
 import com.example.ui.components.SosBroadcastDialog
 import com.example.ui.components.SosConfirmDialog
 import com.example.ui.components.VippattiBottomNavBar
+import com.example.ui.components.NavTabs
 import com.example.data.auth.AuthRepository
 import com.example.data.auth.SharedPrefsAuthStorage
 import com.example.ui.screens.AuthorityConsoleScreen
@@ -123,7 +124,12 @@ class MainActivity : ComponentActivity() {
           @Suppress("UNCHECKED_CAST")
           override fun <T : ViewModel> create(modelClass: Class<T>): T =
             AuthGateViewModel(
-              AuthRepository(SharedPrefsAuthStorage(appContext)).apply { seedDemoAccount() }
+              AuthRepository(SharedPrefsAuthStorage(appContext)).apply {
+              // B12: the shared demo account is a DEBUG-ONLY convenience for
+              // judges and testing. A release build ships NO known-password
+              // account: users register their own.
+              if (BuildConfig.DEBUG) seedDemoAccount()
+            }
             ) as T
         }
       )
@@ -199,7 +205,13 @@ class MainActivity : ComponentActivity() {
       )
       val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-      VippattiTheme(darkTheme = uiState.isDarkTheme) {
+      // Remote config is read ONCE, here at the app root, and handed to the theme
+      // as plain data. VippattiTheme no longer reaches into a global singleton on
+      // the composition path, which is what made the old override both hidden and
+      // untestable.
+      val remoteConfig by com.example.config.ConfigRegistry.manager.configState
+        .collectAsStateWithLifecycle()
+      VippattiTheme(darkTheme = uiState.isDarkTheme, config = remoteConfig) {
         // HISTORICAL (EM-DAT) record sheet. Opened only from the historical
         // panel or a historical map marker, never from a live hazard marker.
         uiState.historicalDetailEvent?.let { historical ->
@@ -248,6 +260,12 @@ fun VippattiAppRoot(
   modifier: Modifier = Modifier
 ) {
   val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+  // Collected once for the whole screen: the nav bar, the content switch and the
+  // banner/logo strip all read this same value. Three separate
+  // collectAsStateWithLifecycle() calls here each registered their own collector
+  // and could render a frame where the bar and the content disagreed.
+  val remoteConfig by com.example.config.ConfigRegistry.manager.configState
+    .collectAsStateWithLifecycle()
   val snackbarHostState = remember { SnackbarHostState() }
   val context = LocalContext.current
 
@@ -374,9 +392,16 @@ fun VippattiAppRoot(
             delay(1400)
           }
         } catch (e: Exception) {
-          // Graceful fallback if tone generator cannot acquire audio stream
+          // An empty catch here used to leave the countdown and the "SOS SIREN
+          // ACTIVE" banner running while the speaker stayed silent. Report the
+          // refusal so the UI can drop the claim and say why instead.
+          if (uiState.isSirenOn) {
+            viewModel.onSirenUnavailable(
+              "Siren could not play: ${e.localizedMessage ?: "the audio stream was unavailable"}. Use the flash and place your own call."
+            )
+          }
         } finally {
-          toneGen?.release()
+          runCatching { toneGen?.release() }
         }
       }
     }
@@ -465,9 +490,13 @@ fun VippattiAppRoot(
     contentWindowInsets = WindowInsets(0, 0, 0, 0),
     snackbarHost = { SnackbarHost(snackbarHostState) },
     bottomBar = {
+      // Remote config owns module visibility; the bar and the content switch below
+      // read the same value, so a disabled module has no entry point *and*
+      // cannot be rendered even if something still holds its tab in state.
       VippattiBottomNavBar(
         currentTab = uiState.currentTab,
-        onTabSelected = { viewModel.setTab(it) }
+        onTabSelected = { viewModel.setTab(it) },
+        config = remoteConfig
       )
     }
   ) { innerPadding ->
@@ -478,8 +507,6 @@ fun VippattiAppRoot(
         .statusBarsPadding()
         .padding(bottom = innerPadding.calculateBottomPadding())
     ) {
-      val remoteConfig by com.example.config.ConfigRegistry.manager.configState.collectAsStateWithLifecycle()
-
       Crossfade(
         targetState = uiState.currentTab,
         animationSpec = tween(durationMillis = 250),
@@ -516,7 +543,11 @@ fun VippattiAppRoot(
 
             // Screen Content
             Box(modifier = Modifier.weight(1f)) {
-                when (tab) {
+                // A tab that remote config switched off mid-session falls back to
+                // HOME rather than showing content the user cannot navigate to.
+                // Same rule the bottom bar uses, from NavTabs, so the two cannot drift.
+                val effectiveTab = NavTabs.resolve(tab, remoteConfig)
+                when (effectiveTab) {
           ScreenTab.HOME -> HomeScreen(
             uiState = uiState,
             onOpenRadar = { viewModel.setTab(ScreenTab.RADAR_MAP) },
@@ -543,7 +574,7 @@ fun VippattiAppRoot(
             onSelectHistoricalEvent = { viewModel.openHistoricalEventDetail(it) }
           )
 
-          ScreenTab.          RADAR_MAP -> RadarMapScreen(
+          ScreenTab.RADAR_MAP -> RadarMapScreen(
             uiState = uiState,
             onSelectBestSafeZone = { viewModel.selectBestSafeZone() },
             onSelectSafeZone = { viewModel.selectSafeZone(it) },

@@ -74,7 +74,7 @@ class RouteSafetyCardLayoutTest {
       steps = emptyList(),
       isLiveOsrm = false,
       summary = "Offline Hazard-Skirting Corridor",
-      travelMode = "foot",
+      travelMode = com.example.data.routing.TravelMode.FOOT,
       hazardWarnings = listOf(
         RouteHazardWarning(
           hazardName = "Test hazard",

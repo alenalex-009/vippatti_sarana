@@ -67,7 +67,7 @@ import com.example.ui.theme.TacticalOnSurfaceVariant
 import com.example.ui.theme.TacticalOutlineVariant
 
 // ============================================================================
-// DETAIL SCREENS â€” back header + full existing instruction content
+// DETAIL SCREENS — back header + full existing instruction content
 // ============================================================================
 
 /** Shared detail-screen header: WORKING back button, icon, title, context subtitle. */
@@ -119,7 +119,7 @@ internal fun DetailHeader(
 }
 
 /**
- * CATEGORY DETAIL â€” shows ALL items of the tapped instruction group with
+ * CATEGORY DETAIL — shows ALL items of the tapped instruction group with
  * the existing critical/safety visual language, nothing omitted.
  */
 @Composable
@@ -165,7 +165,7 @@ internal fun GroupDetailScreen(
 }
 
 /**
- * Common-module detail (Evacuation Essentials and any future module) â€”
+ * Common-module detail (Evacuation Essentials and any future module) —
  * renders the existing common-module items with the same visual language.
  */
 @Composable
@@ -190,7 +190,7 @@ internal fun ModuleDetailScreen(module: CommonModule, onBack: () -> Unit) {
   }
 }
 
-/** Full instruction card â€” critical items escalate to the red emergency look. */
+/** Full instruction card — critical items escalate to the red emergency look. */
 @Composable
 private fun InstructionDetailCard(
   item: InstructionItem,
@@ -274,14 +274,14 @@ private fun InstructionDetailCard(
 }
 
 // ============================================================================
-// EMERGENCY CONTACTS â€” dedicated detail screen with DIAL functionality
+// EMERGENCY CONTACTS — dedicated detail screen with DIAL functionality
 // ============================================================================
 
 /**
  * Dedicated Emergency Contacts screen. Renders the EXISTING official lines
  * from the emergency_contacts common module; each phone-enabled entry gets a
  * real dial button (ACTION_DIAL) exactly like the Profile screen's quick-dial
- * tiles â€” nothing is transmitted without explicit user action.
+ * tiles — nothing is transmitted without explicit user action.
  */
 @Composable
 internal fun ContactsDetailScreen(onBack: () -> Unit) {
@@ -293,7 +293,7 @@ internal fun ContactsDetailScreen(onBack: () -> Unit) {
     try {
       context.startActivity(Intent(Intent.ACTION_DIAL, Uri.parse("tel:${number.filter { it.isDigit() }}")))
     } catch (_: Exception) {
-      // No dialer on this device â€” silently ignored, list stays informative.
+      // No dialer on this device — silently ignored, list stays informative.
     }
   }
 
@@ -357,7 +357,7 @@ internal fun ContactsDetailScreen(onBack: () -> Unit) {
 }
 
 // ============================================================================
-// EMERGENCY KIT â€” dedicated detail screen from the existing module data
+// EMERGENCY KIT — dedicated detail screen from the existing module data
 // ============================================================================
 
 /** Icon mapping for kit entries from the existing emergency_kit module. */

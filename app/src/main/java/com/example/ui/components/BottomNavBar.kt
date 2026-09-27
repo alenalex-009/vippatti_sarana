@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -29,6 +30,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,6 +42,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.R
+import com.example.config.AppRemoteConfig
 import com.example.ui.theme.NeonEmerald
 import com.example.ui.theme.OnNeonEmerald
 import com.example.ui.theme.TacticalNavBg
@@ -56,55 +60,46 @@ private data class NavItemData(
   val testTag: String
 )
 
+/** The icon pair for a destination. Lives here because icons are a rendering concern. */
+private fun iconsFor(tab: ScreenTab): Pair<ImageVector, ImageVector> = when (tab) {
+  ScreenTab.HOME -> Icons.Filled.Home to Icons.Outlined.Home
+  ScreenTab.RADAR_MAP -> Icons.Filled.LocationOn to Icons.Outlined.LocationOn
+  ScreenTab.NEWS_DISPATCHES -> Icons.Filled.Newspaper to Icons.Outlined.Newspaper
+  ScreenTab.INSTRUCTIONS -> Icons.AutoMirrored.Filled.MenuBook to Icons.AutoMirrored.Outlined.MenuBook
+  ScreenTab.PROFILE -> Icons.Filled.Person to Icons.Outlined.Person
+}
+
 /**
- * Bottom navigation — five destinations in user-journey order:
+ * Bottom navigation — up to five destinations in user-journey order:
  * HOME (quiet: am I safe / what do I do) -> MAP (see it) -> NEWS -> GUIDE
  * -> PROFILE. Each tab tells the user where they are (selected pill + label)
  * and every interactive node carries its label as a screen-reader name.
+ *
+ * [config] owns module visibility (`feature_radar_enabled` /
+ * `feature_dispatches_enabled`): a killed module has no entry point here, and
+ * `NavTabs.resolve` keeps the content switch from rendering it either. The
+ * defaults are both true, which is also what a device with no Firebase
+ * configured sees.
  */
 @Composable
 fun VippattiBottomNavBar(
   currentTab: ScreenTab,
   onTabSelected: (ScreenTab) -> Unit,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
+  config: AppRemoteConfig = AppRemoteConfig()
 ) {
-  val items = listOf(
+  val items = NavTabs.visible(config).map { tab ->
+    val (active, inactive) = iconsFor(tab)
     NavItemData(
-      tab = ScreenTab.HOME,
-      label = "Home",
-      activeIcon = Icons.Filled.Home,
-      inactiveIcon = Icons.Outlined.Home,
-      testTag = "nav_home"
-    ),
-    NavItemData(
-      tab = ScreenTab.RADAR_MAP,
-      label = "Map",
-      activeIcon = Icons.Filled.LocationOn,
-      inactiveIcon = Icons.Outlined.LocationOn,
-      testTag = "nav_radar_map"
-    ),
-    NavItemData(
-      tab = ScreenTab.NEWS_DISPATCHES,
-      label = "News",
-      activeIcon = Icons.Filled.Newspaper,
-      inactiveIcon = Icons.Outlined.Newspaper,
-      testTag = "nav_news"
-    ),
-    NavItemData(
-      tab = ScreenTab.INSTRUCTIONS,
-      label = "Guide",
-      activeIcon = Icons.AutoMirrored.Filled.MenuBook,
-      inactiveIcon = Icons.AutoMirrored.Outlined.MenuBook,
-      testTag = "nav_instructions"
-    ),
-    NavItemData(
-      tab = ScreenTab.PROFILE,
-      label = "Profile",
-      activeIcon = Icons.Filled.Person,
-      inactiveIcon = Icons.Outlined.Person,
-      testTag = "nav_profile"
+      tab = tab,
+      label = stringResource(NavTabs.labelRes(tab)),
+      activeIcon = active,
+      inactiveIcon = inactive,
+      testTag = NavTabs.testTag(tab)
     )
-  )
+  }
+
+  val currentSuffix = stringResource(R.string.nav_current_suffix)
 
   Box(
     modifier = modifier
@@ -139,9 +134,11 @@ fun VippattiBottomNavBar(
             ) {
               onTabSelected(item.tab)
             }
-            .padding(vertical = 4.dp)
+            .heightIn(min = 48.dp)
             .testTag(item.testTag)
-            .semantics { contentDescription = item.label + if (selected) " (current tab)" else "" }
+            .semantics(mergeDescendants = true) {
+              contentDescription = item.label + if (selected) currentSuffix else ""
+            }
         ) {
           Box(
             contentAlignment = Alignment.Center,
@@ -163,7 +160,7 @@ fun VippattiBottomNavBar(
 
           Text(
             text = item.label,
-            fontSize = 11.sp,
+            fontSize = 12.sp,
             fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
             color = if (selected) TacticalOnSurface else TacticalNavInactive,
             letterSpacing = 0.2.sp

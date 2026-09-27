@@ -31,6 +31,10 @@ import com.example.data.model.RecordStamp
 import com.example.ui.theme.EmergencyRedBright
 import com.example.ui.theme.NeonEmerald
 import com.example.ui.theme.ObsidianContainer
+import com.example.ui.theme.StatusErrorText
+import com.example.ui.theme.StatusHistoricalText
+import com.example.ui.theme.StatusStaleText
+import com.example.ui.theme.StatusSuccessText
 import com.example.ui.theme.TacticalCyan
 import com.example.ui.theme.TacticalOnSurfaceVariant
 import com.example.ui.theme.TacticalOutlineVariant
@@ -45,21 +49,28 @@ import com.example.ui.theme.TacticalOutlineVariant
  * banners the spec requires (simulated warning, stale warning, unavailable
  * panel with retry). Colours and labels come from the model, never invented.
  */
+/**
+ * The colour every status label is written in. These are the dedicated
+ * `status*Text` tokens rather than the bright map accents, because the pill sets
+ * 12sp bold text and AA needs >= 4.5:1 for that: in light mode [NeonEmerald]
+ * alone measured 4.21:1, [EmergencyRedBright] 4.31:1, [WarningAmber] 2.84:1 and
+ * [TacticalOutlineVariant] 1.19:1. ThemeContrastTest re-measures each pair.
+ */
 @Composable
 internal fun dataStatusColor(status: DataStatus): Color = when (status) {
   DataStatus.LOADING -> TacticalOnSurfaceVariant
-  DataStatus.SUCCESS -> NeonEmerald
-  DataStatus.VERIFIED -> NeonEmerald
-  DataStatus.STALE -> com.example.ui.theme.WarningAmber
+  DataStatus.SUCCESS -> StatusSuccessText
+  DataStatus.VERIFIED -> StatusSuccessText
+  DataStatus.STALE -> StatusStaleText
   DataStatus.EMPTY -> TacticalOnSurfaceVariant
   // Not configured is a neutral fact about this build, never an alarm.
   DataStatus.NOT_CONFIGURED -> TacticalOnSurfaceVariant
   DataStatus.UNAVAILABLE -> TacticalOnSurfaceVariant
-  DataStatus.ERROR -> EmergencyRedBright
+  DataStatus.ERROR -> StatusErrorText
   DataStatus.SIMULATED -> TacticalCyan
-  DataStatus.NOT_VERIFIED -> com.example.ui.theme.WarningAmber
-  // Archived data is neither live (green) nor an error: a neutral, distinct tone.
-  DataStatus.HISTORICAL -> com.example.ui.theme.TacticalOutlineVariant
+  DataStatus.NOT_VERIFIED -> StatusStaleText
+  // Archived data is neither live (green) nor an error: a cool, distinct slate.
+  DataStatus.HISTORICAL -> StatusHistoricalText
 }
 
 /** Compact status pill: LIVE / SIMULATED / STALE / ERROR / … */
@@ -150,18 +161,18 @@ fun StaleWarningBar(
     modifier = Modifier
       .fillMaxWidth()
       .clip(RoundedCornerShape(10.dp))
-      .background(com.example.ui.theme.WarningAmber.copy(alpha = 0.12f))
-      .border(1.dp, com.example.ui.theme.WarningAmber.copy(alpha = 0.5f), RoundedCornerShape(10.dp))
+      .background(StatusStaleText.copy(alpha = 0.12f))
+      .border(1.dp, StatusStaleText.copy(alpha = 0.5f), RoundedCornerShape(10.dp))
       .padding(horizontal = 10.dp, vertical = 6.dp),
     verticalAlignment = Alignment.CenterVertically,
     horizontalArrangement = Arrangement.spacedBy(8.dp)
   ) {
-    Box(modifier = Modifier.size(8.dp).background(com.example.ui.theme.WarningAmber, CircleShape))
+    Box(modifier = Modifier.size(8.dp).background(StatusStaleText, CircleShape))
     Text(
       text = "STALE — last refreshed $age. Treat with caution.",
       fontSize = 12.sp,
       fontWeight = FontWeight.Bold,
-      color = com.example.ui.theme.WarningAmber
+      color = StatusStaleText
     )
   }
 }

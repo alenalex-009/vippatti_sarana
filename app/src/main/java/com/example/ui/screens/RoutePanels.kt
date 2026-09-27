@@ -76,7 +76,7 @@ import com.example.viewmodel.VippattiUiState
 @Composable
 internal fun RouteIntelligencePanel(
   uiState: VippattiUiState,
-  onSetTravelMode: (String) -> Unit,
+  onSetTravelMode: (com.example.data.routing.TravelMode) -> Unit,
   onLoadAlternativeRoutes: () -> Unit,
   onSelectBestSafeZone: () -> Unit,
   onRequestFallbackRoute: () -> Unit = {},
@@ -247,14 +247,19 @@ internal fun RouteIntelligencePanel(
         value = route?.let { OsrmRoutingService.formatDistance(it.distanceMeters) } ?: "--",
         accent = TacticalCyan
       )
+      // B11 honesty: an offline corridor's time comes from ASSUMED average
+      // speeds (mode.estimateSpeedMps), not measured road data. It must never
+      // read as a live ETA: label switches and the value carries a "~".
       RouteMetric(
-        label = "ETA",
-        value = route?.let { OsrmRoutingService.formatDuration(it.durationSeconds) } ?: "--",
-        accent = NeonEmerald
+        label = if (route != null && !route.isLiveOsrm) "TIME (EST.)" else "ETA",
+        value = route?.let {
+          (if (it.isLiveOsrm) "" else "~") + OsrmRoutingService.formatDuration(it.durationSeconds)
+        } ?: "--",
+        accent = if (route != null && !route.isLiveOsrm) WarningAmber else NeonEmerald
       )
       RouteMetric(
         label = "MODE",
-        value = if (uiState.travelMode == "driving") "VEHICLE" else "WALKING",
+        value = if (uiState.travelMode == com.example.data.routing.TravelMode.DRIVING) "VEHICLE" else "WALKING",
         accent = TacticalOnSurface
       )
       RouteMetric(
@@ -415,8 +420,8 @@ internal fun RouteIntelligencePanel(
         Box(
           modifier = Modifier
             .clip(RoundedCornerShape(6.dp))
-            .background(if (uiState.travelMode == "foot") NeonEmerald else Color.Transparent)
-            .clickable { onSetTravelMode("foot") }
+            .background(if (uiState.travelMode == com.example.data.routing.TravelMode.FOOT) NeonEmerald else Color.Transparent)
+            .clickable { onSetTravelMode(com.example.data.routing.TravelMode.FOOT) }
             .padding(horizontal = 10.dp, vertical = 6.dp)
             .testTag("mode_walking_button"),
           contentAlignment = Alignment.Center
@@ -424,15 +429,15 @@ internal fun RouteIntelligencePanel(
           Icon(
             imageVector = Icons.AutoMirrored.Filled.DirectionsWalk,
             contentDescription = "Walking",
-            tint = if (uiState.travelMode == "foot") OnNeonEmerald else TacticalOnSurfaceVariant,
+            tint = if (uiState.travelMode == com.example.data.routing.TravelMode.FOOT) OnNeonEmerald else TacticalOnSurfaceVariant,
             modifier = Modifier.size(16.dp)
           )
         }
         Box(
           modifier = Modifier
             .clip(RoundedCornerShape(6.dp))
-            .background(if (uiState.travelMode == "driving") NeonEmerald else Color.Transparent)
-            .clickable { onSetTravelMode("driving") }
+            .background(if (uiState.travelMode == com.example.data.routing.TravelMode.DRIVING) NeonEmerald else Color.Transparent)
+            .clickable { onSetTravelMode(com.example.data.routing.TravelMode.DRIVING) }
             .padding(horizontal = 10.dp, vertical = 6.dp)
             .testTag("mode_driving_button"),
           contentAlignment = Alignment.Center
@@ -440,7 +445,7 @@ internal fun RouteIntelligencePanel(
           Icon(
             imageVector = Icons.Default.DirectionsCar,
             contentDescription = "Driving",
-            tint = if (uiState.travelMode == "driving") OnNeonEmerald else TacticalOnSurfaceVariant,
+            tint = if (uiState.travelMode == com.example.data.routing.TravelMode.DRIVING) OnNeonEmerald else TacticalOnSurfaceVariant,
             modifier = Modifier.size(16.dp)
           )
         }

@@ -77,7 +77,7 @@ fun LoginScreen(
   var email by rememberSaveable { mutableStateOf("") }
   var password by rememberSaveable { mutableStateOf("") }
   var confirmPassword by rememberSaveable { mutableStateOf("") }
-  var staySignedIn by rememberSaveable { mutableStateOf(true) }
+  var staySignedIn by rememberSaveable { mutableStateOf(false) } // B12: opt-in, not default
   var showPassword by rememberSaveable { mutableStateOf(false) }
   var errorText by rememberSaveable { mutableStateOf<String?>(null) }
 

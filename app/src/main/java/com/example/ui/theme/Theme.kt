@@ -1,16 +1,13 @@
 package com.example.ui.theme
 
-import android.graphics.Color.parseColor
-import androidx.compose.ui.graphics.Color
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.compose.runtime.getValue
-import com.example.config.ConfigRegistry
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
+import com.example.config.AppRemoteConfig
 
 /**
  * ONE source of truth for the application theme. VippattiTheme receives the
@@ -70,31 +67,28 @@ private fun vippattiLightScheme(p: VippattiColors) = lightColorScheme(
 @Composable
 fun VippattiTheme(
   darkTheme: Boolean = false, // Daylight-first: the light palette matches the light map
+  config: AppRemoteConfig = AppRemoteConfig(),
   content: @Composable () -> Unit,
 ) {
-  val remoteConfig by ConfigRegistry.manager.configState.collectAsStateWithLifecycle()
-  
-  val basePalette = if (darkTheme) DarkVippattiColors else LightVippattiColors
-  
-  val primaryOverride = try {
-      if (remoteConfig.primaryColorHex.isNotBlank()) Color(parseColor(remoteConfig.primaryColorHex)) else basePalette.neonEmerald
-  } catch (e: Exception) { basePalette.neonEmerald }
+  // The base palette, then the remote brand applied as a full quartet. Passing
+  // `config` in (rather than reading ConfigRegistry here) keeps this composable
+  // free of any Firebase side effect and makes the override testable in isolation.
+  val palette = remember(darkTheme, config) {
+    ThemeOverride.apply(
+      base = if (darkTheme) DarkVippattiColors else LightVippattiColors,
+      primaryHex = config.primaryColorHex,
+      secondaryHex = config.secondaryColorHex,
+      dark = darkTheme
+    )
+  }
 
-  val secondaryOverride = try {
-      if (remoteConfig.secondaryColorHex.isNotBlank()) Color(parseColor(remoteConfig.secondaryColorHex)) else basePalette.tacticalCyan
-  } catch (e: Exception) { basePalette.tacticalCyan }
-
-  val palette = basePalette.copy(
-      neonEmerald = primaryOverride,
-      tacticalCyan = secondaryOverride
-  )
-  
   val colorScheme = if (darkTheme) vippattiDarkScheme(palette) else vippattiLightScheme(palette)
 
   CompositionLocalProvider(LocalVippattiColors provides palette) {
     MaterialTheme(
       colorScheme = colorScheme,
       typography = Typography,
+      shapes = VippattiShapes,
       content = content
     )
   }

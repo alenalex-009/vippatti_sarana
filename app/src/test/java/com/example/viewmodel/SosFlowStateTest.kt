@@ -28,13 +28,13 @@ import org.junit.Rule
 import org.junit.Test
 
 /**
- * BUG-1 REGRESSION â€” the Local SOS record flow must fully reset.
+ * BUG-1 REGRESSION — the Local SOS record flow must fully reset.
  *
  * Reproduction of the reported defect: complete the SOS flow
  * (confirm -> the record dialog appears -> tap "Keep The Local SOS Active").
  * The old `dismissSosDialog()` only closed the dialog and left
  * `isSosActive = true` and `userIsSafe = false` set forever, so MainActivity's
- * global ActiveToolsBar stayed injected above the screen content on every tab â€”
+ * global ActiveToolsBar stayed injected above the screen content on every tab —
  * the "Home screen becomes broken after the SOS flow" report.
  *
  * Every path out of the flow (keep/Done, cancel, back dismissal, confirm-dialog
@@ -93,7 +93,7 @@ class SosFlowStateTest {
     assertFalse("confirm dialog must be closed", state.showSosConfirmDialog)
     assertFalse("record dialog must be closed", state.showSosBroadcastDialog)
     assertFalse(
-      "SOS flag must reset â€” a stale flag keeps the global ActiveToolsBar on screen",
+      "SOS flag must reset — a stale flag keeps the global ActiveToolsBar on screen",
       state.isSosActive
     )
     assertTrue("safety switch must not stay armed", state.userIsSafe)
@@ -154,7 +154,7 @@ class SosFlowStateTest {
     advanceUntilIdle()
 
     assertTrue(
-      "overlay must be gone after completion â€” this is what broke the home screen",
+      "overlay must be gone after completion — this is what broke the home screen",
       vm.uiState.value.hasActiveDeviceTool.not() && vm.uiState.value.isSosActive.not()
     )
   }
@@ -162,7 +162,7 @@ class SosFlowStateTest {
   @Test
   fun `the SOS dialog can never leave an armed state after dismissal`() = runTest(mainDispatcherRule.dispatcher) {
     val vm = completeToRecordDialog()
-    // Simulate a rapid double-completion (Keep then system back) â€” the state must
+    // Simulate a rapid double-completion (Keep then system back) — the state must
     // stay reset, never re-arm.
     vm.dismissSosDialog()
     vm.dismissSosDialog()

@@ -60,7 +60,19 @@ data class VippattiColors(
   val tacticalNavBorder: Color,
   val tacticalNavInactive: Color,
   // Amber warning
-  val warningAmber: Color
+  val warningAmber: Color,
+  /**
+   * Contrast-guaranteed text colours for the data-status pill in [Provenance.kt].
+   * The pill paints these on [obsidianContainer] at 90% alpha, so each value was
+   * picked against that exact composite at >= 4.5:1 (WCAG AA for 12sp body text)
+   * instead of being borrowed from the map-overlay accents, whose bright tints only
+   * ever satisfy the large-text / non-text rules. See ThemeContrastTest, which
+   * re-measures every pair and fails the build if one drifts.
+   */
+  val statusSuccessText: Color,
+  val statusStaleText: Color,
+  val statusErrorText: Color,
+  val statusHistoricalText: Color
 )
 
 /** Dark theme palette — the established Vippatti Sarana tactical identity. */
@@ -93,7 +105,13 @@ val DarkVippattiColors = VippattiColors(
   tacticalNavBg = Color(0xFF17362B),
   tacticalNavBorder = Color(0xFF204B3D),
   tacticalNavInactive = Color(0xFF8DCEB8),
-  warningAmber = Color(0xFFF59E0B)
+  warningAmber = Color(0xFFF59E0B),
+  // Measured on the dark status pill: SUCCESS 13.11:1, STALE 7.69:1, ERROR 5.20:1,
+  // HISTORICAL 5.53:1. The bright accents could stay as-is in dark mode.
+  statusSuccessText = Color(0xFF6DFFBA),
+  statusStaleText = Color(0xFFF59E0B),
+  statusErrorText = Color(0xFFFF5449),
+  statusHistoricalText = Color(0xFF7C9AA6)
 )
 
 /**
@@ -129,8 +147,18 @@ val LightVippattiColors = VippattiColors(
   onEmergencyRedContainer = Color(0xFFA80011),
   tacticalNavBg = Color(0xFFF6FAF7),
   tacticalNavBorder = Color(0xFFD3EBDD),
-  tacticalNavInactive = Color(0xFF5F7A6C),
-  warningAmber = Color(0xFFD97706)
+  // 5.92:1 on the light nav bar; the previous 0xFF5F7A6C measured 4.44:1, which
+  // fails AA for the 11sp tab labels rendered in it.
+  tacticalNavInactive = Color(0xFF4E6659),
+  warningAmber = Color(0xFFD97706),
+  // The light pill needs deepened hues: SUCCESS 8.87:1 (neonEmerald alone was
+  // 4.21:1), STALE 5.64:1 (was 2.84:1), ERROR 7.00:1 (emergencyRedBright was
+  // 4.31:1), HISTORICAL 6.17:1 as a cool slate so it never reads like the warm
+  // green LOADING / EMPTY / NOT_CONFIGURED neutral.
+  statusSuccessText = Color(0xFF004D33),
+  statusStaleText = Color(0xFF8A5300),
+  statusErrorText = Color(0xFFA80011),
+  statusHistoricalText = Color(0xFF3F5D75)
 )
 
 // ============================================================================
@@ -180,3 +208,9 @@ val TacticalNavInactive: Color @Composable get() = LocalVippattiColors.current.t
 
 // Amber warning
 val WarningAmber: Color @Composable get() = LocalVippattiColors.current.warningAmber
+
+// AA-verified text colours for the data-status pill (see ThemeContrastTest)
+val StatusSuccessText: Color @Composable get() = LocalVippattiColors.current.statusSuccessText
+val StatusStaleText: Color @Composable get() = LocalVippattiColors.current.statusStaleText
+val StatusErrorText: Color @Composable get() = LocalVippattiColors.current.statusErrorText
+val StatusHistoricalText: Color @Composable get() = LocalVippattiColors.current.statusHistoricalText

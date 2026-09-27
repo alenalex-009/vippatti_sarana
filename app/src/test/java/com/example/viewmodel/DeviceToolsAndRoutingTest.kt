@@ -33,7 +33,7 @@ import org.junit.Test
 /**
  * Behaviour tests for the explicit emergency-tool and routing contracts
  * (device tools + route state machine + offline honesty). All network
- * boundaries are test fakes â€” no test hits the real network.
+ * boundaries are test fakes — no test hits the real network.
  *
  * Uses the shared [MainDispatcherRule] (unconfined Main): `ViewModel.viewModelScope`
  * is hard-bound to `Dispatchers.Main.immediate`, and the rule eagerly runs that
@@ -47,7 +47,7 @@ class DeviceToolsAndRoutingTest {
   /**
    * Selects a genuinely ranked shelter by first placing the (real-GPS) user next
    * to a simulated shelter. Without a fix the location is the India centre, from
-   * which every shelter is >40 km away and correctly rejected as UNREACHABLE â€”
+   * which every shelter is >40 km away and correctly rejected as UNREACHABLE —
    * so a fixture that skips this step has no feasible shelter to route to.
    */
   private fun firstFeasibleShelter(vm: VippattiViewModel) =
@@ -66,7 +66,7 @@ class DeviceToolsAndRoutingTest {
     liveRouteFetcher: suspend (
       origin: com.example.data.routing.GeoPoint,
       destination: com.example.data.routing.GeoPoint,
-      mode: String,
+      mode: com.example.data.routing.TravelMode,
       hazards: List<com.example.data.model.HazardZone>,
       destinationName: String,
       wantAlternatives: Int
@@ -116,7 +116,7 @@ class DeviceToolsAndRoutingTest {
     assertEquals(SIREN_MAX_SECONDS, vm.uiState.value.sirenSecondsLeft)
 
     advanceTimeBy(5_001)
-    // NOTE: deliberately NOT advanceUntilIdle â€” that would run the whole 60 s
+    // NOTE: deliberately NOT advanceUntilIdle — that would run the whole 60 s
     // countdown to completion. We assert the mid-countdown value instead.
     assertEquals(SIREN_MAX_SECONDS - 5, vm.uiState.value.sirenSecondsLeft)
     assertEquals(SirenState.PLAYING, vm.uiState.value.sirenState)
@@ -164,6 +164,91 @@ class DeviceToolsAndRoutingTest {
     assertEquals(SirenState.IDLE, vm.uiState.value.sirenState)
     assertEquals(TorchState.OFF, vm.uiState.value.torchState)
     assertTrue(vm.uiState.value.hasActiveDeviceTool.not())
+  }
+
+  @Test
+  fun `a siren hardware refusal un-claims the active siren and leaves a reason`() =
+    runTest(mainDispatcherRule.dispatcher) {
+    // EmergencyQuickTrigger renders "SIREN ON" / "SOS SIREN ACTIVE" while
+    // isSirenOn and "SIREN UNAVAILABLE" + the message when not. startSiren sets
+    // PLAYING optimistically (the tone plays on a background effect); the contract
+    // is that a ToneGenerator refusal flips isSirenOn back off so the UI stops
+    // claiming an audible alarm that is silent, and shows why.
+    val vm = viewModel()
+    vm.startSiren()
+    assertTrue(vm.uiState.value.isSirenOn)
+    assertEquals(null, vm.uiState.value.sirenMessage)
+
+    vm.onSirenUnavailable("Tone generator refused (test fake).")
+    assertEquals(SirenState.UNAVAILABLE, vm.uiState.value.sirenState)
+    assertTrue("a refused siren must not keep the ACTIVE claim", vm.uiState.value.isSirenOn.not())
+    assertEquals(0, vm.uiState.value.sirenSecondsLeft)
+    assertEquals("Tone generator refused (test fake).", vm.uiState.value.sirenMessage)
+  }
+
+  @Test
+  fun `a blank refusal reason still surfaces a readable message`() =
+    runTest(mainDispatcherRule.dispatcher) {
+    // An empty reason would leave the control flagged UNAVAILABLE with nothing to
+    // read, so the ViewModel substitutes a default rather than shipping silence.
+    val vm = viewModel()
+    vm.startSiren()
+    vm.onSirenUnavailable("   ")
+    assertTrue(vm.uiState.value.sirenMessage?.isNotBlank() == true)
+  }
+
+  @Test
+  fun `tapping an unavailable siren clears the stale failure before restarting`() =
+    runTest(mainDispatcherRule.dispatcher) {
+    // From UNAVAILABLE the first tap returns to IDLE and drops the old reason; a
+    // second tap starts a fresh countdown with no leftover message. Otherwise a
+    // recovered device would show "SIREN ON" next to last attempt's error.
+    val vm = viewModel()
+    vm.startSiren()
+    vm.onSirenUnavailable("Audio stream unavailable (test fake).")
+    vm.toggleSiren() // UNAVAILABLE != IDLE, so this stops
+    assertEquals(SirenState.IDLE, vm.uiState.value.sirenState)
+    assertEquals(null, vm.uiState.value.sirenMessage)
+
+    vm.toggleSiren() // IDLE, so this starts
+    assertEquals(SirenState.PLAYING, vm.uiState.value.sirenState)
+    assertEquals(null, vm.uiState.value.sirenMessage)
+  }
+
+  @Test
+  fun `the siren auto-stops to idle when the countdown runs out`() =
+    runTest(mainDispatcherRule.dispatcher) {
+    // Virtual time, so this is cheap. Guarantees ACTIVE cannot outlive the timer:
+    // after 60 s the state and the countdown both fall to IDLE/0 on their own.
+    val vm = viewModel()
+    vm.startSiren()
+    advanceTimeBy((SIREN_MAX_SECONDS + 1) * 1000L)
+    assertEquals(SirenState.IDLE, vm.uiState.value.sirenState)
+    assertEquals(0, vm.uiState.value.sirenSecondsLeft)
+    assertTrue(vm.uiState.value.isSirenOn.not())
+  }
+
+  @Test
+  fun `a torch refusal keeps a visible reason until the next attempt clears it`() =
+    runTest(mainDispatcherRule.dispatcher) {
+    // Mirrors the siren for the flashlight: onTorchResult(false, reason) must set a
+    // readable torchMessage the Light control shows, and the following toggle must
+    // wipe that stale reason so an in-flight request is not shown beside the old
+    // error.
+    val vm = viewModel()
+    vm.toggleFlashlight()
+    vm.onTorchResult(false, "This device has no flash unit.")
+    assertEquals(TorchState.UNAVAILABLE, vm.uiState.value.torchState)
+    assertTrue(vm.uiState.value.isFlashlightOn.not())
+    assertEquals("This device has no flash unit.", vm.uiState.value.torchMessage)
+
+    vm.toggleFlashlight() // retry: ON with the previous reason cleared
+    assertEquals(TorchState.ON, vm.uiState.value.torchState)
+    assertEquals(null, vm.uiState.value.torchMessage)
+
+    vm.onTorchResult(true) // success confirms ON with no reason
+    assertEquals(TorchState.ON, vm.uiState.value.torchState)
+    assertEquals(null, vm.uiState.value.torchMessage)
   }
 
   @Test
@@ -269,7 +354,7 @@ class DeviceToolsAndRoutingTest {
       steps = emptyList(),
       isLiveOsrm = true,
       summary = "OSRM test route",
-      travelMode = "foot"
+      travelMode = com.example.data.routing.TravelMode.FOOT
     )
     val vm = viewModel(liveRouteFetcher = { _, _, _, _, _, _ -> listOf(live) })
     val best = firstFeasibleShelter(vm)
@@ -325,7 +410,7 @@ class DeviceToolsAndRoutingTest {
       steps = emptyList(),
       isLiveOsrm = true,
       summary = "OSRM test route",
-      travelMode = "foot"
+      travelMode = com.example.data.routing.TravelMode.FOOT
     )
     val gate = kotlinx.coroutines.CompletableDeferred<Unit>()
     val vm = viewModel { _, _, _, _, _, _ -> gate.await(); listOf(live) }
@@ -375,7 +460,7 @@ class DeviceToolsAndRoutingTest {
       steps = emptyList(),
       isLiveOsrm = true,
       summary = "OSRM test route",
-      travelMode = "foot"
+      travelMode = com.example.data.routing.TravelMode.FOOT
     )
     val vm = viewModel(liveRouteFetcher = { _, _, _, _, _, _ -> listOf(live) })
     val best = firstFeasibleShelter(vm)
@@ -401,7 +486,7 @@ class DeviceToolsAndRoutingTest {
       steps = emptyList(),
       isLiveOsrm = true,
       summary = "OSRM test route",
-      travelMode = "foot"
+      travelMode = com.example.data.routing.TravelMode.FOOT
     )
     val state = VippattiUiState(activeRoute = live, routeStatus = com.example.viewmodel.RouteStatus.READY)
     assertTrue(state.hasValidatedRoute)

@@ -231,7 +231,7 @@ class VippattiViewModel(
   private val liveRouteFetcher: suspend (
     origin: GeoPoint,
     destination: GeoPoint,
-    mode: String,
+    mode: com.example.data.routing.TravelMode,
     hazards: List<HazardZone>,
     destinationName: String,
     wantAlternatives: Int
@@ -1603,7 +1603,7 @@ class VippattiViewModel(
     }
   }
 
-  fun setTravelMode(mode: String) {
+  fun setTravelMode(mode: com.example.data.routing.TravelMode) {
     if (_uiState.value.travelMode != mode) {
       _uiState.update { it.copy(travelMode = mode) }
       calculateRouteToSelectedZone()
@@ -2001,7 +2001,7 @@ class VippattiViewModel(
 
   /** Explicit start/stop for the siren; a second tap always stops it. */
   fun toggleSiren() {
-    if (_uiState.value.sirenState == SirenState.PLAYING) stopSiren() else startSiren()
+    if (_uiState.value.sirenState != SirenState.IDLE) stopSiren() else startSiren()
   }
 
   /**
@@ -2011,7 +2011,7 @@ class VippattiViewModel(
   fun startSiren() {
     sirenJob?.cancel()
     _uiState.update {
-      it.copy(sirenState = SirenState.PLAYING, sirenSecondsLeft = SIREN_MAX_SECONDS)
+      it.copy(sirenState = SirenState.PLAYING, sirenSecondsLeft = SIREN_MAX_SECONDS, sirenMessage = null)
     }
     sirenJob = viewModelScope.launch {
       var left = SIREN_MAX_SECONDS
@@ -2025,11 +2025,29 @@ class VippattiViewModel(
     }
   }
 
+  /**
+   * The audio subsystem refused a tone generator. The countdown and the "SIREN
+   * ACTIVE" banner are dropped with it, because claiming an audible alarm that is
+   * silent is worse than admitting the tool is unavailable — the distress flash and
+   * the queued SOS SMS still work. Mirrors [onTorchResult] for the torch.
+   */
+  fun onSirenUnavailable(reason: String) {
+    sirenJob?.cancel()
+    sirenJob = null
+    _uiState.update {
+      it.copy(
+        sirenState = SirenState.UNAVAILABLE,
+        sirenSecondsLeft = 0,
+        sirenMessage = reason.ifBlank { "This device did not allow the siren to play." }
+      )
+    }
+  }
+
   /** Stops the siren immediately (used by the button and the global stop). */
   fun stopSiren() {
     sirenJob?.cancel()
     sirenJob = null
-    _uiState.update { it.copy(sirenState = SirenState.IDLE, sirenSecondsLeft = 0) }
+    _uiState.update { it.copy(sirenState = SirenState.IDLE, sirenSecondsLeft = 0, sirenMessage = null) }
   }
 
   /** Global "stop everything" used by the always-visible active-tools bar. */

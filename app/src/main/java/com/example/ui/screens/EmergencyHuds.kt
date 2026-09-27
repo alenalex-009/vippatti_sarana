@@ -53,7 +53,11 @@ internal fun EvacuationCta(
 ) {
   val route = uiState.activeRoute
   val distanceStr = route?.let { OsrmRoutingService.formatDistance(it.distanceMeters) } ?: "--"
-  val durationStr = route?.let { OsrmRoutingService.formatDuration(it.durationSeconds) } ?: "--"
+  // B11: offline corridors are time ESTIMATES from assumed speeds, never a
+  // measured ETA - the tilde carries that on the navigation HUD.
+  val durationStr = route?.let {
+    (if (it.isLiveOsrm) "" else "~") + OsrmRoutingService.formatDuration(it.durationSeconds)
+  } ?: "--"
 
   Row(
     modifier = Modifier
