@@ -51,7 +51,7 @@ class PulsingZoneOverlay(
   /**
    * False once [stop] has been called.
    *
-   * ROTATION/CRASH FIX: the pulse loop used to call `mapView.postInvalidate()`
+   * ROTATION/CRASH FIX: the pulse loop used to call `mapView.postInvalidateOnAnimation()`
    * unconditionally every 66 ms forever. During Activity recreation the map tree
    * is disposed while invalidate callbacks are still queued, so osmdroid ended up
    * drawing against an already-detached tile provider. Every overlay is now
@@ -122,7 +122,7 @@ class PulsingZoneOverlay(
       val nowSync = System.currentTimeMillis()
       if (active && nowSync - lastInvalidateMillis >= INVALIDATE_INTERVAL_MS) {
         lastInvalidateMillis = nowSync
-        mapView.postInvalidate()
+        mapView.postInvalidateOnAnimation()
       }
     }
   }

@@ -138,9 +138,11 @@ class PinOrAreaOverlay(
             pulsePaint
           )
         }
+        // Only the AREA view animates; the shared ~15 fps budget keeps
+        // a full-map repaint at most that often for ALL pulses combined.
         if (now - lastInvalidateMillis >= INVALIDATE_INTERVAL_MS) {
           lastInvalidateMillis = now
-          mapView.postInvalidate()
+          mapView.postInvalidateOnAnimation()
         }
       }
     } else {

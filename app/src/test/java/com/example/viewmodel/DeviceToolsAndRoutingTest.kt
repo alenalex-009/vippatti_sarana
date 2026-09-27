@@ -104,7 +104,8 @@ class DeviceToolsAndRoutingTest {
   // ---------------------------------------------------------- DEVICE TOOLS
 
   @Test
-  fun `siren state is explicit and counts down`() = runTest(mainDispatcherRule.dispatcher) {
+  fun `siren state is explicit and runs until manually stopped (user rule 8)`() =
+    runTest(mainDispatcherRule.dispatcher) {
     val vm = viewModel()
 
     assertEquals(SirenState.IDLE, vm.uiState.value.sirenState)
@@ -113,13 +114,14 @@ class DeviceToolsAndRoutingTest {
     vm.startSiren()
     assertEquals(SirenState.PLAYING, vm.uiState.value.sirenState)
     assertTrue(vm.uiState.value.isSirenOn)
-    assertEquals(SIREN_MAX_SECONDS, vm.uiState.value.sirenSecondsLeft)
-
-    advanceTimeBy(5_001)
-    // NOTE: deliberately NOT advanceUntilIdle — that would run the whole 60 s
-    // countdown to completion. We assert the mid-countdown value instead.
-    assertEquals(SIREN_MAX_SECONDS - 5, vm.uiState.value.sirenSecondsLeft)
+    // No countdown contract (user rule #8): waiting 5 minutes must NOT
+    // silence the alarm by itself - only an explicit stop may.
+    advanceTimeBy(5 * 60_000L)
     assertEquals(SirenState.PLAYING, vm.uiState.value.sirenState)
+    assertTrue(vm.uiState.value.isSirenOn)
+
+    vm.stopSiren()
+    assertEquals(SirenState.IDLE, vm.uiState.value.sirenState)
   }
 
   @Test
@@ -214,20 +216,6 @@ class DeviceToolsAndRoutingTest {
     assertEquals(SirenState.PLAYING, vm.uiState.value.sirenState)
     assertEquals(null, vm.uiState.value.sirenMessage)
   }
-
-  @Test
-  fun `the siren auto-stops to idle when the countdown runs out`() =
-    runTest(mainDispatcherRule.dispatcher) {
-    // Virtual time, so this is cheap. Guarantees ACTIVE cannot outlive the timer:
-    // after 60 s the state and the countdown both fall to IDLE/0 on their own.
-    val vm = viewModel()
-    vm.startSiren()
-    advanceTimeBy((SIREN_MAX_SECONDS + 1) * 1000L)
-    assertEquals(SirenState.IDLE, vm.uiState.value.sirenState)
-    assertEquals(0, vm.uiState.value.sirenSecondsLeft)
-    assertTrue(vm.uiState.value.isSirenOn.not())
-  }
-
   @Test
   fun `a torch refusal keeps a visible reason until the next attempt clears it`() =
     runTest(mainDispatcherRule.dispatcher) {

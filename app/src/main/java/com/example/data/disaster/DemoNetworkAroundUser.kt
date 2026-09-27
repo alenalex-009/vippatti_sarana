@@ -43,6 +43,9 @@ object DemoNetworkAroundUser {
 
   const val DEMO_HAZARD_DISTANCE_KM = 3.0
   const val DEMO_SHELTER_DISTANCE_KM = 5.0
+  /** Demo shelters generated AROUND the focus so the app always has multiple
+   * nearest safe zones to present (user request: not one lone shelter). */
+  const val DEMO_SHELTER_COUNT = 4
   const val DEMO_HAZARD_RADIUS_M = 4_000.0
   const val DEMO_SHELTER_CAPACITY = 240
   const val DEMO_SHELTER_OCCUPIED = 30
@@ -100,29 +103,59 @@ object DemoNetworkAroundUser {
    * 4 km radius), OPEN, with free capacity — so the evaluator ranks it and
    * the GO card can route.
    */
-  fun shelterNear(focus: GeoPoint): SafeZone {
-    val p = offset(focus, DEMO_SHELTER_DISTANCE_KM, (bearingFor(focus) + 180.0) % 360.0)
-    return SafeZone(
-      id = "demo-sz-${quant(focus)}",
-      name = "DEMO Relief Shelter (simulated)",
-      lat = p.lat,
-      lon = p.lon,
-      locationNote = "SIMULATED record — demo shelter placed opposite the demo hazard, " +
-        "about ${DEMO_SHELTER_DISTANCE_KM.toInt()} km from your location",
-      capacityTotal = DEMO_SHELTER_CAPACITY,
-      capacityCurrent = DEMO_SHELTER_OCCUPIED,
-      waterAvailable = true,
-      foodAvailable = true,
-      electricityAvailable = true,
-      sanitationAvailable = true,
-      medicalSupport = true,
-      accessibility = "DEMO — road access assumed",
-      womenChildrenSuitability = true,
-      operatingStatus = "OPEN",
-      verificationStatus = "SIMULATED — not a verified shelter",
-      elevationNote = "DEMO placeholder",
-      provenance = demoProvenance
-    )
+  fun shelterNear(focus: GeoPoint): SafeZone = sheltersAround(focus, hazardBearingOnly = true).first()
+
+  /**
+   * The demo shelter NETWORK around the focus: [DEMO_SHELTER_COUNT] shelters on
+   * evenly spaced bearings so at least one is ALWAYS opposite the demo hazard
+   * (the old single opposite shelter is still the first entry). Distances vary
+   * slightly per index so the ranking has real spread. Every one sits outside
+   * the hazard circle: bearing spread + 5 km keeps them beyond the 4 km radius
+   * from the hazard center as long as they face away from it; those that would
+   * fall inside are nudged to 6 km.
+   */
+  fun sheltersAround(focus: GeoPoint, hazardBearingOnly: Boolean = false): List<SafeZone> {
+    val hazardBearing = bearingFor(focus)
+    val out = ArrayList<SafeZone>(DEMO_SHELTER_COUNT)
+    for (i in 0 until DEMO_SHELTER_COUNT) {
+      // Shelter 0 sits exactly opposite the hazard; the others fan around the
+      // compass so the carousel shows a genuine set of NEARBY options.
+      val bearing = if (i == 0) (hazardBearing + 180.0) % 360.0
+        else (hazardBearing + 180.0 + i * 90.0) % 360.0
+      var distance = DEMO_SHELTER_DISTANCE_KM + i * 0.7
+      val p0 = offset(focus, distance, bearing)
+      // Keep every demo shelter OUTSIDE the demo hazard circle (center->shelter
+      // must exceed the radius, else the evaluator rejects it as trapped).
+      val hazardCenter = offset(focus, DEMO_HAZARD_DISTANCE_KM, hazardBearing)
+      if (com.example.data.model.GeoMath.distanceMeters(hazardCenter, p0) <= DEMO_HAZARD_RADIUS_M + 300.0) {
+        distance += 2.0
+      }
+      val p = offset(focus, distance, bearing)
+      if (!IndiaGeo.contains(p)) continue
+      out += SafeZone(
+        id = "demo-sz-${quant(focus)}-$i",
+        name = DEMO_SHELTER_NAMES[i % DEMO_SHELTER_NAMES.size] + " (simulated)",
+        lat = p.lat,
+        lon = p.lon,
+        locationNote = "SIMULATED record — demo shelter about %.1f km from your location".format(
+          com.example.data.model.GeoMath.distanceMeters(focus, p) / 1000.0
+        ),
+        capacityTotal = DEMO_SHELTER_CAPACITY + i * 60,
+        capacityCurrent = DEMO_SHELTER_OCCUPIED + i * 45,
+        waterAvailable = true,
+        foodAvailable = true,
+        electricityAvailable = true,
+        sanitationAvailable = i != 2,
+        medicalSupport = true,
+        accessibility = if (i % 2 == 0) "DEMO — highway access" else "DEMO — district road access",
+        womenChildrenSuitability = true,
+        operatingStatus = if (i == DEMO_SHELTER_COUNT - 1 && !hazardBearingOnly) "CLOSED" else "OPEN",
+        verificationStatus = "SIMULATED — not a verified shelter",
+        elevationNote = "DEMO placeholder",
+        provenance = demoProvenance
+      )
+    }
+    return out
   }
 
   /** The pair for a focus point; null when the point is outside India. */
@@ -130,6 +163,11 @@ object DemoNetworkAroundUser {
     if (!IndiaGeo.contains(focus)) return null
     return hazardNear(focus) to shelterNear(focus)
   }
+
+  private val DEMO_SHELTER_NAMES = listOf(
+    "DEMO Community Hall", "DEMO School Shelter",
+    "DEMO Relief Camp", "DEMO Stadium Shelter"
+  )
 
   // ---------------------------------------------------------------- internals
 
