@@ -65,6 +65,7 @@ class ResponsiveLayoutSmokeTest {
           onSync = {},
           onToggleAudio = {},
           onSelectCategory = { _ -> },
+          onSelectSeverity = { _ -> },
           onNavigateToEvacRoute = {},
           onNavigateTab = { _ -> },
           onToggleHistoricalLayer = {},

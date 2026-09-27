@@ -348,6 +348,30 @@ object OsrmRoutingService {
       ?: calculateOfflineTacticalRoute(origin, destination, mode, hazards, destinationName)
   }
 
+/**
+   * Pure endpoint repair (user bug: "routing to safe zone stops in the
+   * middle", and every ALTERNATIVE needs the same treatment): OSRM snaps
+   * both ends of the geometry to the nearest ROAD, so an off-road shelter
+   * leaves the drawn line ~100-600 m SHORT of the true destination. This
+   * prepends the true origin and appends the true destination whenever an
+   * end sits >20 m from its snapped point - so EVERY returned corridor,
+   * active or alternative, visibly starts at the user and ENDS at the
+   * shelter.
+   */
+  fun repairEndpoints(
+    points: List<GeoPoint>,
+    origin: GeoPoint,
+    destination: GeoPoint
+  ): List<GeoPoint> {
+    if (points.isEmpty()) return listOf(origin, destination)
+    val first = points.first(); val last = points.last()
+    val out = ArrayList<GeoPoint>(points.size + 2)
+    if (GeoMath.distanceMeters(origin, first) > 20.0) out += origin
+    out += points
+    if (GeoMath.distanceMeters(last, destination) > 20.0) out += destination
+    return out
+  }
+
   private fun parseOsrmRoute(
     routeObj: JSONObject,
     mode: TravelMode,
@@ -399,22 +423,13 @@ object OsrmRoutingService {
     val first = points.firstOrNull(); val last = points.lastOrNull()
     val originGap = if (first != null) GeoMath.distanceMeters(origin, first) else 0.0
     val destGap = if (last != null) GeoMath.distanceMeters(last, destination) else 0.0
-    val fullPoints = buildList {
-      if (points.isNotEmpty()) {        if (originGap > 20.0) add(origin)
-        addAll(points)
-        if (destGap > 20.0) {
-          add(destination)
-          if (stepsList.isNotEmpty() &&
-            !stepsList.last().instruction.startsWith("Arrive")
-          ) {
-            stepsList.add(
-              RouteStep("Final approach: leave the road and continue to $destinationName", destGap, 0.0)
-            )
-          }
-        }
-      } else {
-        addAll(listOf(origin, destination))
-      }
+    val fullPoints = repairEndpoints(points, origin, destination)
+    if (destGap > 20.0 && stepsList.isNotEmpty() &&
+      !stepsList.last().instruction.startsWith("Arrive")
+    ) {
+      stepsList.add(
+        RouteStep("Final approach: leave the road and continue to $destinationName", destGap, 0.0)
+      )
     }
 
     // Honest totals: the road distance PLUS the approach/walk gaps that the

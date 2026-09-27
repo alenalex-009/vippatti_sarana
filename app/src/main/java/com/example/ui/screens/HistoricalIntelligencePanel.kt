@@ -5,6 +5,9 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,9 +16,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -24,6 +30,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
@@ -42,7 +50,9 @@ import com.example.data.historical.HistoricalDisasterEvent
 import com.example.data.historical.HistoricalFilters
 import com.example.ui.theme.NeonEmerald
 import com.example.ui.theme.ObsidianContainer
+import com.example.ui.theme.ObsidianSurface
 import com.example.ui.theme.ObsidianContainerHigh
+import com.example.ui.theme.ObsidianContainerLow
 import com.example.ui.theme.TacticalCyan
 import com.example.ui.theme.TacticalOnSurface
 import com.example.ui.theme.TacticalOnSurfaceVariant
@@ -682,129 +692,206 @@ private fun FilterChip(label: String, selected: Boolean, onClick: () -> Unit) {
 }
 
 /**
- * Full record sheet: every available EM-DAT field, the source, the version, the
- * spatial precision and the limitations. Unavailable values say "Not available".
+ * FULL-PAGE record sheet (user rule: tapping a historical record opens its
+ * own page, presentable, not a wall of text). Every available EM-DAT field
+ * is shown, grouped into scannable sections; absent values honestly say
+ * "Not available" - never zero, never guessed.
  */
 @Composable
 fun HistoricalEventDetailDialog(
   event: HistoricalDisasterEvent,
   onDismiss: () -> Unit
 ) {
-  AlertDialog(
+  // A full-screen page floating above the app (same entry point as the old
+  // dialog; usePlatformDefaultWidth=false lets the sheet fill the screen).
+  Dialog(
     onDismissRequest = onDismiss,
-    confirmButton = {
-      TextButton(onClick = onDismiss) { Text("CLOSE") }
-    },
-    title = {
-      Column {
+    properties = DialogProperties(usePlatformDefaultWidth = false)
+  ) {
+    Column(
+      modifier = Modifier
+        .fillMaxSize()
+        .background(ObsidianSurface)
+  ) {
+    // Page header: back button + record identity
+    Row(
+      modifier = Modifier
+        .fillMaxWidth()
+        .background(ObsidianContainerLow)
+        .padding(horizontal = 12.dp, vertical = 10.dp),
+      verticalAlignment = Alignment.CenterVertically
+    ) {
+      Box(
+        modifier = Modifier
+          .size(34.dp)
+          .clip(CircleShape)
+          .background(TacticalCyan.copy(alpha = 0.15f))
+          .clickable(onClick = onDismiss)
+          .testTag("historical_detail_close"),
+        contentAlignment = Alignment.Center
+      ) {
+        Icon(Icons.Default.ArrowBack, "Close record", tint = TacticalCyan,
+          modifier = Modifier.size(18.dp))
+      }
+      Spacer(Modifier.width(10.dp))
+      Column(Modifier.weight(1f)) {
         Text(
           text = "HISTORICAL DISASTER RECORD",
           fontSize = 13.sp,
           fontWeight = FontWeight.Black,
           color = TacticalCyan
         )
-        Text(text = event.id, fontSize = 10.sp, color = TacticalOnSurfaceVariant)
-      }
-    },
-    text = {
-      Column(
-        modifier = Modifier
-          .fillMaxWidth()
-          .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(6.dp)
-      ) {
-        // Visual impact tiles FIRST: the human cost as big numbers + share
-        // bars of what EM-DAT recorded, before the full field-by-field list.
-        val impactMax = listOfNotNull(
-          event.impacts.totalDeaths, event.impacts.injured,
-          event.impacts.affected, event.impacts.homeless, event.impacts.totalAffected
-        ).maxOrNull()?.coerceAtLeast(1L) ?: 1L
-        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-          ImpactTile("DEATHS", event.impacts.totalDeaths?.let { "${formatCount(it)} deaths" } ?: "Not recorded",
-            event.impacts.totalDeaths, impactMax, EmergencyRedBright, "hist_tile_deaths")
-          ImpactTile("AFFECTED", event.impacts.totalAffected?.let { "${formatCount(it)} affected" } ?: "Not recorded",
-            event.impacts.totalAffected, impactMax, WarningAmber, "hist_tile_affected")
+        // Named events get a title line + the EM-DAT id beneath; unnamed
+        // records show the id ONCE (two identical nodes would break text
+        // finders and read duplicated).
+        event.eventName?.let { name ->
+          Text(name, fontSize = 12.sp, fontWeight = FontWeight.Bold,
+            color = TacticalOnSurface, maxLines = 2, overflow = TextOverflow.Ellipsis)
         }
+        Text(event.id, fontSize = 10.sp, color = TacticalOnSurfaceVariant)
+      }
+    }
+    Column(
+      modifier = Modifier
+        .fillMaxWidth()
+        .weight(1f)
+        .verticalScroll(rememberScrollState())
+        .padding(horizontal = 14.dp, vertical = 12.dp),
+      verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+      // Human cost FIRST: the impact as big numbers + share bars.
+      val impactMax = listOfNotNull(
+        event.impacts.totalDeaths, event.impacts.injured,
+        event.impacts.affected, event.impacts.homeless, event.impacts.totalAffected
+      ).maxOrNull()?.coerceAtLeast(1L) ?: 1L
+      Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        ImpactTile("DEATHS",
+          event.impacts.totalDeaths?.let { "${formatCount(it)} deaths" } ?: "Not recorded",
+          event.impacts.totalDeaths, impactMax, EmergencyRedBright, "hist_tile_deaths")
+        ImpactTile("AFFECTED",
+          event.impacts.totalAffected?.let { "${formatCount(it)} affected" } ?: "Not recorded",
+          event.impacts.totalAffected, impactMax, WarningAmber, "hist_tile_affected")
+      }
+      val impactMaxRow = listOfNotNull(
+        event.impacts.injured, event.impacts.homeless
+      ).maxOrNull()?.coerceAtLeast(1L) ?: 1L
+      Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        ImpactTile("INJURED",
+          event.impacts.injured?.let { "${formatCount(it)}" } ?: "Not recorded",
+          event.impacts.injured, impactMaxRow, TacticalCyan, "hist_tile_injured")
+        ImpactTile("HOMELESS",
+          event.impacts.homeless?.let { "${formatCount(it)}" } ?: "Not recorded",
+          event.impacts.homeless, impactMaxRow, TacticalCyan, "hist_tile_homeless")
+      }
+      // One damage tile with the real dollar figures
+      val damageText = buildList {
+        event.impacts.damageThousandUsd?.let { add("US$ ${formatCount(it * 1000)}") }
+        event.impacts.damageAdjustedThousandUsd?.let {
+          add("US$ ${formatCount(it * 1000)} adjusted")
+        }
+      }.ifEmpty { listOf("Not recorded") }.joinToString(" · ")
+      SectionCard("ECONOMIC DAMAGE") {
+        Text(damageText, fontSize = 14.sp, fontWeight = FontWeight.Bold,
+          color = TacticalOnSurface)
+      }
+      SectionCard("WHAT HAPPENED") {
         DetailLine("Disaster group", event.group)
         DetailLine("Subgroup", event.subgroup)
         DetailLine("Type", event.type)
         DetailLine("Subtype", event.subtype)
         DetailLine("Event name", event.eventName)
-        DetailLine("Country", event.country)
-        DetailLine("Location (source text)", event.locationText)
-        DetailLine(
-          "Administrative units",
-          event.adminUnitNames.takeIf { it.isNotEmpty() }?.joinToString(", ")
-        )
-        DetailLine("Start date", event.startDate.label)
-        DetailLine("End date", event.endDate?.label)
-        DetailLine("Year", event.startYear.toString())
-        DetailLine("Total deaths", event.impacts.totalDeaths?.let { formatCount(it) })
-        DetailLine("Injured", event.impacts.injured?.let { formatCount(it) })
-        DetailLine("Affected", event.impacts.affected?.let { formatCount(it) })
-        DetailLine("Homeless", event.impacts.homeless?.let { formatCount(it) })
-        DetailLine("Total affected", event.impacts.totalAffected?.let { formatCount(it) })
-        DetailLine(
-          "Total damage ('000 US$)",
-          event.impacts.damageThousandUsd?.let { formatCount(it) }
-        )
-        DetailLine(
-          "Damage, adjusted ('000 US$)",
-          event.impacts.damageAdjustedThousandUsd?.let { formatCount(it) }
-        )
         DetailLine(
           "Magnitude",
           event.magnitude?.let { value ->
             value.toString() + (event.magnitudeScale?.let { " ($it)" } ?: "")
           }
         )
+      }
+      SectionCard("WHERE") {
+        DetailLine("Country", event.country)
+        DetailLine("Location (source text)", event.locationText)
+        DetailLine(
+          "Administrative units",
+          event.adminUnitNames.takeIf { it.isNotEmpty() }?.joinToString(", ")
+        )
         DetailLine(
           "Coordinates (source)",
-          event.latitude?.let { lat ->
-            "$lat, ${event.longitude}"
-          }
+          event.latitude?.let { lat -> "$lat, ${event.longitude}" }
         )
+        Text(
+          text = "Spatial precision: ${event.spatialPrecision.label}",
+          fontSize = 10.sp, fontWeight = FontWeight.Bold, color = TacticalOnSurface
+        )
+        Text(
+          text = event.spatialPrecision.explanation,
+          fontSize = 11.sp, color = TacticalOnSurfaceVariant, lineHeight = 12.sp
+        )
+        if (!event.isMappable) {
+          Text(
+            text = "This record is not mapped: EM-DAT provides no coordinates for it. " +
+              "Its location text is kept exactly as the source states it.",
+            fontSize = 11.sp, color = WarningAmber, lineHeight = 12.sp
+          )
+        }
+      }
+      SectionCard("WHEN") {
+        DetailLine("Start date", event.startDate.label)
+        DetailLine("End date", event.endDate?.label)
+        DetailLine("Year", event.startYear.toString())
+      }
+      SectionCard("IMPACT FIELDS (raw EM-DAT)") {
+        DetailLine("Total deaths", event.impacts.totalDeaths?.let { formatCount(it) })
+        DetailLine("Injured", event.impacts.injured?.let { formatCount(it) })
+        DetailLine("Affected", event.impacts.affected?.let { formatCount(it) })
+        DetailLine("Homeless", event.impacts.homeless?.let { formatCount(it) })
+        DetailLine("Total affected", event.impacts.totalAffected?.let { formatCount(it) })
+        DetailLine("Total damage ('000 US$)", event.impacts.damageThousandUsd?.let { formatCount(it) })
+        DetailLine("Damage, adjusted ('000 US$)", event.impacts.damageAdjustedThousandUsd?.let { formatCount(it) })
+      }
+      SectionCard("SOURCE & LIMITATIONS") {
         DetailLine("EM-DAT historic flag", event.historicFlag?.let { if (it) "Yes" else "No" })
         DetailLine("Source", event.source)
         DetailLine("Dataset version", event.datasetVersion)
         DetailLine("Dataset file created", event.accessedOn)
         DetailLine("Record entered", event.entryDate)
         DetailLine("Record last updated", event.lastUpdate)
-        DetailLine("Classification", event.classification.label.uppercase(Locale.getDefault()))
-
-        Text(
-          text = "Spatial precision: ${event.spatialPrecision.label}",
-          fontSize = 10.sp,
-          fontWeight = FontWeight.Bold,
-          color = TacticalOnSurface
+        DetailLine(
+          "Classification", event.classification.label.uppercase(Locale.getDefault())
         )
-        Text(
-          text = event.spatialPrecision.explanation,
-          fontSize = 11.sp,
-          color = TacticalOnSurfaceVariant,
-          lineHeight = 12.sp
-        )
-        if (!event.isMappable) {
-          Text(
-            text = "This record is not mapped: EM-DAT provides no coordinates for it. " +
-              "Its location text is kept exactly as the source states it.",
-            fontSize = 11.sp,
-            color = WarningAmber,
-            lineHeight = 12.sp
-          )
-        }
         event.notes.forEach { note ->
           Text(text = note, fontSize = 11.sp, color = TacticalOnSurfaceVariant)
         }
         Text(
           text = HistoricalContextService.DISCLAIMER,
-          fontSize = 11.sp,
-          color = WarningAmber,
-          lineHeight = 12.sp
+          fontSize = 11.sp, color = WarningAmber, lineHeight = 12.sp
         )
       }
+      Spacer(Modifier.height(20.dp))
     }
-  )
+    }
+  }
+}
+
+@Composable
+private fun SectionCard(title: String, content: @Composable () -> Unit) {
+  Column(
+    modifier = Modifier
+      .fillMaxWidth()
+      .clip(RoundedCornerShape(12.dp))
+      .background(ObsidianContainerLow)
+      .border(1.dp, TacticalOutlineVariant.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
+      .padding(12.dp),
+    verticalArrangement = Arrangement.spacedBy(5.dp)
+  ) {
+    Text(
+      text = title,
+      fontSize = 11.sp,
+      fontWeight = FontWeight.Black,
+      color = TacticalCyan,
+      letterSpacing = 0.8.sp
+    )
+    content()
+  }
 }
 
 @Composable

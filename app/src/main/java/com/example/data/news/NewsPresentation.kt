@@ -36,7 +36,9 @@ object NewsPresentation {
           NewsCategory.GENERAL -> DispatchTagType.CAPACITY_INFO
         },
         title = article.title,
-        description = truncate(article.description.ifBlank { article.content }, 220),
+        // BRIEF cards (user: "too much info in the tab") - a one-glance
+        // summary line; the full story stays one tap away ("Read Full Story").
+        description = truncate(article.description.ifBlank { article.content }, 95),
         location = "${article.scope.ringLabel(place)} • GNews",
         actionLabel = "Read Full Story",
         iconType = when (article.category) {
@@ -54,6 +56,41 @@ object NewsPresentation {
     articles.firstOrNull {
       it.category == NewsCategory.SEVERE_ALERTS || it.category == NewsCategory.ROAD_IMPACT
     } ?: articles.firstOrNull()
+
+  /**
+   * Severity rank of an ARTICLE as stated by its own text (nothing is
+   * invented): 3 = named severe event/warning words, 2 = active hazard
+   * words, 1 = weather-adjacent, 0 = unrelated. The news tab's severity
+   * filter keeps rank >= the selected threshold.
+   */
+  fun severityRank(article: NewsArticle): Int {
+    val text = (article.title + " " + article.description + " " + article.content)
+      .lowercase(Locale.getDefault())
+    return when {
+      SEVERE_WORDS.any { text.contains(it) } -> 3
+      HAZARD_WORDS.any { text.contains(it) } -> 2
+      WEATHER_WORDS.any { text.contains(it) } -> 1
+      else -> 0
+    }
+  }
+
+  /** Whether the article survives the severity threshold ('All' = 0). */
+  fun matchesSeverity(article: NewsArticle, threshold: Int): Boolean =
+    threshold <= 0 || severityRank(article) >= threshold
+
+  private val SEVERE_WORDS = listOf(
+    "cyclone", "hurricane", "typhoon", "red alert", "orange alert",
+    "evacuat", "emergency", "disaster", "catastroph", "deadly",
+    "killed", "deaths", "landslide", "cloudburst", "tsunami"
+  )
+  private val HAZARD_WORDS = listOf(
+    "flood", "heavy rain", "torrential", "storm", "quake", "earthquake",
+    "fire", "wildfire", "heatwave", "cold wave", "alert", "warning",
+    "rescue", "dam", "breach", "waterlog", "rain lashed", "rains"
+  )
+  private val WEATHER_WORDS = listOf(
+    "weather", "rain", "wind", "temperature", "humid", "monsoon", "sky"
+  )
 
   /** Filter chips match the classifier's category directly. */
   fun matchesCategory(category: NewsCategory, chip: String): Boolean = when (chip) {

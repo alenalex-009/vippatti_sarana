@@ -583,6 +583,7 @@ fun VippattiAppRoot(
             onSync = { viewModel.syncData() },
             onToggleAudio = { viewModel.toggleAudioBulletin() },
             onSelectCategory = { viewModel.setNewsCategory(it) },
+            onSelectSeverity = { viewModel.setNewsSeverityThreshold(it) },
             onNavigateToEvacRoute = { viewModel.startEvacuationRoute() },
             onNavigateTab = { viewModel.setTab(it) },
             onToggleHistoricalLayer = { viewModel.toggleHistoricalLayer() },

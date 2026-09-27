@@ -105,6 +105,7 @@ fun DispatchesScreen(
   onSync: () -> Unit,
   onToggleAudio: () -> Unit,
   onSelectCategory: (String) -> Unit,
+  onSelectSeverity: (Int) -> Unit,
   onNavigateToEvacRoute: () -> Unit,
   onNavigateTab: (ScreenTab) -> Unit,
   onToggleHistoricalLayer: () -> Unit,
@@ -430,9 +431,59 @@ fun DispatchesScreen(
       }
     }
 
+    // 4b. Severity filter (user rule): the news tab filters the weather/
+    // disaster items by how SEVERE their own text says they are.
+    item {
+      Row(
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(horizontal = 14.dp)
+          .padding(bottom = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+      ) {
+        Text(
+          text = "Severity:",
+          fontSize = 12.sp,
+          fontWeight = FontWeight.Bold,
+          color = TacticalOnSurfaceVariant
+        )
+        val thresholds = listOf(0 to "All", 2 to "Hazard+", 3 to "Severe only")
+        thresholds.forEach { (threshold, label) ->
+          val isActive = uiState.newsSeverityThreshold == threshold
+          Text(
+            text = label,
+            fontSize = 12.sp,
+            fontWeight = if (isActive) FontWeight.Bold else FontWeight.Medium,
+            color = if (isActive) OnNeonEmerald else TacticalOnSurface,
+            modifier = Modifier
+              .clip(RoundedCornerShape(8.dp))
+              .background(if (isActive) NeonEmerald else ObsidianContainer)
+              .border(
+                1.dp,
+                if (isActive) NeonEmerald else TacticalOutlineVariant.copy(alpha = 0.3f),
+                RoundedCornerShape(8.dp)
+              )
+              .clickable { onSelectSeverity(threshold) }
+              .padding(horizontal = 12.dp, vertical = 6.dp)
+              .testTag("severity_chip_" + label.lowercase().replace(" ", "_"))
+          )
+        }
+      }
+    }
+
     // 5. Severe-Alert Hero Card — the top REAL GNews article (never fabricated)
     item {
-      val hero = uiState.newsHero
+      val hero = uiState.newsHero?.takeIf { article ->
+        // Hero obeys the same severity selection as the feed below it.
+        NewsPresentation.matchesSeverity(article, uiState.newsSeverityThreshold) &&
+        (uiState.selectedNewsCategory == "All" ||
+          NewsPresentation.matchesCategory(
+            article.category,
+            if (uiState.selectedNewsCategory in NewsPresentation.filterChipLabels(uiState.newsArticles))
+              uiState.selectedNewsCategory else "All"
+          ))
+      }
       val now = System.currentTimeMillis()
       if (hero != null) {
         Box(
@@ -792,13 +843,12 @@ fun DispatchesScreen(
     } else {
       "All"
     }
-    val visibleArticles = if (activeCategory == "All") {
-      uiState.newsArticles
-    } else {
-      uiState.newsArticles.filter { article ->
-        NewsPresentation.matchesCategory(article.category, activeCategory)
+    val visibleArticles = uiState.newsArticles
+      .filter { article ->
+        (activeCategory == "All" ||
+          NewsPresentation.matchesCategory(article.category, activeCategory)) &&
+        NewsPresentation.matchesSeverity(article, uiState.newsSeverityThreshold)
       }
-    }
     val filteredDispatches = NewsPresentation.toFeedDispatches(
       visibleArticles,
       System.currentTimeMillis(),
@@ -826,8 +876,8 @@ fun DispatchesScreen(
             Text(
               text = when {
                 uiState.isSyncing -> "Fetching live disaster news…"
-                activeCategory != "All" ->
-                  "No articles match \"$activeCategory\" right now — switch to All or tap Sync."
+                activeCategory != "All" || uiState.newsSeverityThreshold > 0 ->
+                  "No articles match these filters right now — widen severity or switch to All."
                 uiState.newsError != null -> uiState.newsError.userMessage
                 uiState.newsEverLoaded -> "Live feed returned no new articles — try again later."
                 else -> "No disaster news loaded yet — tap Sync to fetch live GNews articles."

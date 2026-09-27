@@ -84,12 +84,16 @@ class DemoNetworkAroundUserTest {
   }
 
   @Test
-  fun `shelter is outside the hazard circle measured from BOTH user and hazard center`() {
-    // Regression: r=4.05km let the circle reach 7.05km past the focus and
-    // swallowed the 5km shelter -> no feasible shelter -> routing dead.
-    val (hazard, shelter) = DemoNetworkAroundUser.around(GeoPoint(21.5, 80.0))!!
-    assertTrue(GeoMath.distanceMeters(GeoPoint(21.5, 80.0), shelter.point) > hazard.radiusMeters)
+  fun `primary shelter is outside the hazard circle (center-based) and WALKING scale from the user`() {
+    // The evaluator's INSIDE_HAZARD_AREA check is center->point distance,
+    // so the circle test must use hazard.center, not the focus.
+    // WALKING SCALE (user rule: "if it's 2 km away I can't travel that far"):
+    // the primary shelter must be under ~1 km from the focus.
+    val focus = GeoPoint(21.5, 80.0)
+    val (hazard, shelter) = DemoNetworkAroundUser.around(focus)!!
     assertTrue(GeoMath.distanceMeters(hazard.center, shelter.point) > hazard.radiusMeters)
+    val userToShelter = GeoMath.distanceMeters(focus, shelter.point)
+    assertTrue("primary shelter must be walking distance: $userToShelter m", userToShelter <= 1_200.0)
   }
 
   @Test

@@ -177,15 +177,22 @@ private fun DashboardTab(uiState: VippattiUiState, onRerank: (Boolean) -> Unit) 
       .verticalScroll(rememberScrollState())
       .padding(horizontal = 12.dp)
   ) {
-    // Tier summary chips
+    // Tier summary chips - TAPPABLE: selecting a tier filters the
+    // order list below to just that urgency band (tap again to clear).
+    var tierFilter by remember { mutableStateOf<RelocationTier?>(null) }
     Row(horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.fillMaxWidth()) {
       RelocationTier.entries.forEach { tier ->
+        val active = tierFilter == tier
         Box(
           modifier = Modifier
             .weight(1f)
             .clip(RoundedCornerShape(8.dp))
-            .background(tierColor(tier).copy(alpha = 0.15f))
-            .border(1.dp, tierColor(tier).copy(alpha = 0.6f), RoundedCornerShape(8.dp))
+            .background(tierColor(tier).copy(alpha = if (active) 0.35f else 0.15f))
+            .border(
+              1.dp, tierColor(tier).copy(alpha = if (active) 1f else 0.6f),
+              RoundedCornerShape(8.dp)
+            )
+            .clickable { tierFilter = if (active) null else tier }
             .padding(vertical = 6.dp),
           contentAlignment = Alignment.Center
         ) {
@@ -234,13 +241,19 @@ private fun DashboardTab(uiState: VippattiUiState, onRerank: (Boolean) -> Unit) 
       }
     }
 
+    val shown = tierFilter?.let { t -> priorities.filter { it.tier == t } } ?: priorities
+    // Destination lookup: a ranked habitation carries the ID of its nearest
+    // safe zone - resolve the NAME so the row answers "where do they go?".
+    val zonesById = (uiState.safeZones + uiState.fieldShelters).associateBy { it.id }
     Text(
       if (priorities.isEmpty()) "Nothing ranked yet"
-      else "Relocation order — most urgent first",
+      else if (shown.isEmpty()) "No records in this tier - tap the tier again to clear."
+      else if (tierFilter == null) "Relocation order — most urgent first"
+      else "Filtered: " + tierFilter?.label + " only — tap the tier again to clear",
       fontSize = 13.sp, fontWeight = FontWeight.Black, color = TacticalOnSurface,
       modifier = Modifier.padding(vertical = 6.dp)
     )
-    priorities.forEach { p -> PriorityRow(p) }
+    shown.forEach { p -> PriorityRow(p, zonesById[p.nearestSafeZoneId]) }
     if (priorities.isEmpty() && !uiState.isRankingPriorities) {
       Text(
         "Add habitation records in the HABITATIONS tab, then tap RANK HABITATIONS — " +
@@ -254,7 +267,7 @@ private fun DashboardTab(uiState: VippattiUiState, onRerank: (Boolean) -> Unit) 
 }
 
 @Composable
-private fun PriorityRow(p: HabitationPriority) {
+private fun PriorityRow(p: HabitationPriority, destination: SafeZone?) {
   var expanded by remember(p.habitation.id, p.score) { mutableStateOf(false) }
   val color = tierColor(p.tier)
   Column(
@@ -307,6 +320,42 @@ private fun PriorityRow(p: HabitationPriority) {
           fontSize = 12.sp, color = TacticalOnSurfaceVariant, lineHeight = 16.sp,
           modifier = Modifier.weight(1f)
         )
+      }
+      // WHERE THEY GO: the nearest safe zone by name + its real capacity
+      // state, so the console answers the authority's actual question.
+      p.nearestSafeZoneId?.let { zoneId ->
+        val zone = destination
+        val capacityText = zone?.let {
+          " · " + it.availableCapacity + " beds free"
+        } ?: ""
+        val distanceText = p.nearestSafeZoneDistanceMeters?.let {
+          " · %.1f km".format(it / 1000)
+        } ?: ""
+        Row(
+          modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
+            .background(NeonEmerald.copy(alpha = 0.08f))
+            .border(1.dp, NeonEmerald.copy(alpha = 0.4f), RoundedCornerShape(8.dp))
+            .padding(horizontal = 10.dp, vertical = 7.dp),
+          verticalAlignment = Alignment.CenterVertically
+        ) {
+          Text(
+            text = "RELOCATE TO: ",
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Black,
+            color = NeonEmerald
+          )
+          Text(
+            text = (zone?.name ?: zoneId) + capacityText + distanceText,
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Bold,
+            color = TacticalOnSurface,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f)
+          )
+        }
       }
       if (p.habitation.population?.classification == DataClassification.SIMULATED) {
         Text(

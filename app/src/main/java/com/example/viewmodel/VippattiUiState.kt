@@ -160,6 +160,8 @@ data class VippattiUiState(
   val isAudioPlaying: Boolean = false,
   val audioPlaybackSeconds: Int = 0,
   val selectedNewsCategory: String = "All",
+  /** News-tab severity filter: 0 = all, 2 = hazard words+, 3 = severe only. */
+  val newsSeverityThreshold: Int = 0,
   // --- REAL GNews disaster-news pipeline (articles are never fabricated) ---
   val newsArticles: List<NewsArticle> = emptyList(),
   val newsHero: NewsArticle? = null,

@@ -61,6 +61,7 @@ class DispatchesHeaderHonestyTest {
           onSync = {},
           onToggleAudio = {},
           onSelectCategory = {},
+          onSelectSeverity = { _ -> },
           onNavigateToEvacRoute = {},
           onNavigateTab = {},
           onToggleHistoricalLayer = {},

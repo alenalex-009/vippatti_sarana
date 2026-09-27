@@ -55,7 +55,17 @@ object SafeZoneEvaluator {
     val hazards: List<com.example.data.model.HazardZone>,
     val walkingSpeedMps: Double = 1.35,
     val hasVulnerableMembers: Boolean = false,
-    val needsMedicalSupport: Boolean = false
+    val needsMedicalSupport: Boolean = false,
+    /**
+     * Fetched elevation of the ORIGIN (Open-Meteo SRTM, ~m above sea level).
+     * Null = altitude unknown - the evaluator never guesses it.
+     */
+    val originElevationMeters: Double? = null,
+    /**
+     * Fetched elevation per shelter id. Missing entries stay UNKNOWN and
+     * score neutrally (no fabricated hill, no penalty).
+     */
+    val zoneElevations: Map<String, Double> = emptyMap()
   )
 
   fun evaluateAll(zones: List<SafeZone>, ctx: RequestContext): List<SafeZoneEvaluation> =
@@ -100,8 +110,25 @@ object SafeZoneEvaluator {
     val capacityScore = if (zone.capacityTotal > 0) {
       ((capacity.availableCapacity.toFloat() / zone.capacityTotal) * 100f).toInt().coerceIn(0, 100)
     } else 0
-    val distanceScore = (100 - (distance / UNREACHABLE_DISTANCE_LIMIT_METERS) * 100)
+    // Walking-impact curve (user rule: relocate to NEARBY places):
+    // <= 1 km = full score (comfortably on foot), linear to ZERO at 10 km.
+    // The old flat /40 km scale made 2 km and 8 km almost indistinguishable.
+    val distanceScore = (100.0 - ((distance - 1_000.0).coerceAtLeast(0.0) /
+      (WALKABLE_DISTANCE_CEILING_METERS - 1_000.0)) * 100.0)
       .coerceIn(0.0, 100.0).toInt()
+    // Altitude score: being HIGHER than the hazard origin means water runs
+    // away from you, not toward the shelter. Only computed from REAL fetched
+    // elevations; unknown altitude scores neutral NEUTRAL and is labelled.
+    val zoneElev = ctx.zoneElevations[zone.id]
+    val altitudeKnown = zoneElev != null && ctx.originElevationMeters != null
+    val climb = if (altitudeKnown) zoneElev!! - ctx.originElevationMeters!! else 0.0
+    val altitudeScore = when {
+      !altitudeKnown -> ALTITUDE_NEUTRAL_SCORE
+      climb >= 2.0 -> 100
+      climb >= 0.0 -> 70
+      climb >= -5.0 -> 35
+      else -> 0
+    }
     val resourceScore = listOf(
       zone.waterAvailable,
       zone.foodAvailable,
@@ -125,6 +152,7 @@ object SafeZoneEvaluator {
       safetyScore * W_SAFETY +
         capacityScore * W_CAPACITY +
         distanceScore * W_DISTANCE +
+        altitudeScore * W_ALTITUDE +
         accessibilityScore * W_ACCESS +
         resourceScore * W_RESOURCES +
         medicalScore * W_MEDICAL +
@@ -146,6 +174,20 @@ object SafeZoneEvaluator {
     reasons += SelectionReason(
       "About ${GeoMath.formatKm(distance)} away (~${estimateTravelMinutes(distance, ctx.walkingSpeedMps)} min walk)"
     )
+    when {
+      altitudeKnown && climb >= 2.0 -> reasons += SelectionReason(
+        "Terrain %.0f m HIGHER than your location - water drains away from it".format(climb)
+      )
+      altitudeKnown && climb <= -5.0 -> reasons += SelectionReason(
+        "CAUTION: terrain %.0f m LOWER than your location - could collect flood water".format(-climb)
+      )
+      altitudeKnown -> reasons += SelectionReason(
+        "Terrain at about the same height as your location"
+      )
+      else -> reasons += SelectionReason(
+        "Altitude of this shelter is not yet known (terrain lookup pending or unavailable)"
+      )
+    }
     if (zone.medicalSupport) reasons += SelectionReason("Medical support available on site")
     if (ctx.hasVulnerableMembers && zone.womenChildrenSuitability) {
       reasons += SelectionReason("Suitable for women, children and elderly evacuees")
@@ -178,13 +220,18 @@ object SafeZoneEvaluator {
 
   // Composite weights: safety dominates, then capacity, distance, access,
   // resources, medical, vulnerable suitability.
-  private const val W_SAFETY = 0.30
-  private const val W_CAPACITY = 0.20
-  private const val W_DISTANCE = 0.15
-  private const val W_ACCESS = 0.10
-  private const val W_RESOURCES = 0.10
-  private const val W_MEDICAL = 0.10
-  private const val W_VULNERABLE = 0.05
+  private const val W_SAFETY = 0.28
+  private const val W_CAPACITY = 0.16
+  // NEARBY-FIRST + ALTITUDE (user rules): distance is now the second
+  // strongest factor after safety, and real SRTM altitude counts.
+  private const val W_DISTANCE = 0.24
+  private const val W_ALTITUDE = 0.06
+  private const val W_ACCESS = 0.08
+  private const val W_RESOURCES = 0.06
+  private const val W_MEDICAL = 0.06
+  private const val W_VULNERABLE = 0.06
+  private const val WALKABLE_DISTANCE_CEILING_METERS = 10_000.0
+  private const val ALTITUDE_NEUTRAL_SCORE = 50
   private const val BONUS_MEDICAL_NEEDED = 10
   private const val BONUS_VULNERABLE = 10
   private const val UNREACHABLE_DISTANCE_LIMIT_METERS = 40_000.0

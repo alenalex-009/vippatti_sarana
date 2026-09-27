@@ -197,6 +197,11 @@ class VippattiViewModel(
    */
   private val terrainProbeOverride: com.example.data.suitability.TerrainProbeService? = null,
   /**
+   * ALTITUDE LOOKUP (user rule: rank shelters by real terrain height, not
+   * guesses). Batched + cached; a fake transport is injected in tests.
+   */
+  private val elevationCacheOverride: com.example.data.suitability.ElevationCache? = null,
+  /**
    * AUTHORITY FIELD REGISTRY (SIH 26191): operator-entered shelter +
    * habitation records. Field shelters are REAL records and stay in scope
    * even with the simulated demo network hidden. Tests inject an in-memory
@@ -272,6 +277,17 @@ class VippattiViewModel(
 
   /** Location the current/last route was computed from — guards GPS re-routing. */
   private var lastRouteOrigin: GeoPoint? = null
+
+  /**
+   * Fetched altitudes feeding [SafeZoneEvaluator.RequestContext]. Null origin
+   * = lookup not finished (or unavailable): evaluators stay NEUTRAL, never
+   * guess. Keyed by the origin they were measured against - a moved user
+   * invalidates them.
+  */
+  private var altitudeForOrigin: GeoPoint? = null
+  private var originElevation: Double? = null
+  private var zoneElevationMap: Map<String, Double> = emptyMap()
+  private var altitudeJob: Job? = null
 
   /**
    * Destination the user asked "START EVACUATION ROUTE" for while no route
@@ -539,6 +555,45 @@ class VippattiViewModel(
   // ============================================================ INTELLIGENCE
 
   /**
+   * Fetches real SRTM elevation for the origin + every candidate shelter,
+   * then re-runs the intelligence pass once (and only once) when the
+   * numbers land. Failure = honest absence: shelters stay UNKNOWN-altitude
+   * neutral-scored; nothing is fabricated and the loop cannot spin.
+   */
+  private fun ensureAltitudesFor(
+    origin: GeoPoint,
+    candidates: List<com.example.data.model.SafeZone>
+  ) {
+    if (candidates.isEmpty()) {
+      altitudeForOrigin = origin
+      originElevation = null
+      zoneElevationMap = emptyMap()
+      return
+    }
+    // Suppress repeats while the same origin is already being probed.
+    if (altitudeJob?.isActive == true && altitudeForOrigin == origin) return
+    altitudeForOrigin = origin
+    altitudeJob?.cancel()
+    altitudeJob = viewModelScope.launch {
+      val cache = elevationCacheOverride ?: com.example.data.suitability.ElevationCache()
+      val elevations = try {
+        cache.elevations(listOf(origin) + candidates.map { it.point })
+      } catch (cancelled: kotlinx.coroutines.CancellationException) {
+        throw cancelled
+      } catch (error: Exception) {
+        emptyMap()
+      }
+      if (altitudeForOrigin != origin) return@launch // user moved on
+      originElevation = elevations[origin]
+      zoneElevationMap = candidates.mapNotNull { z ->
+        elevations[z.point]?.let { z.id to it }
+      }.toMap()
+      // Altitudes only matter if they CHANGE the ranking; recompute once.
+      recomputeIntelligence()
+    }
+  }
+
+  /**
    * The heart of the decision pipeline:
    * GPS/India-centre location -> hazard analysis (REAL live events + user
    * reports + explicitly-labeled mock data) -> safe-zone discovery ->
@@ -637,12 +692,18 @@ class VippattiViewModel(
       }
     )
 
+    val altitudesFresh = altitudeForOrigin == location
     val ctx = SafeZoneEvaluator.RequestContext(
       origin = location,
       hazards = hazards,
       hasVulnerableMembers = state.userProfile.vulnerableCategoryIds.isNotEmpty(),
-      needsMedicalSupport = state.userProfile.needsMedicalSupport
+      needsMedicalSupport = state.userProfile.needsMedicalSupport,
+      originElevationMeters = if (altitudesFresh) originElevation else null,
+      zoneElevations = if (altitudesFresh) zoneElevationMap else emptyMap()
     )
+    if (!altitudesFresh) ensureAltitudesFor(location, scopedCandidates)
+
+
     // Evaluate EVERY candidate: feasible shelters are ranked; rejected ones
     // carry their rejection reason so the UI can never present a full or
     // hazard-trapped shelter as an eligible destination.
@@ -1899,6 +1960,11 @@ class VippattiViewModel(
         snackbarMessage = "Text-to-speech unavailable on this device — bulletin cannot be spoken"
       )
     }
+  }
+
+  /** News-tab severity filter chips: 0 all / 2 hazard+ / 3 severe only. */
+  fun setNewsSeverityThreshold(threshold: Int) {
+    _uiState.update { it.copy(newsSeverityThreshold = threshold) }
   }
 
   fun setNewsCategory(category: String) {

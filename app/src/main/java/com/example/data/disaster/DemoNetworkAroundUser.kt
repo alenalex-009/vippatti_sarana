@@ -26,12 +26,13 @@ import kotlin.math.sin
  *
  * Rules (each unit-tested):
  *  - deterministic: same focus => same network (coordinate-seeded, no RNG);
- *  - the hazard center sits ~3 km away with radius ~4 km, so the FOCUS ITSELF
- *    lies inside the zone (3 < 4.05) — risk assessment honestly escalates
- *    and the guidance card fires;
- *  - the shelter sits ~5 km away on the OPPOSITE bearing (~8 km from the
- *    hazard center, outside its radius) — eligible in every evaluator rule
- *    and within the 40 km reachability limit;
+ *  - WALKING SCALE (user rule: "if a safe place is 2 km away I can't
+ *    travel that far"): the hazard center sits ~1.2 km away with a ~1.6 km
+ *    radius, so the FOCUS ITSELF lies inside the zone (1.2 < 1.6) - risk
+ *    assessment honestly escalates and the guidance card fires;
+ *  - the primary shelter sits ~0.8 km away on the OPPOSITE bearing (~2 km
+ *    from the hazard center, outside its radius) - reachable on foot in
+ *    ~10 minutes, eligible in every evaluator rule;
  *  - focus outside India produces NOTHING (the India-only guard keeps the
  *    final word);
  *  - both records carry classification = SIMULATED + ids namespaced "demo-"
@@ -41,12 +42,15 @@ import kotlin.math.sin
  */
 object DemoNetworkAroundUser {
 
-  const val DEMO_HAZARD_DISTANCE_KM = 3.0
-  const val DEMO_SHELTER_DISTANCE_KM = 5.0
+  // WALKING-SCALE scenario (user rule: "a safe place 2 km away is already
+  // too far") - the hazard sits just outside the user, the primary shelter is
+  // 0.8 km away on the opposite bearing, and the fanned options are 1.5-3.5 km.
+  const val DEMO_HAZARD_DISTANCE_KM = 1.2
+  const val DEMO_SHELTER_DISTANCE_KM = 0.8
   /** Demo shelters generated AROUND the focus so the app always has multiple
    * nearest safe zones to present (user request: not one lone shelter). */
-  const val DEMO_SHELTER_COUNT = 4
-  const val DEMO_HAZARD_RADIUS_M = 4_000.0
+  const val DEMO_SHELTER_COUNT = 5
+  const val DEMO_HAZARD_RADIUS_M = 1_600.0
   const val DEMO_SHELTER_CAPACITY = 240
   const val DEMO_SHELTER_OCCUPIED = 30
 
@@ -108,11 +112,11 @@ object DemoNetworkAroundUser {
   /**
    * The demo shelter NETWORK around the focus: [DEMO_SHELTER_COUNT] shelters on
    * evenly spaced bearings so at least one is ALWAYS opposite the demo hazard
-   * (the old single opposite shelter is still the first entry). Distances vary
-   * slightly per index so the ranking has real spread. Every one sits outside
-   * the hazard circle: bearing spread + 5 km keeps them beyond the 4 km radius
-   * from the hazard center as long as they face away from it; those that would
-   * fall inside are nudged to 6 km.
+   * (the primary opposite shelter is the first entry, ~0.8 km WALKING scale).
+   * Distances vary slightly per index so the ranking has real spread. Every
+   * shelter sits outside the hazard circle: bearings that face the hazard are
+   * walked outward in small steps until they clear it, so the whole set stays
+   * as close to the user as the circle allows.
    */
   fun sheltersAround(focus: GeoPoint, hazardBearingOnly: Boolean = false): List<SafeZone> {
     val hazardBearing = bearingFor(focus)
@@ -127,8 +131,14 @@ object DemoNetworkAroundUser {
       // Keep every demo shelter OUTSIDE the demo hazard circle (center->shelter
       // must exceed the radius, else the evaluator rejects it as trapped).
       val hazardCenter = offset(focus, DEMO_HAZARD_DISTANCE_KM, hazardBearing)
-      if (com.example.data.model.GeoMath.distanceMeters(hazardCenter, p0) <= DEMO_HAZARD_RADIUS_M + 300.0) {
-        distance += 2.0
+      // Walk OUTWARD in small steps until this shelter clears the hazard
+      // circle by a safety margin - works at any bearing angle and keeps
+      // every demo option as close to walking scale as possible.
+      while (com.example.data.model.GeoMath.distanceMeters(
+          hazardCenter, offset(focus, distance, bearing)
+        ) <= DEMO_HAZARD_RADIUS_M + 300.0 && distance < 40.0
+      ) {
+        distance += 0.3
       }
       val p = offset(focus, distance, bearing)
       if (!IndiaGeo.contains(p)) continue
