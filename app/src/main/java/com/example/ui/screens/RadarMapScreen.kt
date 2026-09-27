@@ -223,9 +223,12 @@ fun RadarMapScreen(
       onHazardZoneTapped = onOpenHazardDetail,
       onSafeZoneTapped = onOpenSafeZoneDetail,
       onRealGpsFix = onRealGpsFix,
-      // LIVE provider events are always rendered: the simulated-demo switch only
-      // controls the SIMULATED zone network, never real hazard data.
-      disasterEvents = uiState.disasterEvents,
+      // DEMO MODE (user rule #6): with the demo scenario ON the live pins are
+      // hidden so the demo story reads cleanly (hazard circle + shelters near
+      // YOU). Demo OFF returns to pure live data. The Demo data chip says
+      // which mode is active, so this is visible, never silent.
+      disasterEvents = if (uiState.isMockDataVisible) emptyList()
+      else uiState.disasterEvents,
       enabledLayers = uiState.enabledLayers,
       onDisasterEventTapped = onOpenDisasterEventDetail,
       // NEARBY-FIRST: fold distant data while the camera is at city scale.

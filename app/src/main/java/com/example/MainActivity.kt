@@ -811,7 +811,7 @@ internal fun ActiveToolsBar(
     if (sirenOn) {
       ToolStatusRow(
         label = "SOS SIREN ACTIVE",
-        detail = "Auto-stops in ${uiState.sirenSecondsLeft}s",
+        detail = "Sounding now — stop it when safe",
         onStop = onStopDeviceTools,
         testTag = "active_tool_siren_stop"
       )

@@ -120,8 +120,12 @@ class NewsRepository(
       val seenIds = HashSet<String>()
       val seenTitles = HashSet<String>()
       val out = mutableListOf<NewsArticle>()
+      // User rule #7: disaster coverage LEADS the feed. Articles are
+      // bucketed disaster-first (anything the classifier tagged GENERAL
+      // sorts after every hazard category); recency orders within a bucket.
       for (article in all.sortedWith(
-        compareByDescending<NewsArticle> { it.publishedAtMillis }
+        compareBy<NewsArticle> { if (it.category == NewsCategory.GENERAL) 1 else 0 }
+          .thenByDescending { it.publishedAtMillis }
           .thenBy { it.scope.ordinal }
       )) {
         val titleKey = normalizeTitle(article.title)

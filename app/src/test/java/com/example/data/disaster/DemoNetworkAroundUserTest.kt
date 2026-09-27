@@ -91,4 +91,30 @@ class DemoNetworkAroundUserTest {
     assertTrue(GeoMath.distanceMeters(GeoPoint(21.5, 80.0), shelter.point) > hazard.radiusMeters)
     assertTrue(GeoMath.distanceMeters(hazard.center, shelter.point) > hazard.radiusMeters)
   }
+
+  @Test
+  fun `demo produces MULTIPLE nearby shelters, all reachable and outside the hazard`() {
+    val shelters = com.example.data.disaster.DemoNetworkAroundUser.sheltersAround(vizag)
+    assertTrue("need >= 3 demo shelters, got ${'$'}{shelters.size}", shelters.size >= 3)
+    val hazard = com.example.data.disaster.DemoNetworkAroundUser.hazardNear(vizag)
+    shelters.forEach { sz ->
+      val fromUser = GeoMath.distanceMeters(vizag, sz.point)
+      val fromHazard = GeoMath.distanceMeters(hazard.center, sz.point)
+      assertTrue("shelter ${'$'}{sz.id} unreachable: ${'$'}{fromUser}m", fromUser < 40_000.0)
+      assertTrue("shelter ${'$'}{sz.id} inside hazard circle: ${'$'}{fromHazard}m",
+        fromHazard > hazard.radiusMeters)
+      // At least the primary shelters are OPEN with capacity for routing.
+    }
+    assertTrue("the first shelter (opposite the hazard) must be OPEN with capacity",
+      shelters.first().operatingStatus == "OPEN" && shelters.first().availableCapacity > 0)
+  }
+
+  @Test
+  fun `every demo shelter stays inside India for any focus point`() {
+    listOf(vizag, kochi, GeoPoint(21.5, 80.0), GeoPoint(26.9, 80.9)).forEach { focus ->
+      com.example.data.disaster.DemoNetworkAroundUser.sheltersAround(focus).forEach { sz ->
+        assertTrue("demo shelter ${'$'}{sz.id} left India", IndiaGeo.contains(sz.point))
+      }
+    }
+  }
 }

@@ -100,7 +100,6 @@ private const val REROUTE_MIN_MOVEMENT_METERS = 50.0
 private const val MAX_INCIDENT_REPORTS = 50
 
 /** Siren auto-stop window, surfaced to the user as a visible countdown. */
-const val SIREN_MAX_SECONDS = 60
 
 /**
  * Place resolution guard: re-resolve the district/state only after the user has
@@ -556,7 +555,15 @@ class VippattiViewModel(
     // "simulated demo" switch must never hide real hazards. Previously it emptied
     // the whole picture, which silently produced a GREEN risk verdict and empty
     // routing anywhere in India whenever demo data was switched off.
-    val liveZones = toHazardZones(state.disasterEvents.filter { it.isValid(now) })
+    // AUDIT (user rule #6): DEMO ON = live feeds are visually replaced by the
+
+    // clearly-labelled demo scenario, so the demo story cannot be drowned out
+
+    // by unrelated live quakes/fire dots. With demo OFF the live feeds are back.
+
+    val liveZones = if (state.isMockDataVisible) emptyList()
+
+      else toHazardZones(state.disasterEvents.filter { it.isValid(now) })
     val reportZones = toHazardZones(
       state.userIncidentReports
         .map { it.toDisasterEvent(now) }
@@ -571,7 +578,16 @@ class VippattiViewModel(
     // where there is no local position to scope to. Every demo record stays
     // labelled SIMULATED with demo-namespaced ids either way.
     val focused = !state.isUserLocationFallback
-    val demoAround = if (state.isMockDataVisible && focused) DemoNetworkAroundUser.around(location) else null
+
+    val demoSet = if (state.isMockDataVisible && focused)
+
+      DemoNetworkAroundUser.around(location) to DemoNetworkAroundUser.sheltersAround(location)
+
+    else null
+
+    val demoAround = demoSet?.first
+
+    val demoShelters = demoSet?.second ?: emptyList()
     val mockZones = if (state.isMockDataVisible) {
       if (focused) {
         listOfNotNull(demoAround?.first)
@@ -588,7 +604,7 @@ class VippattiViewModel(
     // PLUS any REAL operator-entered field registry records, which stay
     // in scope in every mode — they are field data, not demo data.
     val demoZones = if (state.isMockDataVisible) {
-      if (focused) listOfNotNull(demoAround?.second)
+      if (focused) demoShelters
       else state.safeZones.filter { IndiaGeo.contains(it.point) }
     } else {
       emptyList()
@@ -2063,19 +2079,18 @@ class VippattiViewModel(
    * never keep running unseen after the user leaves the Instructions screen.
    */
   fun startSiren() {
+    // USER RULE #8: the alarm runs until the user turns it off - no
+    // countdown, no auto-stop. The stop control lives in the active-tools
+    // bar on every tab, and the audio loop is still hardware-honest (an
+    // unplayable siren reports UNAVAILABLE instead of pretending).
     sirenJob?.cancel()
+    sirenJob = null
     _uiState.update {
-      it.copy(sirenState = SirenState.PLAYING, sirenSecondsLeft = SIREN_MAX_SECONDS, sirenMessage = null)
-    }
-    sirenJob = viewModelScope.launch {
-      var left = SIREN_MAX_SECONDS
-      while (left > 0) {
-        delay(1000)
-        left--
-        _uiState.update { it.copy(sirenSecondsLeft = left) }
-      }
-      // Auto-stop: state and hardware both return to IDLE together.
-      _uiState.update { it.copy(sirenState = SirenState.IDLE, sirenSecondsLeft = 0) }
+      it.copy(
+        sirenState = SirenState.PLAYING,
+        sirenSecondsLeft = 0,
+        sirenMessage = null
+      )
     }
   }
 

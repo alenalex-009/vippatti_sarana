@@ -62,11 +62,16 @@ object NewsPresentation {
     "Weather Radar" -> category == NewsCategory.WEATHER
     "Shelter Updates" -> category == NewsCategory.SHELTER
     "Government Bulletins" -> category == NewsCategory.GOVERNMENT
+    "Other News" -> category == NewsCategory.GENERAL
     else -> true
   }
 
   /** Every filter chip label — single source of truth for the dispatches UI. */
-  val CHIP_LABELS = listOf("All", "Severe Alerts", "Weather Radar", "Shelter Updates", "Government Bulletins")
+  // User rule #7: disaster coverage is the POINT of the feed, so the
+  // hazard categories come first and the classifier's leftover "News" bucket
+  // gets its OWN chip ("Other News") instead of mixing into disaster coverage.
+  val CHIP_LABELS =
+    listOf("All", "Severe Alerts", "Weather Radar", "Shelter Updates", "Government Bulletins", "Other News")
 
   /**
    * Only the chips that currently have matching articles (All always present).

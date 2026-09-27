@@ -76,7 +76,21 @@ internal fun SafeZoneCarousel(
 
   // Keep the selected card visible in the carousel when selection changes
   // (map circle tap, "Best Zone" button, or initial recommendation).
-  val selectedIndex = uiState.safeZones.indexOfFirst { it.id == selectedId }
+  // NEARBY-FIRST (user rule #5): the rendered set is eval-driven and
+  // sorted by LIVE distance from the user's current position - never the
+  // raw network list, so another state's shelters can't appear at 0 m.
+  val evalById = uiState.evaluatedShelters.associateBy { it.zone.id }
+  val origin = uiState.userLocation
+  val carouselZones: List<SafeZone> = run {
+    val source = if (uiState.isMockDataVisible) uiState.safeZones else emptyList()
+    source.sortedBy {
+      evalById[it.id]?.distanceMeters
+        ?: com.example.data.model.GeoMath.distanceMeters(origin, it.point)
+    }.take(MAX_CAROUSEL_ZONES)
+  }
+  val hiddenCount = (if (uiState.isMockDataVisible) uiState.safeZones.size else 0) -
+    carouselZones.size
+  val selectedIndex = carouselZones.indexOfFirst { it.id == selectedId }
   LaunchedEffect(selectedId) {
     if (selectedIndex >= 0) listState.animateScrollToItem(selectedIndex)
   }
@@ -84,7 +98,8 @@ internal fun SafeZoneCarousel(
   Column(modifier = Modifier.fillMaxWidth()) {
     // Shortest-distance read-out (radar requirement 3): nearest FEASIBLE safe
     // zone from the user's current position, recomputed on every evaluation.
-    val nearest = uiState.rankedShelters.minByOrNull { it.distanceMeters }
+    val nearest = carouselZones.mapNotNull { evalById[it.id] }
+      .filter { it.isFeasible }.minByOrNull { it.distanceMeters }
     Row(
       modifier = Modifier
         .fillMaxWidth()
@@ -119,8 +134,8 @@ internal fun SafeZoneCarousel(
         } else if (nearest != null) {
           "NEAREST SAFE: ${nearest.zone.name} • " +
             "${OsrmRoutingService.formatDistance(nearest.distanceMeters)} away"
-        } else if (uiState.safeZones.isEmpty()) {
-          "NO SAFE ZONES IN SCOPE"
+        } else if (carouselZones.isEmpty()) {
+          "NO SHELTERS NEAR THIS PLACE — search a different area"
         } else {
           "NO FEASIBLE SHELTER — all in danger / full"
         },
@@ -134,7 +149,7 @@ internal fun SafeZoneCarousel(
     }
 
     // Mock OFF = empty carousel (matches the empty map); no shelter cards.
-    val visibleZones = if (uiState.isMockDataVisible) uiState.safeZones else emptyList()
+    val visibleZones = carouselZones
     LazyRow(
       state = listState,
       modifier = Modifier
@@ -149,7 +164,9 @@ internal fun SafeZoneCarousel(
           zone = zone,
           // Full evaluation (feasible AND rejected) — rejected shelters show
           // their real rejection reason instead of a blank generic card.
-          evaluation = uiState.evaluatedShelters.firstOrNull { it.zone.id == zone.id },
+          evaluation = evalById[zone.id],
+          activeRouteHere = uiState.activeRoute?.takeIf { it.destinationName == zone.name },
+          userLocation = origin,
           isSelected = isSelected,
           isCalculatingRoute = uiState.isCalculatingRoute && isSelected,
           onSelect = { onSelectSafeZone(zone) },
@@ -161,8 +178,19 @@ internal fun SafeZoneCarousel(
         )
       }
     }
+    if (hiddenCount > 0) {
+      Text(
+        text = "$hiddenCount more shelters are farther away — nearest " +
+          MAX_CAROUSEL_ZONES + " shown. Search another place to re-center them.",
+        fontSize = 11.sp,
+        color = TacticalOnSurfaceVariant,
+        modifier = Modifier.padding(horizontal = 14.dp)
+      )
+    }
   }
 }
+
+private const val MAX_CAROUSEL_ZONES = 8
 
 /**
  * One safe-zone card: name, safety badge, distance/ETA, capacity bar with
@@ -174,6 +202,8 @@ private fun SafeZoneCard(
   evaluation: SafeZoneEvaluation?,
   isSelected: Boolean,
   isCalculatingRoute: Boolean,
+  activeRouteHere: com.example.data.routing.RouteResult? = null,
+  userLocation: com.example.data.routing.GeoPoint,
   onSelect: () -> Unit,
   modifier: Modifier = Modifier
 ) {
@@ -182,7 +212,12 @@ private fun SafeZoneCard(
     (zone.capacityCurrent.toFloat() / zone.capacityTotal).coerceIn(0f, 1f)
   } else 1f
   val isFull = capacity?.acceptsNewOccupants == false || zone.availableCapacity <= 0
-  val distanceKm = evaluation?.distanceMeters ?: 0.0
+  // Live distance from the USER: the evaluation carries it when present;
+  // otherwise straight-line from the current position (never 0 by default).
+  val distanceKm = evaluation?.distanceMeters
+    ?: com.example.data.model.GeoMath.distanceMeters(
+      userLocation, com.example.data.routing.GeoPoint(zone.lat, zone.lon)
+    )
   val etaMins = SafeZoneEvaluator.estimateTravelMinutes(distanceKm, 1.35)
 
   Column(
@@ -280,10 +315,16 @@ private fun SafeZoneCard(
         fontWeight = FontWeight.Bold,
         color = TacticalCyan
       )
+      // When a real road route to THIS shelter exists, show its measured
+      // duration; the walk figure is always labelled as an estimate.
       Text(
-        text = "~${etaMins} min walk",
+        text = if (activeRouteHere != null && activeRouteHere.isLiveOsrm) {
+          "road route ~${OsrmRoutingService.formatDuration(activeRouteHere.durationSeconds)}"
+        } else {
+          "~${etaMins} min walk (est.)"
+        },
         fontSize = 10.sp,
-        color = TacticalOnSurfaceVariant
+        color = if (activeRouteHere?.isLiveOsrm == true) NeonEmerald else TacticalOnSurfaceVariant
       )
       Spacer(modifier = Modifier.weight(1f))
       if (evaluation?.hazardExposureCount ?: 0 > 0) {

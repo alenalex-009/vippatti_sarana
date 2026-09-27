@@ -271,7 +271,7 @@ object OsrmRoutingService {
     // which is what made it feel dead/laggy (reported bug). Simplified lines
     // STILL follow the road network.
     val primaryUrl = buildRouteUrl(endpoint, origin, destination, wantAlternatives, overview = overview)
-    val primaryRoutes = tryRequestRoutes(primaryUrl, mode, hazards, destinationName, wantAlternatives)
+    val primaryRoutes = tryRequestRoutes(primaryUrl, origin, destination, mode, hazards, destinationName, wantAlternatives)
     if (primaryRoutes != null && primaryRoutes.isNotEmpty()) return primaryRoutes
 
     // Retry once with the OTHER overview: very long trips can exceed the
@@ -281,12 +281,14 @@ object OsrmRoutingService {
       endpoint, origin, destination, wantAlternatives,
       overview = if (overview == "simplified") "full" else "simplified"
     )
-    return tryRequestRoutes(retryUrl, mode, hazards, destinationName, wantAlternatives) ?: emptyList()
+    return tryRequestRoutes(retryUrl, origin, destination, mode, hazards, destinationName, wantAlternatives) ?: emptyList()
   }
 
   /** One OSRM request attempt; null when the attempt fully failed. */
   private fun tryRequestRoutes(
     url: String,
+    origin: GeoPoint,
+    destination: GeoPoint,
     mode: TravelMode,
     hazards: List<HazardZone>,
     destinationName: String,
@@ -305,7 +307,7 @@ object OsrmRoutingService {
       val routes = json.optJSONArray("routes") ?: return null
       buildList {
         for (i in 0 until routes.length().coerceAtMost(wantAlternatives)) {
-          parseOsrmRoute(routes.getJSONObject(i), mode, hazards, destinationName)?.let(::add)
+          parseOsrmRoute(routes.getJSONObject(i), mode, hazards, destinationName, origin, destination)?.let(::add)
         }
       }
     }
@@ -350,10 +352,13 @@ object OsrmRoutingService {
     routeObj: JSONObject,
     mode: TravelMode,
     hazards: List<HazardZone>,
-    destinationName: String
+    destinationName: String,
+    origin: GeoPoint,
+    destination: GeoPoint
   ): RouteResult? {
     val distance = routeObj.optDouble("distance", 0.0)
     val duration = routeObj.optDouble("duration", 0.0)
+    // (endpoint gap legs are folded into the drawn geometry below)
 
     val geometry = routeObj.optJSONObject("geometry") ?: return null
     val coordinates = geometry.optJSONArray("coordinates") ?: return null
@@ -384,11 +389,48 @@ object OsrmRoutingService {
       stepsList.add(RouteStep("Follow evacuation corridor to $destinationName", distance, duration))
     }
 
-    val penalty = HazardRoutingPolicy.computePenaltyFor(points, hazards)
+    // ENDPOINT REPAIR (user bug: "route stops in the middle before the
+    // safe zone"): OSRM snaps both endpoints to the nearest road, so for an
+    // off-road shelter the geometry ends ~100-600 m SHORT of the true
+    // destination (and starts short of the user). Append the real origin in
+    // front and the real destination behind: the line now visibly starts at
+    // the user and ENDS at the shelter. The added last-leg distance is
+    // included so the shown distance matches what is drawn.
+    val first = points.firstOrNull(); val last = points.lastOrNull()
+    val originGap = if (first != null) GeoMath.distanceMeters(origin, first) else 0.0
+    val destGap = if (last != null) GeoMath.distanceMeters(last, destination) else 0.0
+    val fullPoints = buildList {
+      if (points.isNotEmpty()) {        if (originGap > 20.0) add(origin)
+        addAll(points)
+        if (destGap > 20.0) {
+          add(destination)
+          if (stepsList.isNotEmpty() &&
+            !stepsList.last().instruction.startsWith("Arrive")
+          ) {
+            stepsList.add(
+              RouteStep("Final approach: leave the road and continue to $destinationName", destGap, 0.0)
+            )
+          }
+        }
+      } else {
+        addAll(listOf(origin, destination))
+      }
+    }
+
+    // Honest totals: the road distance PLUS the approach/walk gaps that the
+
+    // repaired geometry adds, so the number always matches the drawn line.
+
+    val gapMeters = (GeoMath.distanceMeters(origin, points.firstOrNull() ?: origin)
+
+      + GeoMath.distanceMeters(points.lastOrNull() ?: destination, destination))
+
+    val penalty = HazardRoutingPolicy.computePenaltyFor(fullPoints, hazards)
+
     return RouteResult(
-      distanceMeters = distance,
+      distanceMeters = distance + gapMeters,
       durationSeconds = duration,
-      pathPoints = points,
+      pathPoints = fullPoints,
       steps = stepsList,
       isLiveOsrm = true,
       summary = summary.ifBlank { "OSRM Validated Passage" },
