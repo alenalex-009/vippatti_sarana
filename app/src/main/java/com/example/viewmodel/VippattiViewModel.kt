@@ -242,6 +242,7 @@ class VippattiViewModel(
     mode: com.example.data.routing.TravelMode,
     hazards: List<HazardZone>,
     destinationName: String,
+    destinationId: String,
     wantAlternatives: Int
   ) -> List<RouteResult> = OsrmRoutingService::fetchLiveRoutesAsync,
   /**
@@ -724,6 +725,10 @@ class VippattiViewModel(
     // Evaluate EVERY candidate: feasible shelters are ranked; rejected ones
     // carry their rejection reason so the UI can never present a full or
     // hazard-trapped shelter as an eligible destination.
+    // The map + carousel render ONLY shelters scoped to the current focus
+    // (field registry records + the local demo set). Publishing this
+    // set is what makes 'displayed distance = marker = routing destination'
+    // hold: every UI surface reads the same objects the evaluator used.
     val evaluated = SafeZoneEvaluator.evaluateAll(scopedCandidates, ctx)
     val ranked = evaluated.filter { it.isFeasible }.sortedByDescending { it.score }
     val action = ActionAdvisor.recommend(risk, ranked)
@@ -790,6 +795,7 @@ class VippattiViewModel(
         personalRisk = risk,
         hazardZones = hazards,
         evaluatedShelters = evaluated,
+        scopedShelters = scopedCandidates,
         rankedShelters = ranked,
         recommendedAction = action,
         relocationPlan = plan,
@@ -1195,7 +1201,10 @@ class VippattiViewModel(
       as? com.example.data.shelters.EmergencyGuidance.SuggestShelter) ?: return
     val zone = suggestion.evaluation.zone
     val routeHere = _uiState.value.activeRoute
-      ?.takeIf { it.destinationName == zone.name }
+      ?.takeIf {
+        it.destinationId == zone.id ||
+        (it.destinationId.isBlank() && it.destinationName == zone.name)
+      }
     if (routeHere != null && _uiState.value.selectedSafeZone?.id == zone.id) {
       // The suggested zone's corridor is ALREADY drawn: GO means START
       // GUIDANCE + zoom to the route — not "re-request everything", which
@@ -1490,7 +1499,11 @@ class VippattiViewModel(
     // guidance mid-sentence. Keep drawing the same-destination corridor while
     // the refresh happens underneath.
     val sameCorridorOnScreen = _uiState.value.activeRoute
-      ?.takeIf { it.destinationName == zone.name && it.travelMode == mode }
+      ?.takeIf {
+        (it.destinationId == zone.id ||
+          (it.destinationId.isBlank() && it.destinationName == zone.name)) &&
+        it.travelMode == mode
+      }
     val cacheKey = LiveRouteCache.key(zone.id, mode, origin, hazards)
 
     // A cached LIVE road route for the exact destination/mode/area/hazard set is
@@ -1528,7 +1541,8 @@ class VippattiViewModel(
     }
 
     routingJob = viewModelScope.launch {
-      val live = liveRouteFetcher(origin, zone.point, mode, hazards, zone.name, 1).firstOrNull()
+      val live = liveRouteFetcher(origin, zone.point, mode, hazards, zone.name, zone.id, 1)
+        .firstOrNull()
 
       // Staleness guard: a newer selection/origin must never be overwritten.
       if (lastRouteOrigin != origin || _uiState.value.selectedSafeZone?.id != zone.id) return@launch
@@ -1685,6 +1699,7 @@ class VippattiViewModel(
         mode = mode,
         hazards = hazards,
         destinationName = target.name,
+        destinationId = target.id,
         maxAlternatives = 2
       )
       if (lastRouteOrigin != origin ||
@@ -2131,21 +2146,63 @@ class VippattiViewModel(
    * no relief-network backend, so nothing is transmitted to NDRF or any other
    * authority) and shows the record dialog.
    */
+  /**
+   * "Start SOS record" SAVE action. The record is persisted FIRST (local
+   * report store); the UI only flips to the SAVED state once the persist
+   * succeeded - a failed save says so instead of claiming a record exists.
+   * Nothing is ever transmitted: this build has no authority backend.
+   */
   fun confirmSosBroadcast() {
-    _uiState.update {
-      it.copy(
-        showSosConfirmDialog = false,
-        showSosBroadcastDialog = true,
-        isSosActive = true,
-        userIsSafe = false
-      )
-    }
+    _uiState.update { it.copy(showSosConfirmDialog = false) }
     val profile = _uiState.value.userProfile
-    submitEmergencyReport(
-      ReportKind.SOS_BROADCAST,
-      message = "NEED ASSISTANCE - SOS distress broadcast from ${profile.fullName}" +
-        (if (profile.medicalTag.isNotBlank()) " | Medical tag: ${profile.medicalTag}" else "")
-    )
+    viewModelScope.launch {
+      val receipt = try {
+        reportService.submit(
+          EmergencyReport(
+            kind = ReportKind.SOS_BROADCAST,
+            reporterId = profile.citizenId,
+            reporterName = profile.fullName,
+            message = "SOS record from " + profile.fullName +
+              (if (profile.medicalTag.isNotBlank()) " | Medical: " + profile.medicalTag else ""),
+            photoUri = null,
+            location = _uiState.value.userLocation,
+            batteryPercent = _uiState.value.batteryPercent,
+            isCharging = _uiState.value.isBatteryCharging,
+            medicalTag = profile.medicalTag
+          )
+        )
+      } catch (cancelled: kotlinx.coroutines.CancellationException) {
+        throw cancelled
+      } catch (e: Exception) {
+        ReportReceipt(
+          reportId = "LOCAL-ERR",
+          accepted = false,
+          relayChannel = LocalEmergencyReportService.RELAY_CHANNEL,
+          etaMinutes = null,
+          note = "Could not save the SOS record: " + (e.message ?: "unexpected error") +
+            ". Nothing was recorded."
+        )
+      }
+      if (receipt.accepted) {
+        _uiState.update {
+          it.copy(
+            showSosBroadcastDialog = true,
+            isSosActive = true,
+            userIsSafe = false,
+            lastReportReceipt = receipt,
+            isSubmittingReport = false
+          )
+        }
+      } else {
+        _uiState.update {
+          it.copy(
+            lastReportReceipt = receipt,
+            isSubmittingReport = false,
+            snackbarMessage = receipt.note
+          )
+        }
+      }
+    }
   }
 
   // =========================== PROFILE / BATTERY ===========================

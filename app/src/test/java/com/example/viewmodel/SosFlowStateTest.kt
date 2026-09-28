@@ -62,7 +62,7 @@ class SosFlowStateTest {
     ),
     weatherFetcher = { WeatherReading.Failure(WeatherFailureKind.NO_CONNECTION) },
     // These tests never route: keep the network boundary faked and deterministic.
-    liveRouteFetcher = { _, _, _, _, _, _ -> emptyList() }
+    liveRouteFetcher = { _, _, _, _, _, _, _ -> emptyList() }
   )
 
   private class OfflineProvider(override val providerId: DisasterSource) : DisasterDataProvider {

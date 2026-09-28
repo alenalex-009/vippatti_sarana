@@ -82,13 +82,17 @@ internal fun SafeZoneCarousel(
   val evalById = uiState.evaluatedShelters.associateBy { it.zone.id }
   val origin = uiState.userLocation
   val carouselZones: List<SafeZone> = run {
-    val source = if (uiState.isMockDataVisible) uiState.safeZones else emptyList()
+    // ONE source of truth: the LOCATION-SCOPED shelter set that the map
+    // markers and the evaluator use. Registry records are REAL (always
+    // allowed); demo shelters exist only while demo data is on. A card
+    // here is always the exact object routing goes to (799m vs 14.8km bug).
+    val source = uiState.scopedShelters
     source.sortedBy {
       evalById[it.id]?.distanceMeters
         ?: com.example.data.model.GeoMath.distanceMeters(origin, it.point)
     }.take(MAX_CAROUSEL_ZONES)
   }
-  val hiddenCount = (if (uiState.isMockDataVisible) uiState.safeZones.size else 0) -
+  val hiddenCount = uiState.scopedShelters.size -
     carouselZones.size
   val selectedIndex = carouselZones.indexOfFirst { it.id == selectedId }
   LaunchedEffect(selectedId) {
@@ -165,7 +169,10 @@ internal fun SafeZoneCarousel(
           // Full evaluation (feasible AND rejected) — rejected shelters show
           // their real rejection reason instead of a blank generic card.
           evaluation = evalById[zone.id],
-          activeRouteHere = uiState.activeRoute?.takeIf { it.destinationName == zone.name },
+          activeRouteHere = uiState.activeRoute?.takeIf { route ->
+            route.destinationId == zone.id ||
+            (route.destinationId.isBlank() && route.destinationName == zone.name)
+          },
           userLocation = origin,
           isSelected = isSelected,
           isCalculatingRoute = uiState.isCalculatingRoute && isSelected,

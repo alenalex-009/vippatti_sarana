@@ -69,9 +69,10 @@ class DeviceToolsAndRoutingTest {
       mode: com.example.data.routing.TravelMode,
       hazards: List<com.example.data.model.HazardZone>,
       destinationName: String,
+      destinationId: String,
       wantAlternatives: Int
     ) -> List<com.example.data.routing.RouteResult> =
-      { _, _, _, _, _, _ -> emptyList() } // deterministic failure: no real OSRM is ever hit
+      { _, _, _, _, _, _, _ -> emptyList() } // deterministic failure: no real OSRM is ever hit
   ) = VippattiViewModel(
     reportService = LocalEmergencyReportService(),
     newsCache = MemoryNewsCache(),
@@ -253,7 +254,7 @@ class DeviceToolsAndRoutingTest {
   @Test
   fun `route request starts in REQUESTING with zero geometry drawn`() = runTest(mainDispatcherRule.dispatcher) {
     val gate = kotlinx.coroutines.CompletableDeferred<Unit>()
-    val vm = viewModel { _, _, _, _, _, _ -> gate.await(); emptyList() }
+    val vm = viewModel { _, _, _, _, _, _, _ -> gate.await(); emptyList() }
     val best = firstFeasibleShelter(vm)
     vm.selectSafeZone(best.zone, autoRoute = false)
     vm.calculateRouteToSelectedZone()
@@ -344,7 +345,7 @@ class DeviceToolsAndRoutingTest {
       summary = "OSRM test route",
       travelMode = com.example.data.routing.TravelMode.FOOT
     )
-    val vm = viewModel(liveRouteFetcher = { _, _, _, _, _, _ -> listOf(live) })
+    val vm = viewModel(liveRouteFetcher = { _, _, _, _, _, _, _ -> listOf(live) })
     val best = firstFeasibleShelter(vm)
     vm.selectSafeZone(best.zone, autoRoute = false)
     vm.calculateRouteToSelectedZone()
@@ -401,7 +402,7 @@ class DeviceToolsAndRoutingTest {
       travelMode = com.example.data.routing.TravelMode.FOOT
     )
     val gate = kotlinx.coroutines.CompletableDeferred<Unit>()
-    val vm = viewModel { _, _, _, _, _, _ -> gate.await(); listOf(live) }
+    val vm = viewModel { _, _, _, _, _, _, _ -> gate.await(); listOf(live) }
     val best = firstFeasibleShelter(vm)
     vm.selectSafeZone(best.zone, autoRoute = false)
 
@@ -450,7 +451,7 @@ class DeviceToolsAndRoutingTest {
       summary = "OSRM test route",
       travelMode = com.example.data.routing.TravelMode.FOOT
     )
-    val vm = viewModel(liveRouteFetcher = { _, _, _, _, _, _ -> listOf(live) })
+    val vm = viewModel(liveRouteFetcher = { _, _, _, _, _, _, _ -> listOf(live) })
     val best = firstFeasibleShelter(vm)
     vm.selectSafeZone(best.zone, autoRoute = true)
     advanceUntilIdle()

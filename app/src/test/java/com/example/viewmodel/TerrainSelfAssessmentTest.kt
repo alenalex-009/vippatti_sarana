@@ -78,7 +78,7 @@ class TerrainSelfAssessmentTest {
       storageDispatcher = mainDispatcherRule.dispatcher
     ),
     weatherFetcher = { WeatherReading.Failure(WeatherFailureKind.NO_CONNECTION) },
-    liveRouteFetcher = { _, _, _, _, _, _ -> emptyList() },
+    liveRouteFetcher = { _, _, _, _, _, _, _ -> emptyList() },
     terrainProbeOverride = probe
   )
 

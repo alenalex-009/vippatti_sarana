@@ -18,6 +18,42 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.horizontalScroll
+import com.example.ui.theme.ObsidianContainer
+import com.example.ui.theme.ObsidianContainerHigh
+import com.example.ui.theme.TacticalOutlineVariant
+import com.example.ui.theme.TacticalCyan
+import com.example.ui.theme.NeonEmeraldContainer
+import com.example.ui.theme.WarningAmber
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.filled.Air
+import androidx.compose.material.icons.filled.Opacity
+import androidx.compose.material.icons.filled.Thermostat
+import androidx.compose.material.icons.filled.TrendingDown
+import androidx.compose.material.icons.filled.TrendingUp
+import androidx.compose.material3.Button
+import com.example.data.disaster.WeatherMetrics
+import com.example.data.disaster.DisasterLayer
+import com.example.ui.components.StatusBadge
+import com.example.ui.components.dataStatusColor
+import com.example.ui.theme.EmergencyRed
+import com.example.ui.theme.EmergencyRedBright
+import com.example.ui.theme.EmergencyRedContainer
+import com.example.ui.theme.ObsidianContainerLow
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -138,6 +174,9 @@ internal fun ExpandedSheetContent(
   /** Explicit opt-in for the unverified offline straight-line estimate. */
   onRequestFallbackRoute: () -> Unit = {},
   onSelectAlternativeRoute: (String) -> Unit = {},
+  /** Map-cleanup rule 1: layer switches + data status moved OFF the map
+   *  into this secondary sheet surface (the infrastructure stays). */
+  onToggleLayer: (com.example.data.disaster.DisasterLayer) -> Unit = {},
   /** Retries the live weather reading (used by the provenance panel). */
   onRetryWeather: () -> Unit = {},
   modifier: Modifier = Modifier
@@ -204,11 +243,18 @@ internal fun ExpandedSheetContent(
       onSelectAlternativeRoute = onSelectAlternativeRoute
     )
 
-    // 5. Large one-hand evacuation CTA.
-    EvacuationCta(
+    // (map-cleanup rule 1) The large START EVACUATION ROUTE bar is gone from
+    // the sheet: routing starts from a safe-zone card tap, and the route
+    // panel + destination card carry the state. Guidance start/stop is bound
+    // to the card's GO action, so no duplicate tutorial-like bar exists.
+
+    // 5b. DATA & LAYERS - the map's secondary controls, progressive
+    // disclosure INSIDE the sheet (map-cleanup rule 1: no Layers button,
+    // no cached-data badges on the map itself). All switching power lives
+    // here; the map stays the workspace.
+    DataAndLayersSection(
       uiState = uiState,
-      onStartEvacuation = onStartEvacuation,
-      onStopEvacuation = onStopEvacuation
+      onToggleLayer = onToggleLayer
     )
 
     // 6. Citizen incident reporting — reachable ONLY through this explicit
@@ -227,6 +273,105 @@ internal fun ExpandedSheetContent(
         style = MaterialTheme.typography.labelMedium,
         color = MaterialTheme.colorScheme.onSurface
       )
+    }
+  }
+}
+
+/**
+ * Compact layer switches + honest data status for the bottom sheet.
+ * Same DisasterLayer state the map engine consumes - nothing removed,
+ * just relocated out of the map chrome.
+ */
+@Composable
+private fun DataAndLayersSection(
+  uiState: VippattiUiState,
+  onToggleLayer: (com.example.data.disaster.DisasterLayer) -> Unit
+) {
+  var expanded by remember { mutableStateOf(false) }
+  val active = uiState.enabledLayers.size
+  val totalLayers = com.example.data.disaster.DisasterLayer.entries.size
+  val liveCount = uiState.providerStatuses.count { (_, st) ->
+    st == com.example.data.model.DataStatus.SUCCESS ||
+    st == com.example.data.model.DataStatus.STALE
+  }
+  Column(
+    modifier = Modifier
+      .fillMaxWidth()
+      .clip(RoundedCornerShape(12.dp))
+      .background(ObsidianContainer)
+      .border(1.dp, TacticalOutlineVariant.copy(alpha = 0.4f), RoundedCornerShape(12.dp))
+      .clickable { expanded = !expanded }
+      .padding(10.dp)
+      .testTag("sheet_data_layers")
+  ) {
+    Row(
+      modifier = Modifier.fillMaxWidth(),
+      horizontalArrangement = Arrangement.SpaceBetween,
+      verticalAlignment = Alignment.CenterVertically
+    ) {
+      Text(
+        text = "Map data & layers \u00b7 " + active + "/" + totalLayers,
+        fontSize = 11.sp, fontWeight = FontWeight.Bold, color = TacticalOnSurface
+      )
+      Text(
+        text = if (expanded) "HIDE" else "SHOW",
+        fontSize = 10.sp, fontWeight = FontWeight.Bold, color = TacticalCyan
+      )
+    }
+    if (expanded) {
+      Spacer(Modifier.height(6.dp))
+      Row(
+        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
+      ) {
+        com.example.data.disaster.DisasterLayer.entries.forEach { layer ->
+          val on = layer in uiState.enabledLayers
+          Box(
+            modifier = Modifier
+              .clip(RoundedCornerShape(999.dp))
+              .background(
+                if (on) NeonEmeraldContainer.copy(alpha = 0.3f) else ObsidianContainerHigh
+              )
+              .border(
+                1.dp,
+                if (on) NeonEmerald else TacticalOutlineVariant.copy(alpha = 0.4f),
+                RoundedCornerShape(999.dp)
+              )
+              .clickable { onToggleLayer(layer) }
+              .padding(horizontal = 10.dp, vertical = 6.dp)
+              .testTag("sheet_layer_" + layer.name.lowercase())
+          ) {
+            Text(
+              text = (if (on) "\u2713 " else "") + layer.label,
+              fontSize = 10.sp,
+              fontWeight = if (on) FontWeight.Bold else FontWeight.Medium,
+              color = if (on) NeonEmerald else TacticalOnSurfaceVariant,
+              maxLines = 1
+            )
+          }
+        }
+      }
+      if (uiState.providerStatuses.isNotEmpty()) {
+        Spacer(Modifier.height(6.dp))
+        uiState.providerStatuses.forEach { (state, status) ->
+          Row(
+            modifier = Modifier.fillMaxWidth().padding(vertical = 1.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+          ) {
+            Text(
+              state.source.name.lowercase().replace('_', ' '),
+              fontSize = 10.sp, color = TacticalOnSurfaceVariant)
+            Text(status.name, fontSize = 10.sp, fontWeight = FontWeight.Bold,
+              color = if (status == com.example.data.model.DataStatus.SUCCESS)
+                NeonEmerald else WarningAmber)
+          }
+        }
+        Text(
+          "Sources responding: " + liveCount + " of " + uiState.providerStatuses.size,
+          fontSize = 10.sp, color = TacticalOnSurfaceVariant,
+          modifier = Modifier.padding(top = 2.dp)
+        )
+      }
     }
   }
 }

@@ -81,7 +81,7 @@ class PopulationPipelineBehaviorTest {
     ),
     populationProvider = population,
     weatherFetcher = { WeatherReading.Failure(WeatherFailureKind.NO_CONNECTION) },
-    liveRouteFetcher = { _, _, _, _, _, _ -> emptyList() }
+    liveRouteFetcher = { _, _, _, _, _, _, _ -> emptyList() }
   )
 
   /** A provider that yields a fixed list, or throws, on every fetch. */

@@ -45,7 +45,13 @@ data class RouteResult(
   /** 0..100 — higher is safer. */
   val routeSafetyScore: Int = 100,
   /** Destination label (e.g. shelter name). */
-  val destinationName: String = "Safe Zone"
+  val destinationName: String = "Safe Zone",
+  /**
+   * Stable destination SHELTER id. Demo names repeat across locations, so
+   * route<->zone matching MUST use this, never destinationName (user bug:
+   * card said 799 m while routing went 14.8 km to a same-named shelter).
+   */
+  val destinationId: String = ""
 ) {
   /**
    * Stable, FULLY content-addressed identity (audit B7). Derived from a
@@ -253,6 +259,7 @@ object OsrmRoutingService {
     mode: TravelMode,
     hazards: List<HazardZone>,
     destinationName: String,
+    destinationId: String = "",
     wantAlternatives: Int,
     overview: String = "full"
   ): List<RouteResult> {
@@ -271,7 +278,8 @@ object OsrmRoutingService {
     // which is what made it feel dead/laggy (reported bug). Simplified lines
     // STILL follow the road network.
     val primaryUrl = buildRouteUrl(endpoint, origin, destination, wantAlternatives, overview = overview)
-    val primaryRoutes = tryRequestRoutes(primaryUrl, origin, destination, mode, hazards, destinationName, wantAlternatives)
+    val primaryRoutes = tryRequestRoutes(
+      primaryUrl, origin, destination, mode, hazards, destinationName, destinationId, wantAlternatives)
     if (primaryRoutes != null && primaryRoutes.isNotEmpty()) return primaryRoutes
 
     // Retry once with the OTHER overview: very long trips can exceed the
@@ -281,7 +289,9 @@ object OsrmRoutingService {
       endpoint, origin, destination, wantAlternatives,
       overview = if (overview == "simplified") "full" else "simplified"
     )
-    return tryRequestRoutes(retryUrl, origin, destination, mode, hazards, destinationName, wantAlternatives) ?: emptyList()
+    return tryRequestRoutes(
+      retryUrl, origin, destination, mode, hazards, destinationName, destinationId, wantAlternatives
+    ) ?: emptyList()
   }
 
   /** One OSRM request attempt; null when the attempt fully failed. */
@@ -292,6 +302,7 @@ object OsrmRoutingService {
     mode: TravelMode,
     hazards: List<HazardZone>,
     destinationName: String,
+    destinationId: String,
     wantAlternatives: Int
   ): List<RouteResult>? = try {
     val request = Request.Builder()
@@ -307,7 +318,10 @@ object OsrmRoutingService {
       val routes = json.optJSONArray("routes") ?: return null
       buildList {
         for (i in 0 until routes.length().coerceAtMost(wantAlternatives)) {
-          parseOsrmRoute(routes.getJSONObject(i), mode, hazards, destinationName, origin, destination)?.let(::add)
+          parseOsrmRoute(
+            routes.getJSONObject(i), mode, hazards, destinationName, destinationId,
+            origin, destination
+          )?.let(::add)
         }
       }
     }
@@ -326,9 +340,11 @@ object OsrmRoutingService {
     mode: TravelMode,
     hazards: List<HazardZone>,
     destinationName: String,
+    destinationId: String = "",
     wantAlternatives: Int
   ): List<RouteResult> = withContext(Dispatchers.IO) {
-    fetchLiveRoutes(origin, destination, mode, hazards, destinationName, wantAlternatives)
+    fetchLiveRoutes(
+      origin, destination, mode, hazards, destinationName, destinationId, wantAlternatives)
   }
 
   /**
@@ -341,11 +357,15 @@ object OsrmRoutingService {
     destination: GeoPoint,
     mode: TravelMode = TravelMode.FOOT,
     hazards: List<HazardZone> = emptyList(),
-    destinationName: String = "Safe Zone"
+    destinationName: String = "Safe Zone",
+    destinationId: String = ""
   ): RouteResult = withContext(Dispatchers.IO) {
-    fetchLiveRoutes(origin, destination, mode, hazards, destinationName, wantAlternatives = 1)
+    fetchLiveRoutes(
+      origin, destination, mode, hazards, destinationName, destinationId, wantAlternatives = 1
+    )
       .firstOrNull()
-      ?: calculateOfflineTacticalRoute(origin, destination, mode, hazards, destinationName)
+      ?: calculateOfflineTacticalRoute(
+        origin, destination, mode, hazards, destinationName, destinationId)
   }
 
 /**
@@ -377,6 +397,7 @@ object OsrmRoutingService {
     mode: TravelMode,
     hazards: List<HazardZone>,
     destinationName: String,
+    destinationId: String,
     origin: GeoPoint,
     destination: GeoPoint
   ): RouteResult? {
@@ -453,7 +474,8 @@ object OsrmRoutingService {
       hazardWarnings = penalty.warnings,
       routeSafetyStatus = penalty.status,
       routeSafetyScore = penalty.safetyScore,
-      destinationName = destinationName
+      destinationName = destinationName,
+      destinationId = destinationId,
     )
   }
 
@@ -467,7 +489,8 @@ object OsrmRoutingService {
     destination: GeoPoint,
     mode: TravelMode,
     hazards: List<HazardZone> = emptyList(),
-    destinationName: String = "Safe Zone"
+    destinationName: String = "Safe Zone",
+    destinationId: String = ""
   ): RouteResult {
     val waypoints = mutableListOf(origin)
 
@@ -550,7 +573,8 @@ object OsrmRoutingService {
       hazardWarnings = penalty.warnings,
       routeSafetyStatus = penalty.status,
       routeSafetyScore = penalty.safetyScore,
-      destinationName = destinationName
+      destinationName = destinationName,
+      destinationId = destinationId,
     )
   }
 
@@ -565,6 +589,7 @@ object OsrmRoutingService {
     mode: TravelMode,
     hazards: List<HazardZone> = emptyList(),
     destinationName: String = "Safe Zone",
+    destinationId: String = "",
     maxAlternatives: Int = 2
   ): List<RouteResult> = withContext(Dispatchers.IO) {
     // ONE fast request for genuinely different OSRM road corridors.
@@ -578,7 +603,7 @@ object OsrmRoutingService {
     // and still follows real roads. Offline, an empty list means "no
     // verified alternatives" — said out loud, never papered over.
     val live = fetchLiveRoutes(
-      origin, destination, mode, hazards, destinationName,
+      origin, destination, mode, hazards, destinationName, destinationId,
       wantAlternatives = (maxAlternatives + 1).coerceIn(2, 3),
       overview = "simplified"
     )

@@ -324,6 +324,12 @@ data class VippattiUiState(
   /** Each bump = GO/START pressed: map fits+zooms the active corridor. */
   val guidanceZoomToken: Int = 0,
   /**
+   * LOCATION-SCOPED shelter set (user rule 4): field registry records + the
+   * demo/reference shelters generated AROUND the current focus. The map and
+   * the carousel render ONLY this - never the all-India PilotRegionData.
+   */
+  val scopedShelters: List<com.example.data.model.SafeZone> = emptyList(),
+  /**
    * Legend chip tap filters the map to ONE hazard type (12-2);
    * null = show all. Re-tapping the selected chip clears it.
    */

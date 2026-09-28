@@ -45,6 +45,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -247,6 +248,15 @@ fun OsmDroidRadarMapView(
       delay(4000)
       mapState.clearGpsStatus()
     }
+  }
+
+  // Route camera fits clear the floating chrome (rule 7): Dp insets -> px.
+  val fitDensity = LocalDensity.current
+  LaunchedEffect(topOverlayPadding, bottomOverlayPadding) {
+    mapState.routeFitTopInsetPx =
+      with(fitDensity) { topOverlayPadding.toPx().toInt() }
+    mapState.routeFitBottomInsetPx =
+      with(fitDensity) { bottomOverlayPadding.toPx().toInt() }
   }
 
   LaunchedEffect(travelMode) { mapState.setTravelMode(travelMode) }
@@ -1105,6 +1115,9 @@ class OsmMapControllerHolder(
 
   /** Current locate request state — observed by the recenter button + banner. */
   var hazardTypeFilter: com.example.data.model.HazardType? = null
+  /** UI chrome the route-fit must avoid (rule 7: camera padding for UI). */
+  var routeFitTopInsetPx = 0
+  var routeFitBottomInsetPx = 0
   var gpsRequestState by mutableStateOf(GpsRequestState.IDLE)
     private set
 
@@ -1260,7 +1273,9 @@ class OsmMapControllerHolder(
       points.maxOf { it.lat }, points.minOf { it.lon },
       points.minOf { it.lat }, points.maxOf { it.lon }
     ).increaseByScale(1.3f)
-    mv.zoomToBoundingBox(box, true, 64, 17.0, 500L)
+    val guidanceMargin = (64 + routeFitTopInsetPx + routeFitBottomInsetPx / 2)
+      .coerceAtMost((mv.height / 3).coerceAtLeast(64))
+    mv.zoomToBoundingBox(box, true, guidanceMargin, 17.0, 500L)
     // Walking scale: never leave guidance looking at a whole state.
     mainHandler.postDelayed({
       val target = 16.5
@@ -1398,7 +1413,9 @@ class OsmMapControllerHolder(
         points.maxOf { it.latitude }, points.minOf { it.longitude },
         points.minOf { it.latitude }, points.maxOf { it.longitude }
       ).increaseByScale(1.25f)
-      mv.zoomToBoundingBox(box, true, 64, 17.0, 600L)
+      val fitMargin = (64 + routeFitTopInsetPx + routeFitBottomInsetPx / 2)
+        .coerceAtMost((mv.height / 3).coerceAtLeast(64))
+      mv.zoomToBoundingBox(box, true, fitMargin, 17.0, 600L)
     }
     mv.invalidate()
   }

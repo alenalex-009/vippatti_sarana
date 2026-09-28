@@ -355,9 +355,14 @@ internal fun DisasterStatusLayerRow(
 internal fun DisasterTypeLegend(
   types: List<com.example.data.model.HazardType>,
   selectedType: com.example.data.model.HazardType? = null,
-  onSelectType: (com.example.data.model.HazardType) -> Unit = {}
+  onSelectType: (com.example.data.model.HazardType) -> Unit = {},
+  onToggleMockData: () -> Unit = {},
+  isMockVisible: Boolean = false
 ) {
-  if (types.isEmpty()) return
+  // The row always renders: the fixed hazard FILTER chips plus the Demo
+  // toggle stay reachable even when the current scenario is calm (the
+  // Demo pill is the only map-side way back into the scenario).
+
   LazyRow(
     modifier = Modifier
       .fillMaxWidth()
@@ -365,26 +370,37 @@ internal fun DisasterTypeLegend(
     contentPadding = PaddingValues(horizontal = 10.dp),
     horizontalArrangement = Arrangement.spacedBy(6.dp)
   ) {
-    items(types, key = { it.name }) { type ->
+    // RULE 3: the five named hazard filters are ALWAYS visible and tappable
+    // (dimmer when the current scenario has none of that type - a judge can
+    // still see the filter vocabulary and clear it). Tap = only this type;
+    // tap again = clear.
+    val chipTypes = listOf(
+      com.example.data.model.HazardType.FLOOD,
+      com.example.data.model.HazardType.FIRE,
+      com.example.data.model.HazardType.EARTHQUAKE,
+      com.example.data.model.HazardType.CYCLONE,
+      com.example.data.model.HazardType.LANDSLIDE
+    )
+    items(chipTypes, key = { it.name }) { type ->
       val swatch = Color(com.example.data.disaster.DisasterTypeColors.argbFor(type))
       val isSel = selectedType == type
+      val present = type in types
       Row(
         modifier = Modifier
           .clip(RoundedCornerShape(999.dp))
           .background(
-            if (isSel) swatch.copy(alpha = 0.35f)
-            else ObsidianContainer.copy(alpha = 0.9f)
+            if (isSel) swatch.copy(alpha = 0.92f)
+            else ObsidianContainer.copy(alpha = 0.94f)
           )
           .border(
-            1.dp,
-            if (isSel) swatch else swatch.copy(alpha = 0.7f),
+            if (isSel) 2.dp else 1.dp,
+            if (isSel) Color.White.copy(alpha = 0.85f)
+            else swatch.copy(alpha = if (present) 0.7f else 0.35f),
             RoundedCornerShape(999.dp)
           )
-          // 12-2: tap FILTERS the map to this hazard type; tap again clears.
           .clickable { onSelectType(type) }
-          // 12-2: bigger touch target + readable padding
           .padding(horizontal = 12.dp, vertical = 8.dp)
-          .testTag("legend_${type.name.lowercase()}"),
+          .testTag("legend_" + type.name.lowercase()),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(5.dp)
       ) {
@@ -392,14 +408,53 @@ internal fun DisasterTypeLegend(
           modifier = Modifier
             .size(8.dp)
             .clip(CircleShape)
-            .background(swatch)
+            .background(if (isSel) Color.White else swatch)
         )
         Text(
-          text = if (isSel) "${type.label} · ONLY THIS" else type.label,
+          text = type.label,
           fontSize = 11.sp,
-          fontWeight = FontWeight.Bold,
-          color = TacticalOnSurface,
+          fontWeight = if (isSel) FontWeight.Black else FontWeight.Bold,
+          color = when {
+            isSel -> Color(0xFF081016)
+            present -> TacticalOnSurface
+            else -> TacticalOnSurfaceVariant
+          },
           maxLines = 1
+        )
+        if (isSel) {
+          Text(
+            text = "\u2715",
+            fontSize = 10.sp,
+            fontWeight = FontWeight.Black,
+            color = Color(0xFF081016)
+          )
+        }
+      }
+    }
+    // Rule 5: the demo scenario switch lives on this chip row (compact,
+    // clearly separate from data layers).
+    item {
+      Box(
+        modifier = Modifier
+          .clip(RoundedCornerShape(999.dp))
+          .background(
+            if (isMockVisible) TacticalCyan.copy(alpha = 0.25f) else ObsidianContainer
+          )
+          .border(
+            1.dp,
+            if (isMockVisible) TacticalCyan
+            else TacticalOutlineVariant.copy(alpha = 0.4f),
+            RoundedCornerShape(999.dp)
+          )
+          .clickable { onToggleMockData() }
+          .padding(horizontal = 10.dp, vertical = 7.dp)
+          .testTag("mock_data_toggle_chip")
+      ) {
+        Text(
+          text = if (isMockVisible) "Demo: ON" else "Demo: OFF",
+          fontSize = 10.sp,
+          fontWeight = FontWeight.Bold,
+          color = if (isMockVisible) TacticalCyan else TacticalOnSurfaceVariant
         )
       }
     }

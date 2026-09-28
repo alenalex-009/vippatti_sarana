@@ -128,6 +128,63 @@ import kotlin.math.roundToInt
  *  4. Live turn-by-turn HUD pinned under the risk strip while guidance runs,
  *     always tied to the SELECTED destination.
  */
+/**
+ * Compact TERRAIN-HAVEN row (map-cleanup rule: the big guidance card is gone
+ * from the map, but the DERIVED safe-terrain result must stay actionable).
+ */
+@Composable
+internal fun HavenResultRow(
+  uiState: VippattiUiState,
+  onRouteToHaven: () -> Unit
+) {
+  if (uiState.isSearchingHaven) {
+    Row(
+      modifier = Modifier
+        .fillMaxWidth()
+        .padding(horizontal = 10.dp)
+        .padding(bottom = 4.dp),
+      verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+      CircularProgressIndicator(
+        modifier = Modifier.size(14.dp), strokeWidth = 2.dp, color = TacticalCyan
+      )
+      Text(
+        "Probing safe terrain around you (slope + rain + coast)",
+        fontSize = 10.sp, color = TacticalOnSurfaceVariant
+      )
+    }
+  }
+  uiState.terrainHaven?.let { h ->
+    Row(
+      modifier = Modifier
+        .fillMaxWidth()
+        .padding(horizontal = 10.dp)
+        .padding(bottom = 4.dp)
+        .clip(RoundedCornerShape(10.dp))
+        .background(TacticalCyan.copy(alpha = 0.14f))
+        .border(1.dp, TacticalCyan.copy(alpha = 0.6f), RoundedCornerShape(10.dp))
+        .clickable(onClick = onRouteToHaven)
+        .padding(horizontal = 10.dp, vertical = 8.dp)
+        .testTag("haven_result_row"),
+      verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+      Column(Modifier.weight(1f)) {
+        Text(
+          h.headline,
+          fontSize = 11.sp, fontWeight = FontWeight.Bold, color = TacticalCyan,
+          maxLines = 1, overflow = TextOverflow.Ellipsis
+        )
+        Text(
+          "DERIVED open terrain \u2014 not a registered shelter \u00b7 tap to route",
+          fontSize = 10.sp, color = TacticalOnSurfaceVariant, maxLines = 1
+        )
+      }
+    }
+  }
+}
+
 @Composable
 fun RadarMapScreen(
   uiState: VippattiUiState,
@@ -215,8 +272,10 @@ fun RadarMapScreen(
     // and no live event markers reach the engine — only base tiles + GPS dot.
     OsmDroidRadarMapView(
       hazardZones = uiState.hazardZones,
-      safeZones = uiState.fieldShelters +
-        (if (uiState.isMockDataVisible) uiState.safeZones else emptyList()),
+      // LOCATION-SCOPED SHELTERS ONLY (user rule 4/5): the map renders the
+      // exact set scoped to the current focus - never the all-India demo list.
+      safeZones = if (uiState.isMockDataVisible) uiState.scopedShelters
+        else uiState.fieldShelters,
       selectedSafeZone = uiState.selectedSafeZone,
       activeRoute = uiState.activeRoute,
       travelMode = uiState.travelMode,
@@ -239,7 +298,9 @@ fun RadarMapScreen(
       cameraJumpTarget = uiState.cameraJumpTarget,
       guidanceZoomToken = uiState.guidanceZoomToken,
       hazardTypeFilter = uiState.hazardTypeFilter,
-      viewingPlaceLabel = if (uiState.isViewingChosenPlace) uiState.viewedPlaceLabel else null,
+      // The yellow place-view notification is gone from the map; the top
+      // location pill carries the same truth ("X . Selected area . Change").
+      viewingPlaceLabel = null,
       onExitPlaceView = onExitPlaceView,
       onCameraJumpConsumed = { onCameraJumpConsumed() },
       alternativeRoutes = uiState.alternativeRoutes,
@@ -262,14 +323,12 @@ fun RadarMapScreen(
         .fillMaxWidth()
         .onSizeChanged { size -> topOverlayHeightPx = size.height }
     ) {
-      // Place-view banner: shown while a CHOSEN place is being viewed.
-      if (uiState.isViewingChosenPlace && uiState.viewedPlaceLabel != null) {
-        PlaceViewBanner(
-          label = uiState.viewedPlaceLabel,
-          onExit = onExitPlaceView,
-          modifier = Modifier.padding(top = 8.dp)
-        )
-      }
+      // ============ TOP STRUCTURE (user map-cleanup rule 2) ==================
+      // [ Selected location ]  [ Risk card ]  [ Disaster filter chips ]
+      // Everything else (layers pills, cached-data badges, guidance card,
+      // step-by-step HUD, yellow place banner) is OFF the primary map.
+
+      // 1. Selected location pill + search + SOS (single source of truth).
       Row(
         modifier = Modifier
           .fillMaxWidth()
@@ -277,26 +336,43 @@ fun RadarMapScreen(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically
       ) {
-        PersonalRiskStrip(
-          risk = uiState.personalRisk,
-          isFallbackLocation = uiState.isUserLocationFallback,
-          modifier = Modifier.weight(1f)
-        )
-        // "Look at another place" — Google-Maps-style search affordance.
-        IconButton(
-          onClick = onOpenPlacePicker,
+        val placeLabel = when {
+          uiState.isViewingChosenPlace ->
+            (uiState.viewedPlaceLabel ?: "Selected area") + " \u00b7 Selected area"
+          uiState.isUserLocationFallback -> "Location approximate"
+          else -> "Your location \u00b7 GPS"
+        }
+        Row(
           modifier = Modifier
-            .size(40.dp)
-            .clip(RoundedCornerShape(10.dp))
-            .background(ObsidianContainerLowest.copy(alpha = 0.94f))
-            .border(1.dp, TacticalCyan.copy(alpha = 0.55f), RoundedCornerShape(10.dp))
-            .testTag("place_picker_button")
+            .weight(1f)
+            .clip(RoundedCornerShape(12.dp))
+            .background(ObsidianContainerLowest.copy(alpha = 0.96f))
+            .border(1.dp, TacticalOutlineVariant.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
+            .clickable { onOpenPlacePicker() }
+            .padding(horizontal = 12.dp, vertical = 9.dp),
+          verticalAlignment = Alignment.CenterVertically,
+          horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
           Icon(
-            imageVector = Icons.Default.Search,
-            contentDescription = "Look at another place",
+            imageVector = Icons.Default.Place,
+            contentDescription = null,
             tint = TacticalCyan,
-            modifier = Modifier.size(20.dp)
+            modifier = Modifier.size(16.dp)
+          )
+          Text(
+            text = placeLabel,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold,
+            color = TacticalOnSurface,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f)
+          )
+          Text(
+            text = "Change",
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Black,
+            color = TacticalCyan
           )
         }
         IconButton(
@@ -316,58 +392,45 @@ fun RadarMapScreen(
         }
       }
 
-      // 2b. DATA STATUS + LAYER TOGGLES + REPORT INCIDENT — one compact
-      //      horizontally scrollable chip row; never covers the whole map.
-      DisasterStatusLayerRow(
-        uiState = uiState,
-        onToggleLayer = onToggleLayer,
-        onToggleMockData = onToggleMockData
+      // 2. Risk card (compact, tap-to-expand lives inside PersonalRiskStrip).
+      PersonalRiskStrip(
+        risk = uiState.personalRisk,
+        isFallbackLocation = uiState.isUserLocationFallback,
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(horizontal = 10.dp)
       )
 
-      // 2c. DISASTER-COLOR LEGEND — keys each zone color to its disaster
-      //     type. Auto-hides with the empty map (no zones -> no legend).
+      // 3. Functional disaster filter chips (rule 3): flood/fire/quake/
+      // cyclone/landslide - tap filters the map to that type, tap again clears.
       DisasterTypeLegend(
         types = uiState.hazardZones.map { it.type }.distinct(),
         selectedType = uiState.hazardTypeFilter,
-        onSelectType = onToggleHazardTypeFilter
+        onSelectType = onToggleHazardTypeFilter,
+        onToggleMockData = onToggleMockData,
+        isMockVisible = uiState.isMockDataVisible
       )
 
-      // 2d. EMERGENCY GUIDANCE — "disaster near you: where do I go?" card.
-      //     Derived purely from risk + evaluated shelters; terrain haven
-      //     results render inside the same card with a DERIVED label.
-      EmergencyGuidanceCard(
-        guidance = uiState.emergencyGuidance,
-        haven = uiState.terrainHaven,
-        isSearchingHaven = uiState.isSearchingHaven,
-        onGo = onGuidanceGo,
-        onSearchHaven = onSearchTerrainHaven,
-        onRouteToHaven = onRouteToTerrainHaven,
-        onDismiss = onGuidanceDismiss,
-        modifier = Modifier.padding(top = 6.dp)
-      )
-
-      // 2e. TERRAIN SELF-ASSESSMENT — "is MY spot a red zone?" also lives on
-      //     the map (it is on Home too): removing it read as "feature gone".
+      // 4. Terrain self-check stays ONE quiet chip (already on Home too); the
+      //    haven workflow lives in the sheet result row below it.
       TerrainSelfAssessmentChip(
         assessment = uiState.terrainSelfAssessment,
         isAssessing = uiState.isAssessingTerrain,
         onAssess = onAssessTerrain,
         onDismiss = onDismissTerrainAssessment,
-        modifier = Modifier.padding(top = 4.dp)
+        modifier = Modifier
+          .padding(horizontal = 10.dp, vertical = 4.dp)
       )
-
-
-      // 3. Live turn-by-turn HUD — directly under the risk strip while
-      //    guidance is active, always following the SELECTED destination's
-      //    route. Flows below the strip (no hardcoded top offset).
-      AnimatedVisibility(visible = uiState.isNavigatingLive) {
-        LiveNavigationHud(
+      if (uiState.isSearchingHaven || uiState.terrainHaven != null) {
+        HavenResultRow(
           uiState = uiState,
-          onNextNavigationStep = onNextNavigationStep,
-          onStopEvacuation = onStopEvacuation
+          onRouteToHaven = onRouteToTerrainHaven
         )
       }
+
     }
+
+    // ============ END floating top overlay ============
 
     // 4. COLLAPSIBLE BOTTOM SHEET — tap handle or flick to collapse/expand;
     //    the map underneath stays fully interactive. The drag gesture lives
@@ -437,6 +500,7 @@ fun RadarMapScreen(
           onSelectSafeZone = onSelectSafeZone,
           onSetTravelMode = onSetTravelMode,
           onStartEvacuation = onStartEvacuation,
+          onToggleLayer = onToggleLayer,
           onStopEvacuation = onStopEvacuation,
           onLoadAlternativeRoutes = onLoadAlternativeRoutes,
           onOpenIncidentReport = onOpenIncidentReport,
