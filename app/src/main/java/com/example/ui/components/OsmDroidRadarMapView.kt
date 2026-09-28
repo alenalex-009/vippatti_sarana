@@ -1339,7 +1339,14 @@ class OsmMapControllerHolder(
   fun stopFollowingAndCenter(point: GeoPoint) {
     val view = mapView ?: return
     locationOverlay?.disableFollowLocation()
-    view.controller.animateTo(OsmGeoPoint(point.lat, point.lon))
+    // RULE 10: choosing a place always lands at LOCAL zoom - never stays
+    // on the previous India-wide view.
+    if (view.zoomLevelDouble < LOCATE_MIN_ZOOM) {
+      view.controller.setZoom(LOCATE_MIN_ZOOM)
+      view.controller.animateTo(OsmGeoPoint(point.lat, point.lon))
+    } else {
+      view.controller.animateTo(OsmGeoPoint(point.lat, point.lon))
+    }
     view.invalidate()
   }
 
