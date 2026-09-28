@@ -86,6 +86,36 @@ class MapFreezeGuardTest {
   }
 
   @Test
+  fun `poisoned camera heals on the next draw instead of blanking the map`() {
+    val map = laidOutMap()
+    // install() gives the overlay its map handle for repair.
+    val safe = SafeTilesOverlay.install(map, context)
+    val canvas = Canvas(
+      android.graphics.Bitmap.createBitmap(1080, 1920, android.graphics.Bitmap.Config.ARGB_8888)
+    )
+    // A good frame records the camera.
+    val good = Projection(
+      12.0, 1080, 1920,
+      OsmGeoPoint(17.6868, 83.2921), 1f, false, false, 256, 256
+    )
+    safe.draw(canvas, good)
+    // Poison the camera exactly like #2028 does. MapView builds every draw
+    // projection from mZoomLevel, so a poisoned map hands the overlay a NaN
+    // projection — that draw must REPAIR (no throw, no blank) instead.
+    map.setZoomLevel(Double.NaN)
+    assertTrue(map.zoomLevelDouble.isNaN())
+    val started = System.nanoTime()
+    val poisoned = Projection(
+      Double.NaN, 1080, 1920,
+      OsmGeoPoint(17.6868, 83.2921), 1f, false, false, 256, 256
+    )
+    safe.draw(canvas, poisoned)
+    val elapsedMs = (System.nanoTime() - started) / 1_000_000
+    assertTrue("heal must be instant, took ${elapsedMs}ms", elapsedMs < 1000)
+    assertTrue("camera must be finite again", map.zoomLevelDouble.isFinite())
+  }
+
+  @Test
   fun `normal zoom protection still marks the cache area`() {
     val map = laidOutMap()
     map.controller.setZoom(12.0)
