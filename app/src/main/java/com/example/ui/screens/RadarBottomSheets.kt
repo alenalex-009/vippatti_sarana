@@ -47,6 +47,23 @@ import com.example.viewmodel.VippattiUiState
 @Composable
 internal fun CollapsedSheetContent(uiState: VippattiUiState) {
   val route = uiState.activeRoute
+  // PROGRESSIVE DISCLOSURE (map redesign rule): the Destination card appears
+  // ONLY once a safe zone is actually selected; before that the peek shows
+  // a quiet hint instead of a permanent 'No safe zone' message.
+  if (uiState.selectedSafeZone == null) {
+    Text(
+      text = "Swipe up — safe zones, routing and data",
+      fontSize = 11.sp,
+      fontWeight = FontWeight.Medium,
+      color = TacticalOnSurfaceVariant,
+      maxLines = 1,
+      modifier = Modifier
+        .fillMaxWidth()
+        .padding(horizontal = 16.dp, vertical = 14.dp)
+        .testTag("collapsed_sheet_hint")
+    )
+    return
+  }
   Row(
     modifier = Modifier
       .fillMaxWidth()
@@ -69,7 +86,7 @@ internal fun CollapsedSheetContent(uiState: VippattiUiState) {
         letterSpacing = 0.8.sp
       )
       Text(
-        text = uiState.selectedSafeZone?.name ?: "No safe zone selected — expand to choose",
+        text = uiState.selectedSafeZone?.name ?: "No viable safe zone found — expand to choose",
         fontSize = 12.sp,
         fontWeight = FontWeight.Bold,
         color = TacticalOnSurface,

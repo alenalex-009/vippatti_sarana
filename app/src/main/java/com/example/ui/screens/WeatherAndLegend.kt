@@ -3,6 +3,14 @@ package com.example.ui.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -44,6 +52,7 @@ import com.example.ui.theme.EmergencyRedContainer
 import com.example.ui.theme.NeonEmerald
 import com.example.ui.theme.NeonEmeraldContainer
 import com.example.ui.theme.ObsidianContainer
+import com.example.ui.theme.ObsidianContainerHigh
 import com.example.ui.theme.ObsidianContainerLow
 import com.example.ui.theme.TacticalCyan
 import com.example.ui.theme.TacticalOnSurface
@@ -176,9 +185,12 @@ internal fun DisasterStatusLayerRow(
   onToggleLayer: (DisasterLayer) -> Unit,
   onToggleMockData: () -> Unit = {}
 ) {
+  // PROGRESSIVE DISCLOSURE (user map-redesign rule): the strip shows only
+  // two compact pills - Layers (with the active count) and data status.
+  // Tapping a pill expands its detail in place; nothing is removed, and the
+  // map stays visually dominant. Demo ON/OFF stays one tap away because it
+  // is the scenario switch, not a data layer.
   val providerStatuses = uiState.providerStatuses
-  // Aggregate status for the demo chip colour: LIVE wins, then a real provider
-  // failure, then cached/stale data.
   val aggregateStatus = when {
     uiState.isDisasterDataLive -> DataStatus.SUCCESS
     providerStatuses.any { (_, status) -> status == DataStatus.ERROR } -> DataStatus.ERROR
@@ -186,79 +198,165 @@ internal fun DisasterStatusLayerRow(
     else -> DataStatus.EMPTY
   }
   val statusColor = dataStatusColor(aggregateStatus)
-  // Plain-language data summary instead of per-provider jargon chips: normal
-  // people read "Live: 2 of 3 sources" — the full per-source provenance stays
-  // available where it belongs (event detail sheets, Home DATA STATUS footer).
   val liveCount = providerStatuses.count { (_, status) ->
     status == DataStatus.SUCCESS || status == DataStatus.STALE
   }
-  LazyRow(
-    modifier = Modifier
-      .fillMaxWidth()
-      .padding(vertical = 2.dp),
-    contentPadding = PaddingValues(horizontal = 10.dp),
-    horizontalArrangement = Arrangement.spacedBy(6.dp)
-  ) {
-    item {
-      StatusChip(
-        text = if (providerStatuses.isEmpty()) "No data yet"
-        else "Live: $liveCount of ${providerStatuses.size} sources",
-        color = statusColor,
-        testTag = "disaster_data_status_chip"
-      )
-    }
-    // Simulated-demo toggle, plainly worded.
-    item {
-      StatusChip(
-        text = if (uiState.isMockDataVisible) "Demo data: ON" else "Demo data: OFF",
-        color = if (uiState.isMockDataVisible) TacticalCyan else TacticalOnSurfaceVariant,
-        testTag = "mock_data_toggle_chip",
-        onClick = onToggleMockData
-      )
-    }
-    // Layer toggles — only layers the providers/data model actually support.
-    listOf(
-      DisasterLayer.EARTHQUAKES to "Quakes",
-      DisasterLayer.ACTIVE_FIRES to "Fires",
-      DisasterLayer.OFFICIAL_ALERTS to "Alerts",
-      DisasterLayer.USER_REPORTS to "My Reports",
-      DisasterLayer.SAFE_ZONES to "Shelters"
-    ).forEach { (layer, label) ->
-      item {
-        val enabled = layer in uiState.enabledLayers
-        Box(
-          modifier = Modifier
-            .clip(RoundedCornerShape(999.dp))
-            .background(if (enabled) NeonEmeraldContainer.copy(alpha = 0.25f) else ObsidianContainer)
-            .border(
-              1.dp,
-              if (enabled) NeonEmerald.copy(alpha = 0.6f) else TacticalOutlineVariant.copy(alpha = 0.4f),
-              RoundedCornerShape(999.dp)
-            )
-            .clickable { onToggleLayer(layer) }
-            .padding(horizontal = 10.dp, vertical = 5.dp)
-            .testTag("layer_toggle_${layer.name.lowercase()}")
-        ) {
-          Text(
-            text = label,
-            fontSize = 10.sp,
-            fontWeight = if (enabled) FontWeight.Bold else FontWeight.Medium,
-            color = if (enabled) NeonEmerald else TacticalOnSurfaceVariant,
-            maxLines = 1
+  val hazardLayers = listOf(
+    DisasterLayer.EARTHQUAKES to "Quakes",
+    DisasterLayer.ACTIVE_FIRES to "Fires",
+    DisasterLayer.OFFICIAL_ALERTS to "Alerts",
+    DisasterLayer.USER_REPORTS to "My Reports",
+    DisasterLayer.SAFE_ZONES to "Shelters"
+  )
+  val activeLayerCount = hazardLayers.count { (layer, _) -> layer in uiState.enabledLayers }
+
+  var layersExpanded by remember { mutableStateOf(false) }
+  var statusExpanded by remember { mutableStateOf(false) }
+
+  Column(modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)) {
+    Row(
+      modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp),
+      horizontalArrangement = Arrangement.spacedBy(6.dp),
+      verticalAlignment = Alignment.CenterVertically
+    ) {
+      // Layers pill - shows the active count; expands to real toggles.
+      Box(
+        modifier = Modifier
+          .clip(RoundedCornerShape(999.dp))
+          .background(if (layersExpanded) NeonEmeraldContainer.copy(alpha = 0.3f) else ObsidianContainer)
+          .border(1.dp, TacticalOutlineVariant.copy(alpha = 0.5f), RoundedCornerShape(999.dp))
+          .clickable { layersExpanded = !layersExpanded }
+          .padding(horizontal = 10.dp, vertical = 5.dp)
+          .testTag("map_layers_pill")
+      ) {
+        Text(
+          text = "Layers \u00b7 " + activeLayerCount,
+          fontSize = 10.sp,
+          fontWeight = FontWeight.Bold,
+          color = TacticalOnSurface
+        )
+      }
+      // Data status pill - one honest word; tap expands per-source detail.
+      Box(
+        modifier = Modifier
+          .clip(RoundedCornerShape(999.dp))
+          .background(if (statusExpanded) ObsidianContainerHigh else ObsidianContainer)
+          .border(1.dp, statusColor.copy(alpha = 0.5f), RoundedCornerShape(999.dp))
+          .clickable { statusExpanded = !statusExpanded }
+          .padding(horizontal = 10.dp, vertical = 5.dp)
+          .testTag("disaster_data_status_chip")
+      ) {
+        Text(
+          text = when (aggregateStatus) {
+            DataStatus.SUCCESS -> "Live " + liveCount + "/" + providerStatuses.size
+            DataStatus.ERROR -> "Data issue"
+            DataStatus.STALE -> "Cached data"
+            else -> "No data yet"
+          },
+          fontSize = 10.sp,
+          fontWeight = FontWeight.Bold,
+          color = statusColor
+        )
+      }
+      Spacer(Modifier.weight(1f))
+      // Demo switch stays visible (scenario control, not a data layer).
+      Box(
+        modifier = Modifier
+          .clip(RoundedCornerShape(999.dp))
+          .background(
+            if (uiState.isMockDataVisible) TacticalCyan.copy(alpha = 0.2f) else ObsidianContainer
           )
+          .border(
+            1.dp,
+            if (uiState.isMockDataVisible) TacticalCyan else TacticalOutlineVariant.copy(alpha = 0.4f),
+            RoundedCornerShape(999.dp)
+          )
+          .clickable { onToggleMockData() }
+          .padding(horizontal = 10.dp, vertical = 5.dp)
+          .testTag("mock_data_toggle_chip")
+      ) {
+        Text(
+          text = if (uiState.isMockDataVisible) "Demo: ON" else "Demo: OFF",
+          fontSize = 10.sp,
+          fontWeight = FontWeight.Bold,
+          color = if (uiState.isMockDataVisible) TacticalCyan else TacticalOnSurfaceVariant
+        )
+      }
+    }
+
+    // EXPANDED LAYERS: the real toggles, only while the pill is open.
+    AnimatedVisibility(visible = layersExpanded) {
+      Row(
+        modifier = Modifier
+          .fillMaxWidth()
+          .horizontalScroll(rememberScrollState())
+          .padding(horizontal = 10.dp, vertical = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
+      ) {
+        hazardLayers.forEach { (layer, label) ->
+          val enabled = layer in uiState.enabledLayers
+          Box(
+            modifier = Modifier
+              .clip(RoundedCornerShape(999.dp))
+              .background(
+                if (enabled) NeonEmeraldContainer.copy(alpha = 0.25f) else ObsidianContainer
+              )
+              .border(
+                1.dp,
+                if (enabled) NeonEmerald.copy(alpha = 0.6f)
+                else TacticalOutlineVariant.copy(alpha = 0.4f),
+                RoundedCornerShape(999.dp)
+              )
+              .clickable { onToggleLayer(layer) }
+              .padding(horizontal = 10.dp, vertical = 6.dp)
+              .testTag("layer_toggle_" + layer.name.lowercase())
+          ) {
+            Text(
+              text = label,
+              fontSize = 10.sp,
+              fontWeight = if (enabled) FontWeight.Bold else FontWeight.Medium,
+              color = if (enabled) NeonEmerald else TacticalOnSurfaceVariant,
+              maxLines = 1
+            )
+          }
         }
       }
     }
-    // NOTE: the "+ Report Incident" chip used to live here, floating over the map
-    // directly under the risk strip. A stray tap while panning/zooming could open
-    // the report form (the app's only text-input popup), which is what made map
-    // taps feel like an unwanted comment box. Reporting now lives behind the
-    // explicit "REPORT AN INCIDENT..." action in the bottom sheet.
+
+    // EXPANDED DATA STATUS: per-provider honesty, secondary by design.
+    AnimatedVisibility(visible = statusExpanded) {
+      Column(
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(horizontal = 12.dp, vertical = 6.dp),
+        verticalArrangement = Arrangement.spacedBy(2.dp)
+      ) {
+        if (providerStatuses.isEmpty()) {
+          Text("No provider fetches this session.", fontSize = 10.sp,
+            color = TacticalOnSurfaceVariant)
+        }
+        providerStatuses.forEach { (state, status) ->
+          Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+          ) {
+            Text(state.source.name.lowercase().replace('_', ' '),
+              fontSize = 10.sp, color = TacticalOnSurface)
+            Text(status.name, fontSize = 10.sp, fontWeight = FontWeight.Bold,
+              color = statusColor)
+          }
+        }
+      }
+    }
   }
 }
 
 @Composable
-internal fun DisasterTypeLegend(types: List<com.example.data.model.HazardType>) {
+internal fun DisasterTypeLegend(
+  types: List<com.example.data.model.HazardType>,
+  selectedType: com.example.data.model.HazardType? = null,
+  onSelectType: (com.example.data.model.HazardType) -> Unit = {}
+) {
   if (types.isEmpty()) return
   LazyRow(
     modifier = Modifier
@@ -269,12 +367,23 @@ internal fun DisasterTypeLegend(types: List<com.example.data.model.HazardType>) 
   ) {
     items(types, key = { it.name }) { type ->
       val swatch = Color(com.example.data.disaster.DisasterTypeColors.argbFor(type))
+      val isSel = selectedType == type
       Row(
         modifier = Modifier
           .clip(RoundedCornerShape(999.dp))
-          .background(ObsidianContainer.copy(alpha = 0.9f))
-          .border(1.dp, swatch.copy(alpha = 0.7f), RoundedCornerShape(999.dp))
-          .padding(horizontal = 8.dp, vertical = 4.dp)
+          .background(
+            if (isSel) swatch.copy(alpha = 0.35f)
+            else ObsidianContainer.copy(alpha = 0.9f)
+          )
+          .border(
+            1.dp,
+            if (isSel) swatch else swatch.copy(alpha = 0.7f),
+            RoundedCornerShape(999.dp)
+          )
+          // 12-2: tap FILTERS the map to this hazard type; tap again clears.
+          .clickable { onSelectType(type) }
+          // 12-2: bigger touch target + readable padding
+          .padding(horizontal = 12.dp, vertical = 8.dp)
           .testTag("legend_${type.name.lowercase()}"),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(5.dp)
@@ -286,7 +395,7 @@ internal fun DisasterTypeLegend(types: List<com.example.data.model.HazardType>) 
             .background(swatch)
         )
         Text(
-          text = type.label,
+          text = if (isSel) "${type.label} · ONLY THIS" else type.label,
           fontSize = 11.sp,
           fontWeight = FontWeight.Bold,
           color = TacticalOnSurface,

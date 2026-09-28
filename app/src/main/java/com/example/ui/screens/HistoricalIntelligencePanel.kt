@@ -118,7 +118,7 @@ fun HistoricalIntelligencePanel(
         )
       }
       Text(
-        text = if (expanded) "HIDE" else "SHOW",
+        text = if (expanded) "COLLAPSE" else "EXPLORE",
         fontSize = 10.sp,
         fontWeight = FontWeight.Bold,
         color = TacticalOnSurface

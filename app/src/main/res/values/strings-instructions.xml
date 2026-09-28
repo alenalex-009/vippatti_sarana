@@ -41,8 +41,8 @@
     <string name="instructions_module_intro">Your safety comes first. Follow these instructions to reduce risk.</string>
 
     <!-- SOS dialogs -->
-    <string name="sos_active_title">SOS ACTIVE — RECORDED ON THIS DEVICE</string>
-    <string name="sos_active_notice">No authority has been notified automatically. Dial 112 to reach emergency services, or send the saved SOS SMS to your kin network.</string>
+    <string name="sos_active_title">SOS SAVED</string>
+    <string name="sos_active_notice">Your SOS information is saved on this device. NOT SENT TO AUTHORITIES. Call 112 if you need immediate help.</string>
     <string name="sos_label_gps">GPS Location</string>
     <string name="sos_label_battery">Battery Level</string>
     <string name="sos_label_medical">Medical Tag</string>
@@ -50,8 +50,8 @@
     <string name="sos_call_112_now">CALL 112 NOW</string>
     <string name="sos_keep_active">Keep The Local SOS Active</string>
     <string name="sos_cancel_false_alarm">Cancel SOS / False Alarm</string>
-    <string name="sos_confirm_title">START A LOCAL SOS RECORD?</string>
-    <string name="sos_confirm_body">This saves a distress record on THIS DEVICE with your location, device battery and medical tags so it is ready to relay. It does NOT contact NDRF, SARANA or any authority — this build has no relief-network backend. Dial 112 for real help.</string>
+    <string name="sos_confirm_title">Start an SOS record?</string>
+    <string name="sos_confirm_body">Saves your location, battery level and medical information on this device. No authority is contacted automatically. For immediate help, call 112.</string>
     <string name="sos_save_local">SAVE LOCAL SOS</string>
     <string name="sos_cancel_i_am_safe">CANCEL — I AM SAFE</string>
 

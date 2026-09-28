@@ -65,8 +65,8 @@
     <string name="instructions_module_intro">आपकी सुरक्षा सबसे पहले है। जोखिम कम करने के लिए इन निर्देशों का पालन करें।</string>
 
     <!-- SOS dialogs -->
-    <string name="sos_active_title">SOS सक्रिय — इसी डिवाइस पर दर्ज</string>
-    <string name="sos_active_notice">किसी अधिकारी को स्वतः सूचना नहीं भेजी गई है। आपातकालीन सेवाओं के लिए 112 पर कॉल करें, या सहेजा गया SOS SMS अपने परिवार के संपर्कों को भेजें।</string>
+    <string name="sos_active_title">SOS सहेजा गया</string>
+    <string name="sos_active_notice">यह जानकारी इसी डिवाइस पर सहेजी गई है। अधिकारियों को नहीं भेजी गई। तत्काल सहायता के लिए 112 पर कॉल करें।</string>
     <string name="sos_label_gps">GPS स्थान</string>
     <string name="sos_label_battery">बैटरी स्तर</string>
     <string name="sos_label_medical">चिकित्सा विवरण</string>
@@ -74,8 +74,8 @@
     <string name="sos_call_112_now">अभी 112 पर कॉल करें</string>
     <string name="sos_keep_active">स्थानीय SOS सक्रिय रखें</string>
     <string name="sos_cancel_false_alarm">SOS रद्द करें / झूरी सूचना</string>
-    <string name="sos_confirm_title">स्थानीय SOS दर्ज करें?</string>
-    <string name="sos_confirm_body">यह आपकी स्थान, डिवाइस बैटरी और चिकित्सा विवरण सहित इसी डिवाइस पर संकट रिकॉर्ड सहेजता है, ताकि वह आगे भेजने के लिए तैयार रहे। यह NDRF, SARANA या किसी अधिकारी से संपर्क नहीं करता — इस संस्करण में राहत नेटवर्क बैकएंड नहीं है। वास्तविक मदद के लिए 112 पर कॉल करें।</string>
+    <string name="sos_confirm_title">SOS दर्ज करें?</string>
+    <string name="sos_confirm_body">यह आपका स्थान, बैटरी और चिकित्सा जानकारी इसी डिवाइस पर सहेजता है। किसी अधिकारी को स्वतः सूचना नहीं भेजी जाती। तत्काल सहायता के लिए 112 पर कॉल करें।</string>
     <string name="sos_save_local">स्थानीय SOS सहेजें</string>
     <string name="sos_cancel_i_am_safe">रद्द करें — मैं सुरक्षित हूँ</string>
 

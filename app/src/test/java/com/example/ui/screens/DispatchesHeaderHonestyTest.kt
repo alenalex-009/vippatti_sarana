@@ -87,18 +87,18 @@ class DispatchesHeaderHonestyTest {
   }
 
   @Test
-  fun `a never-synced feed says NOT SYNCED, never LIVE`() {
+  fun `a never-synced feed says Not synced, never LIVE`() {
     renderDispatches(VippattiUiState())
     scrollToFeedHeader()
 
     composeTestRule.onNodeWithText("FEED DISPATCHES").assertExists()
-    composeTestRule.onNodeWithText("NOT SYNCED").assertExists()
+    composeTestRule.onNodeWithText("Not synced", substring = true).assertExists()
     composeTestRule.onAllNodesWithText("LIVE VIA GNEWS", substring = true).assertCountEquals(0)
     composeTestRule.onAllNodesWithText("LIVE FEED DISPATCHES", substring = true).assertCountEquals(0)
   }
 
   @Test
-  fun `a failed feed says FEED UNREACHABLE, never LIVE`() {
+  fun `a failed feed says Feed unreachable, never LIVE`() {
     renderDispatches(
       VippattiUiState(
         newsError = NewsError(NewsErrorKind.NETWORK, "No connection to the news service.")
@@ -106,12 +106,12 @@ class DispatchesHeaderHonestyTest {
     )
     scrollToFeedHeader()
 
-    composeTestRule.onNodeWithText("FEED UNREACHABLE").assertExists()
+    composeTestRule.onNodeWithText("Feed unreachable", substring = true).assertExists()
     composeTestRule.onAllNodesWithText("LIVE VIA GNEWS", substring = true).assertCountEquals(0)
   }
 
   @Test
-  fun `a cached feed says CACHED FEED, never LIVE`() {
+  fun `a cached feed says Cached news, never LIVE`() {
     renderDispatches(
       VippattiUiState(
         newsArticles = listOf(article()),
@@ -120,12 +120,12 @@ class DispatchesHeaderHonestyTest {
     )
     scrollToFeedHeader()
 
-    composeTestRule.onNodeWithText("CACHED FEED").assertExists()
+    composeTestRule.onNodeWithText("Cached news", substring = true).assertExists()
     composeTestRule.onAllNodesWithText("LIVE VIA GNEWS", substring = true).assertCountEquals(0)
   }
 
   @Test
-  fun `a live feed keeps the LIVE VIA GNEWS label`() {
+  fun `a live feed keeps a Live news label`() {
     renderDispatches(
       VippattiUiState(
         newsArticles = listOf(article()),
@@ -134,7 +134,7 @@ class DispatchesHeaderHonestyTest {
     )
     scrollToFeedHeader()
 
-    composeTestRule.onNodeWithText("LIVE VIA GNEWS").assertExists()
+    composeTestRule.onNodeWithText("Live news", substring = true).assertExists()
   }
 
   @Test

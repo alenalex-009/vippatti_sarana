@@ -307,7 +307,8 @@ fun VippattiAppRoot(
       onDeleteShelter = { viewModel.deleteFieldShelter(it) },
       onSaveHabitation = { viewModel.saveFieldHabitation(it) },
       onDeleteHabitation = { viewModel.deleteFieldHabitation(it) },
-      onRerank = { viewModel.rerunAuthorityRanking(it) }
+      onRerank = { viewModel.rerunAuthorityRanking(it) },
+      onViewOnMap = { viewModel.viewPriorityOnMap(it) }
     )
     return
   }
@@ -583,7 +584,6 @@ fun VippattiAppRoot(
             onSync = { viewModel.syncData() },
             onToggleAudio = { viewModel.toggleAudioBulletin() },
             onSelectCategory = { viewModel.setNewsCategory(it) },
-            onSelectSeverity = { viewModel.setNewsSeverityThreshold(it) },
             onNavigateToEvacRoute = { viewModel.startEvacuationRoute() },
             onNavigateTab = { viewModel.setTab(it) },
             onToggleHistoricalLayer = { viewModel.toggleHistoricalLayer() },
@@ -618,6 +618,7 @@ fun VippattiAppRoot(
             onRetryWeather = { viewModel.refreshWeather(force = true) },
             // EMERGENCY GUIDANCE: nearest safe zone + terrain haven actions.
             onGuidanceGo = { viewModel.acceptEmergencyGuidance() },
+            onToggleHazardTypeFilter = { viewModel.toggleHazardTypeFilter(it) },
             onGuidanceDismiss = { viewModel.dismissEmergencyGuidance() },
             onSearchTerrainHaven = { viewModel.searchTerrainHaven() },
             onRouteToTerrainHaven = { viewModel.routeToTerrainHaven() },

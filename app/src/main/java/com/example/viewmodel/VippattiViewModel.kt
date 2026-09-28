@@ -275,6 +275,16 @@ class VippattiViewModel(
   private var disasterJob: Job? = null
   private var weatherJob: Job? = null
 
+  /**
+   * Demo-network anchor. While a corridor or live guidance exists for demo
+   * destinations, the demo set must stay anchored here: regenerating it on
+   * every 1 Hz GPS fix mints new demo ids, the selected shelter 'disappears
+   * from scope', and the recompute tears down the drawn route + guidance
+   * (reported: GO / guidance breaks the route mid-walk). Re-anchored only
+   * when nothing is being routed to.
+   */
+  private var demoAnchor: GeoPoint? = null
+
   /** Location the current/last route was computed from — guards GPS re-routing. */
   private var lastRouteOrigin: GeoPoint? = null
 
@@ -634,33 +644,40 @@ class VippattiViewModel(
     // labelled SIMULATED with demo-namespaced ids either way.
     val focused = !state.isUserLocationFallback
 
+    // Anchor: freeze the demo scenario while a route/guidance targets it.
+    val routingDemo = state.activeRoute != null || state.isNavigatingLive ||
+      (state.selectedSafeZone?.id?.startsWith("demo-") == true)
+    val demoFocus = if (routingDemo) demoAnchor ?: location else location
+    demoAnchor = demoFocus
     val demoSet = if (state.isMockDataVisible && focused)
-
-      DemoNetworkAroundUser.around(location) to DemoNetworkAroundUser.sheltersAround(location)
-
+      DemoNetworkAroundUser.around(demoFocus) to DemoNetworkAroundUser.sheltersAround(demoFocus)
     else null
 
     val demoAround = demoSet?.first
 
     val demoShelters = demoSet?.second ?: emptyList()
-    val mockZones = if (state.isMockDataVisible) {
-      if (focused) {
-        listOfNotNull(demoAround?.first)
-      } else {
-        // India-only guard so a record outside IndiaGeo never reaches the map.
-        PilotRegionData.hazardZones.filter { IndiaGeo.contains(it.center) }
-      }
-    } else {
-      emptyList()
-    }
+    // UNFOCUSED (no GPS, no chosen place): the old India-wide 14-STATE demo
+    // scattered shelters across other states - "if I am in Vizag and the safe
+    // zone is in Patna how would I even go till there" (user report #4). The
+    // demo is now generated around the labelled fallback centre too: still
+    // honestly SIMULATED, but always the walking-scale scenario near the point
+    // the app is actually using. The full India set stays available in the
+    // Authority Console reference data.
+    val fallbackDemo = if (state.isMockDataVisible && !focused)
+      DemoNetworkAroundUser.around(location) to DemoNetworkAroundUser.sheltersAround(location)
+    else null
+    val mockZones: List<com.example.data.model.HazardZone> = if (state.isMockDataVisible) {
+      if (focused) listOfNotNull(demoAround?.first)
+      else listOfNotNull(fallbackDemo?.first?.first)
+    } else emptyList()
+
     val hazards = (liveZones + reportZones + mockZones).distinctBy { it.id }
 
     // The shelter network candidates: demo zones (scoped as above)
     // PLUS any REAL operator-entered field registry records, which stay
     // in scope in every mode — they are field data, not demo data.
     val demoZones = if (state.isMockDataVisible) {
-      if (focused) demoShelters
-      else state.safeZones.filter { IndiaGeo.contains(it.point) }
+      if (focused) demoShelters else fallbackDemo?.second ?: emptyList()
     } else {
       emptyList()
     }
@@ -817,7 +834,8 @@ class VippattiViewModel(
           isUserLocationFallback = false
         )
       }
-      recomputeIntelligence()
+      val wasFallback = state.isUserLocationFallback
+      recomputeIntelligence(selectInitialShelter = wasFallback)
       maybeRecalculateRouteForNewLocation()
       refreshWeather()
       refreshResolvedPlace(GeoPoint(latitude, longitude))
@@ -940,7 +958,10 @@ class VippattiViewModel(
         terrainHaven = null
       )
     }
-    recomputeIntelligence()
+    // A chosen place must instantly answer "where would I go?" for the judge:
+    // auto-select + route the best viable zone computed around THAT point
+    // (never a random other-state shelter).
+    recomputeIntelligence(selectInitialShelter = true)
     refreshWeather(force = true)
     refreshResolvedPlace(candidate.point, force = true)
     syncDisasterData()
@@ -1172,7 +1193,25 @@ class VippattiViewModel(
   fun acceptEmergencyGuidance() {
     val suggestion = (_uiState.value.emergencyGuidance
       as? com.example.data.shelters.EmergencyGuidance.SuggestShelter) ?: return
-    selectSafeZone(suggestion.evaluation.zone, autoRoute = true)
+    val zone = suggestion.evaluation.zone
+    val routeHere = _uiState.value.activeRoute
+      ?.takeIf { it.destinationName == zone.name }
+    if (routeHere != null && _uiState.value.selectedSafeZone?.id == zone.id) {
+      // The suggested zone's corridor is ALREADY drawn: GO means START
+      // GUIDANCE + zoom to the route — not "re-request everything", which
+      // blanked the line and broke the map mid-guidance (crucial bug).
+      _uiState.update {
+        it.copy(
+          isNavigatingLive = true,
+          guidanceZoomToken = it.guidanceZoomToken + 1,
+          snackbarMessage = "Guidance to ${zone.name} started — follow the green line"
+        )
+      }
+      return
+    }
+    pendingGuidanceZoneId = zone.id
+    _uiState.update { it.copy(guidanceZoomToken = it.guidanceZoomToken + 1) }
+    selectSafeZone(zone, autoRoute = true)
   }
 
   /** Explicit dismissal of the guidance card until the next recompute. */
@@ -1299,6 +1338,21 @@ class VippattiViewModel(
   fun openAuthorityDashboard(liveTerrainScan: Boolean = false) {
     _uiState.update { it.copy(showAuthorityDashboard = true) }
     runRanking(liveTerrainScan)
+  }
+
+  /**
+   * 12-10: VIEW ON MAP from the console closes it, switches to the map and
+   * flies the camera onto the priority point. Hazards/shelters around the
+   * point render from the normal state pipeline; nothing is invented here.
+   */
+  fun viewPriorityOnMap(point: com.example.data.routing.GeoPoint) {
+    _uiState.update {
+      it.copy(
+        showAuthorityDashboard = false,
+        currentTab = ScreenTab.RADAR_MAP,
+        cameraJumpTarget = point
+      )
+    }
   }
 
   fun closeAuthorityDashboard() {
@@ -1431,6 +1485,12 @@ class VippattiViewModel(
     val mode = _uiState.value.travelMode
     val hazards = _uiState.value.hazardZones
     lastRouteOrigin = origin
+    // USER BUG (crucial): tapping GO while a corridor for THIS zone was
+    // already drawn nulled the route, blanking the map line and killing live
+    // guidance mid-sentence. Keep drawing the same-destination corridor while
+    // the refresh happens underneath.
+    val sameCorridorOnScreen = _uiState.value.activeRoute
+      ?.takeIf { it.destinationName == zone.name && it.travelMode == mode }
     val cacheKey = LiveRouteCache.key(zone.id, mode, origin, hazards)
 
     // A cached LIVE road route for the exact destination/mode/area/hazard set is
@@ -1457,12 +1517,13 @@ class VippattiViewModel(
     // origin→midpoint→destination corridor, which reads as a real safe route.
     _uiState.update {
       it.copy(
-        activeRoute = null,
+        activeRoute = sameCorridorOnScreen,
         alternativeRoutes = emptyList(),
         isCalculatingRoute = true,
         routeStatus = RouteStatus.REQUESTING,
         routeStatusMessage = "Requesting a road route to ${zone.name}…",
-        currentNavigationStepIndex = 0
+        currentNavigationStepIndex = if (sameCorridorOnScreen != null)
+          it.currentNavigationStepIndex else 0
       )
     }
 
@@ -1741,6 +1802,20 @@ class VippattiViewModel(
     // empty corridor produced a HUD with no geometry behind it — so the request
     // is remembered instead of silently promised: the arriving route for THIS
     // zone arms guidance (see consumePendingGuidanceFor).
+    if (_uiState.value.activeRoute?.destinationName == target.name) {
+      // Corridor to THIS destination is already on screen: pressing START
+      // EVACUATION must arm guidance + zoom, never tear the line down and
+      // re-request (user: "that button going again problem").
+      _uiState.update {
+        it.copy(
+          isNavigatingLive = true,
+          currentTab = ScreenTab.RADAR_MAP,
+          guidanceZoomToken = it.guidanceZoomToken + 1,
+          snackbarMessage = "Guidance to ${target.name} started — follow the green line"
+        )
+      }
+      return
+    }
     if (_uiState.value.activeRoute == null) {
       pendingGuidanceZoneId = target.id
       _uiState.update {
@@ -1965,6 +2040,13 @@ class VippattiViewModel(
   /** News-tab severity filter chips: 0 all / 2 hazard+ / 3 severe only. */
   fun setNewsSeverityThreshold(threshold: Int) {
     _uiState.update { it.copy(newsSeverityThreshold = threshold) }
+  }
+
+  /** Toggle the single-hazard-type map filter (tap chip on / tap again off). */
+  fun toggleHazardTypeFilter(type: com.example.data.model.HazardType) {
+    _uiState.update {
+      it.copy(hazardTypeFilter = if (it.hazardTypeFilter == type) null else type)
+    }
   }
 
   fun setNewsCategory(category: String) {

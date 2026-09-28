@@ -141,7 +141,7 @@ class HistoricalPanelRenderTest {
   @Test
   fun `expanding shows area evidence, the disclaimer and the record list`() {
     renderPanel(state(catalog()))
-    composeTestRule.onNodeWithText("SHOW").performClick()
+    composeTestRule.onNodeWithText("EXPLORE").performClick()
 
     // The real Idukki record is listed with its record count.
     assertVisible("YOUR AREA — HISTORICAL EVIDENCE")
@@ -156,7 +156,7 @@ class HistoricalPanelRenderTest {
   @Test
   fun `a missing impact figure renders as Not available, never as zero`() {
     renderPanel(state(catalog()))
-    composeTestRule.onNodeWithText("SHOW").performClick()
+    composeTestRule.onNodeWithText("EXPLORE").performClick()
 
     // The selection reports deaths (a figure) but no homeless or damage at all,
     // so those totals must read "Not available" rather than 0.

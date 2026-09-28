@@ -220,9 +220,9 @@ class MapGpsAndRouteTest {
     var reported: Pair<Double, Double>? = null
     pressRecenter(holder, hasPermission = true, onFix = { lat, lon -> reported = lat to lon })
     assertEquals(GpsRequestState.REQUESTING, holder.gpsRequestState)
-    shadowOf(Looper.getMainLooper()).idleFor(Duration.ofSeconds(16))
+    shadowOf(Looper.getMainLooper()).idleFor(Duration.ofSeconds(21))
     assertEquals(GpsRequestState.TIMEOUT, holder.gpsRequestState)
-    assertTrue(holder.gpsStatusMessage!!.contains("15s"))
+    assertTrue(holder.gpsStatusMessage!!.contains("20s"))
     assertNull("no fix may be reported on timeout", reported)
     assertEquals("camera must not move without a valid fix", centerBefore,
       mapView.mapCenter.latitude to mapView.mapCenter.longitude)
@@ -252,7 +252,7 @@ class MapGpsAndRouteTest {
     assertEquals(GpsRequestState.REQUESTING, holder.gpsRequestState)
     holder.cleanup()
     assertEquals(GpsRequestState.IDLE, holder.gpsRequestState)
-    shadowOf(Looper.getMainLooper()).idleFor(Duration.ofSeconds(16))
+    shadowOf(Looper.getMainLooper()).idleFor(Duration.ofSeconds(21))
     assertEquals("cancelled timeout must never fire", GpsRequestState.IDLE, holder.gpsRequestState)
     assertTrue(shadowOf(locationManager()).getRequestLocationUpdateListeners().isEmpty())
   }

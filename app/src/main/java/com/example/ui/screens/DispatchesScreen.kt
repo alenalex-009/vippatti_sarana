@@ -50,7 +50,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -66,6 +69,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import com.example.data.model.DataStatus
+import com.example.data.news.NewsCategory
 import com.example.data.news.NewsPresentation
 import com.example.data.news.ringLabel
 import androidx.compose.ui.text.font.FontWeight
@@ -96,6 +100,7 @@ import com.example.ui.theme.TacticalCyanContainer
 import com.example.ui.theme.TacticalOnSurface
 import com.example.ui.theme.TacticalOnSurfaceVariant
 import com.example.ui.theme.TacticalOutlineVariant
+import com.example.ui.theme.WarningAmber
 import com.example.viewmodel.ScreenTab
 import com.example.viewmodel.VippattiUiState
 
@@ -105,7 +110,7 @@ fun DispatchesScreen(
   onSync: () -> Unit,
   onToggleAudio: () -> Unit,
   onSelectCategory: (String) -> Unit,
-  onSelectSeverity: (Int) -> Unit,
+  onSelectSeverity: (Int) -> Unit = {},
   onNavigateToEvacRoute: () -> Unit,
   onNavigateTab: (ScreenTab) -> Unit,
   onToggleHistoricalLayer: () -> Unit,
@@ -271,7 +276,7 @@ fun DispatchesScreen(
                 maxLines = 2
               )
               Text(
-                text = "GNews free plan: articles appear up to 12h after publication • not official alerts",
+                text = "News articles — not official alerts",
                 fontSize = 10.sp,
                 color = TacticalOnSurfaceVariant
               )
@@ -427,47 +432,6 @@ fun DispatchesScreen(
               color = if (isSelected) OnNeonEmerald else TacticalOnSurface
             )
           }
-        }
-      }
-    }
-
-    // 4b. Severity filter (user rule): the news tab filters the weather/
-    // disaster items by how SEVERE their own text says they are.
-    item {
-      Row(
-        modifier = Modifier
-          .fillMaxWidth()
-          .padding(horizontal = 14.dp)
-          .padding(bottom = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically
-      ) {
-        Text(
-          text = "Severity:",
-          fontSize = 12.sp,
-          fontWeight = FontWeight.Bold,
-          color = TacticalOnSurfaceVariant
-        )
-        val thresholds = listOf(0 to "All", 2 to "Hazard+", 3 to "Severe only")
-        thresholds.forEach { (threshold, label) ->
-          val isActive = uiState.newsSeverityThreshold == threshold
-          Text(
-            text = label,
-            fontSize = 12.sp,
-            fontWeight = if (isActive) FontWeight.Bold else FontWeight.Medium,
-            color = if (isActive) OnNeonEmerald else TacticalOnSurface,
-            modifier = Modifier
-              .clip(RoundedCornerShape(8.dp))
-              .background(if (isActive) NeonEmerald else ObsidianContainer)
-              .border(
-                1.dp,
-                if (isActive) NeonEmerald else TacticalOutlineVariant.copy(alpha = 0.3f),
-                RoundedCornerShape(8.dp)
-              )
-              .clickable { onSelectSeverity(threshold) }
-              .padding(horizontal = 12.dp, vertical = 6.dp)
-              .testTag("severity_chip_" + label.lowercase().replace(" ", "_"))
-          )
         }
       }
     }
@@ -669,6 +633,12 @@ fun DispatchesScreen(
                   )
                 }
 
+                // USER RULE (news redesign): never show a route button on
+                // generic articles - only hazard/road coverage has a meaningful
+                // affected-area + safe-zone workflow to open.
+                if (hero.category == NewsCategory.SEVERE_ALERTS ||
+                  hero.category == NewsCategory.ROAD_IMPACT
+                ) {
                 Button(
                   onClick = onNavigateToEvacRoute,
                   colors = ButtonDefaults.buttonColors(
@@ -692,6 +662,7 @@ fun DispatchesScreen(
                     contentDescription = null,
                     modifier = Modifier.size(16.dp)
                   )
+                }
                 }
               }
 
@@ -820,21 +791,36 @@ fun DispatchesScreen(
           )
         }
         Text(
+          // 11: plain status line. LIVE stays honestly LIVE, cached data
+          // says cached + the real last-fetch time; provider names and plan
+          // limits moved into the Data & sources strip below.
           text = if (uiState.isSyncing) {
-            "Syncing…"
+            "Syncing\u2026"
           } else {
+            val stamp = uiState.newsLastFetchedAtMillis?.let {
+              java.text.SimpleDateFormat("h:mm a", java.util.Locale.getDefault())
+                .format(java.util.Date(it))
+            }
             when (uiState.newsStatus) {
-              DataStatus.SUCCESS -> "LIVE VIA GNEWS"
-              DataStatus.STALE -> "CACHED FEED"
-              DataStatus.ERROR -> "FEED UNREACHABLE"
-              DataStatus.LOADING -> "SYNCING"
-              else -> "NOT SYNCED"
+              DataStatus.SUCCESS -> if (stamp != null) "Live news \u00b7 Updated " + stamp
+                else "Live news"
+              DataStatus.STALE -> if (stamp != null) "Cached news \u00b7 Updated " + stamp
+                else "Cached news"
+              DataStatus.ERROR -> "Feed unreachable \u2014 tap Sync"
+              DataStatus.LOADING -> "Syncing\u2026"
+              else -> "Not synced \u00b7 tap Sync"
             }
           },
           fontSize = 11.sp,
           color = TacticalOnSurfaceVariant
         )
       }
+    }
+
+    // 6b. DATA & SOURCES - collapsed technical detail (11). Providers and
+    // plan limits are not the reader's problem at a glance; one tap away.
+    item {
+      DataAndSourcesRow(uiState = uiState)
     }
 
     // 7. Feed Cards — REAL GNews articles mapped to dispatch cards
@@ -917,6 +903,75 @@ fun DispatchesScreen(
             }
           } ?: onNavigateTab(ScreenTab.INSTRUCTIONS)
         }
+      )
+    }
+  }
+}
+
+/** Collapsible "Data & sources" strip: honest provenance, off the main view. */
+@Composable
+private fun DataAndSourcesRow(uiState: VippattiUiState) {
+  var expanded by remember { mutableStateOf(false) }
+  Column(
+    modifier = Modifier
+      .fillMaxWidth()
+      .padding(horizontal = 16.dp, vertical = 4.dp)
+      .clip(RoundedCornerShape(10.dp))
+      .background(ObsidianContainerLow)
+      .border(1.dp, TacticalOutlineVariant.copy(alpha = 0.3f), RoundedCornerShape(10.dp))
+      .clickable { expanded = !expanded }
+      .padding(10.dp)
+      .testTag("data_and_sources_row")
+  ) {
+    Row(
+      modifier = Modifier.fillMaxWidth(),
+      horizontalArrangement = Arrangement.SpaceBetween,
+      verticalAlignment = Alignment.CenterVertically
+    ) {
+      Text(
+        text = "Data & sources",
+        fontSize = 11.sp,
+        fontWeight = FontWeight.Bold,
+        color = TacticalOnSurfaceVariant
+      )
+      Text(
+        text = if (expanded) "HIDE" else "SHOW",
+        fontSize = 10.sp,
+        fontWeight = FontWeight.Bold,
+        color = TacticalCyan
+      )
+    }
+    if (expanded) {
+      Spacer(modifier = Modifier.height(6.dp))
+      if (uiState.providerStatuses.isEmpty()) {
+        Text("No provider fetches this session.", fontSize = 10.sp,
+          color = TacticalOnSurfaceVariant)
+      }
+      uiState.providerStatuses.forEach { (state, status) ->
+        Row(
+          modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
+          horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+          Text(state.source.name.lowercase().replace('_', ' '),
+            fontSize = 10.sp, color = TacticalOnSurface)
+          Text(status.name, fontSize = 10.sp, fontWeight = FontWeight.Bold,
+            color = when (status) {
+              DataStatus.SUCCESS -> NeonEmerald
+              DataStatus.ERROR -> EmergencyRed
+              else -> WarningAmber
+            })
+        }
+      }
+      if (uiState.newsScopeNote.isNotBlank()) {
+        Text(uiState.newsScopeNote, fontSize = 10.sp,
+          color = TacticalOnSurfaceVariant, modifier = Modifier.padding(top = 4.dp))
+      }
+      Text(
+        text = "News articles · not official alerts",
+        fontSize = 10.sp,
+        fontWeight = FontWeight.Bold,
+        color = WarningAmber,
+        modifier = Modifier.padding(top = 2.dp)
       )
     }
   }

@@ -321,6 +321,13 @@ data class VippattiUiState(
   val placeCandidates: List<com.example.data.location.PlaceCandidate> = emptyList(),
   val placeSearchError: String? = null,
   val showPlacePicker: Boolean = false,
+  /** Each bump = GO/START pressed: map fits+zooms the active corridor. */
+  val guidanceZoomToken: Int = 0,
+  /**
+   * Legend chip tap filters the map to ONE hazard type (12-2);
+   * null = show all. Re-tapping the selected chip clears it.
+   */
+  val hazardTypeFilter: com.example.data.model.HazardType? = null,
 
   // --- Carrying capacity (SIH milestone) ---
   /** How many people need relocation here; null = no population figure. */

@@ -188,6 +188,10 @@ fun OsmDroidRadarMapView(
   focusPoint: GeoPoint? = null,
   /** One-shot camera fly-to when the user picks a place to view. */
   cameraJumpTarget: GeoPoint? = null,
+  /** Each bump = guidance started: fit the corridor at walking scale. */
+  guidanceZoomToken: Int = 0,
+  /** When set, ONLY this hazard type draws (legend chip filter, 12-2). */
+  hazardTypeFilter: com.example.data.model.HazardType? = null,
   /** Alternative corridors (index 0 is the active route) drawn as grey ghosts. */
   alternativeRoutes: List<com.example.data.routing.RouteResult> = emptyList(),
   /** Non-null while a CHOSEN place is being viewed instead of the GPS. */
@@ -259,6 +263,20 @@ fun OsmDroidRadarMapView(
     mapState.setFocus(focusPoint?.let { GeoPoint(it.lat, it.lon) })
   }
   LaunchedEffect(showAllRegion) { mapState.setShowAllRegion(showAllRegion) }
+
+  LaunchedEffect(hazardTypeFilter) {
+    mapState.hazardTypeFilter = hazardTypeFilter
+    mapState.redeployAll()
+  }
+
+  LaunchedEffect(guidanceZoomToken, activeRoute?.routeId) {
+    // GO / START EVACUATION pressed: bring the corridor front-and-centre.
+    // Keyed on the arriving routeId too, so guidance armed BEFORE the
+    // geometry exists still zooms the moment the corridor lands.
+    if (guidanceZoomToken > 0 && activeRoute != null) {
+      mapState.zoomToActiveRoute()
+    }
+  }
 
   // Place-view camera: fly to a chosen place (and stop following GPS while the
   // user is looking somewhere else). Consumed by the parent after firing.
@@ -558,8 +576,9 @@ private fun MapControlButton(
   IconButton(
     onClick = onClick,
     modifier = Modifier
-      .size(36.dp)
-      .clip(RoundedCornerShape(8.dp))
+      // 12-3: comfortable touch targets with clear separation.
+      .size(44.dp)
+      .clip(RoundedCornerShape(10.dp))
       .background(ObsidianContainer.copy(alpha = 0.95f))
       .border(1.dp, TacticalOutlineVariant, RoundedCornerShape(8.dp))
       .testTag(testTag)
@@ -798,6 +817,8 @@ class OsmMapControllerHolder(
 
     val zoom = view.zoomLevelDouble
     val visible = nearbyFilter(hazardZones, zoom) { it.center }
+      // 12-2: a selected legend chip shows ONLY that hazard type.
+      .filter { hazardTypeFilter == null || it.type == hazardTypeFilter }
     visible.forEach { zone ->
       val overlay = PinOrAreaOverlay(
         center = OsmGeoPoint(zone.center.lat, zone.center.lon),
@@ -1083,6 +1104,7 @@ class OsmMapControllerHolder(
   // ------------------------------------------------ GPS locate (Issue 2)
 
   /** Current locate request state — observed by the recenter button + banner. */
+  var hazardTypeFilter: com.example.data.model.HazardType? = null
   var gpsRequestState by mutableStateOf(GpsRequestState.IDLE)
     private set
 
@@ -1152,9 +1174,9 @@ class OsmMapControllerHolder(
     // Fast path 1: the overlay already holds a real device fix (reported to
     // the ViewModel when it arrived — just center on it).
     locationOverlay?.myLocation?.let { fix ->
-      view?.controller?.animateTo(fix)
+      centerAtWalkingZoom(fix)
       gpsRequestState = GpsRequestState.SUCCESS
-      gpsStatusMessage = "Centered on your GPS location."
+      gpsStatusMessage = "Zoomed to your GPS location."
       return
     }
     // Fast path 2: the OS last-known location — real device data (may be
@@ -1165,9 +1187,9 @@ class OsmMapControllerHolder(
       )
     } catch (_: SecurityException) { null }
     if (lastKnown != null) {
-      view?.controller?.animateTo(OsmGeoPoint(lastKnown.latitude, lastKnown.longitude))
+      centerAtWalkingZoom(OsmGeoPoint(lastKnown.latitude, lastKnown.longitude))
       gpsRequestState = GpsRequestState.SUCCESS
-      gpsStatusMessage = "Centered on your last known GPS location."
+      gpsStatusMessage = "Zoomed to your last known GPS position."
       onFix(lastKnown.latitude, lastKnown.longitude)
       return
     }
@@ -1175,9 +1197,9 @@ class OsmMapControllerHolder(
     // move until a valid fix arrives — no disaster/routing wait, no fallback.
     val listener = LocationListener { location ->
       cancelOneShot()
-      mapView?.controller?.animateTo(OsmGeoPoint(location.latitude, location.longitude))
+      centerAtWalkingZoom(OsmGeoPoint(location.latitude, location.longitude))
       gpsRequestState = GpsRequestState.SUCCESS
-      gpsStatusMessage = "Centered on your GPS location."
+      gpsStatusMessage = "Zoomed to your GPS location."
       onFix(location.latitude, location.longitude)
     }
     oneShotListener = listener
@@ -1219,10 +1241,55 @@ class OsmMapControllerHolder(
     oneShotActive = false
   }
 
+/**
+   * Guidance just started (GO / START EVACUATION): frame the corridor at
+   * WALKING scale. A national-zoom fit made the user report "the guide
+   breaks the route and the map does not work": the line was technically
+   * there but tiny and unusable. Fit the bbox, then guarantee a minimum
+   * street zoom so the next turns are actually visible.
+   */
+  fun zoomToActiveRoute() {
+    val mv = mapView ?: return
+    val route = lastDrawnRoute ?: return
+    val points = route.pathPoints
+    if (points.size < 2 || mv.width == 0 || mv.height == 0) {
+      points.firstOrNull()?.let { mv.controller.animateTo(OsmGeoPoint(it.lat, it.lon)) }
+      return
+    }
+    val box = org.osmdroid.util.BoundingBox(
+      points.maxOf { it.lat }, points.minOf { it.lon },
+      points.minOf { it.lat }, points.maxOf { it.lon }
+    ).increaseByScale(1.3f)
+    mv.zoomToBoundingBox(box, true, 64, 17.0, 500L)
+    // Walking scale: never leave guidance looking at a whole state.
+    mainHandler.postDelayed({
+      val target = 16.5
+      if (mv.zoomLevelDouble < target) mv.controller.setZoom(target)
+    }, 520L)
+  }
+
+/**
+   * Center on a fix at WALKING scale (user bug: locate zoomed OUT instead of
+   * IN to the exact position). animateTo keeps the zoom level, so raise the
+   * level to at least LOCATE_MIN_ZOOM when currently below it.
+   */
+  private fun centerAtWalkingZoom(point: OsmGeoPoint) {
+    val mv = mapView ?: return
+    if (mv.zoomLevelDouble < LOCATE_MIN_ZOOM) {
+      // zoomTo(level, geoPoint) centers AND zooms in one animated move.
+      // Two proven APIs instead of zoomTo(level, point): zoom to street
+      // scale first, then centre on the fix (reported locate = zoom-out bug).
+      mv.controller.setZoom(LOCATE_MIN_ZOOM)
+      mv.controller.animateTo(point)
+    } else {
+      mv.controller.animateTo(point)
+    }
+  }
+
   fun recenterUser() {
     val myLoc = locationOverlay?.myLocation
     if (myLoc != null) {
-      mapView?.controller?.animateTo(myLoc)
+      centerAtWalkingZoom(myLoc)
     } else {
       // No fix: say so honestly instead of silently jumping the camera to
       // the labeled fallback area (that jump presented fallback coordinates
@@ -1299,6 +1366,7 @@ class OsmMapControllerHolder(
    */
   fun displayRoute(route: RouteResult) {
     val mv = mapView ?: return
+    lastDrawnRoute = route
     currentRoutePolyline?.let { mv.overlays.remove(it) }
     if (route.pathPoints.isEmpty()) return
     val points = route.pathPoints.map { OsmGeoPoint(it.lat, it.lon) }
@@ -1336,6 +1404,8 @@ class OsmMapControllerHolder(
   }
 
   private var lastFittedRouteId: String? = null
+  /** Route geometry currently drawn - refit target when guidance starts. */
+  private var lastDrawnRoute: RouteResult? = null
 
   /**
    * Draws the NON-primary alternative corridors as faint grey ghost lines so
@@ -1428,6 +1498,8 @@ class OsmMapControllerHolder(
     private const val SAFE_ZONE_RADIUS_METERS = 900.0
     private const val DISASTER_MARKER_RADIUS_METERS = 1200.0
     /** Hard timeout for the GPS one-shot locate before reporting TIMEOUT. */
-    private const val LOCATION_TIMEOUT_MS = 15_000L
+    private const val LOCATION_TIMEOUT_MS = 20_000L
+    /** Locate press always lands at >= this zoom (walking scale). */
+    private const val LOCATE_MIN_ZOOM = 16.0
   }
 }

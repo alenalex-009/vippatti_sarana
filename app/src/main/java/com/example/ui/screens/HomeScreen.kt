@@ -45,7 +45,8 @@ import androidx.compose.ui.unit.sp
 import com.example.R
 import com.example.data.model.DataStatus
 import com.example.data.risk.RiskLevel
-import com.example.data.shelters.EmergencyGuidance
+import com.example.data.shelters.EmergencyGuidance
+
 import com.example.ui.theme.EmergencyRedBright
 import com.example.ui.theme.NeonEmerald
 import com.example.ui.theme.SafeGreen
@@ -244,7 +245,7 @@ private fun RiskHero(
       .clip(RoundedCornerShape(16.dp))
       .background(color.copy(alpha = 0.12f))
       .border(1.5.dp, color.copy(alpha = 0.7f), RoundedCornerShape(16.dp))
-      .padding(16.dp)
+      .padding(12.dp)
   ) {
     Text(
       stringResource(R.string.home_area_safe_question),
@@ -260,12 +261,13 @@ private fun RiskHero(
           .background(color)
       )
       Spacer(Modifier.width(8.dp))
-      Text(headline, fontSize = 22.sp, fontWeight = FontWeight.Black, color = color)
+      Text(headline, fontSize = 18.sp, fontWeight = FontWeight.Black, color = color)
     }
     Spacer(Modifier.height(6.dp))
     Text(
       risk?.explanation ?: stringResource(R.string.home_assessing_body),
-      fontSize = 12.sp, color = TacticalOnSurface, lineHeight = 17.sp
+      fontSize = 12.sp, color = TacticalOnSurface, lineHeight = 16.sp,
+      maxLines = 2, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
     )
     risk?.let {
       Text(

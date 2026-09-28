@@ -95,10 +95,11 @@ object NewsPresentation {
   /** Filter chips match the classifier's category directly. */
   fun matchesCategory(category: NewsCategory, chip: String): Boolean = when (chip) {
     "All" -> true
-    "Severe Alerts" -> category == NewsCategory.SEVERE_ALERTS || category == NewsCategory.ROAD_IMPACT
-    "Weather Radar" -> category == NewsCategory.WEATHER
-    "Shelter Updates" -> category == NewsCategory.SHELTER
-    "Government Bulletins" -> category == NewsCategory.GOVERNMENT
+    "Disaster" -> category == NewsCategory.SEVERE_ALERTS ||
+      category == NewsCategory.ROAD_IMPACT ||
+      category == NewsCategory.SHELTER ||
+      category == NewsCategory.GOVERNMENT
+    "Weather" -> category == NewsCategory.WEATHER
     "Other News" -> category == NewsCategory.GENERAL
     else -> true
   }
@@ -107,8 +108,12 @@ object NewsPresentation {
   // User rule #7: disaster coverage is the POINT of the feed, so the
   // hazard categories come first and the classifier's leftover "News" bucket
   // gets its OWN chip ("Other News") instead of mixing into disaster coverage.
+  // USER RULE (news redesign): minimal, honest set. Spatial/weather
+  // visualization lives on the MAP, so no "Weather Radar" chip here. GNews
+  // articles are NOT official alerts, so "Severe Alerts" became "Severe
+  // Events". Disaster groups every hazard-response category together.
   val CHIP_LABELS =
-    listOf("All", "Severe Alerts", "Weather Radar", "Shelter Updates", "Government Bulletins", "Other News")
+    listOf("All", "Disaster", "Weather", "Other News")
 
   /**
    * Only the chips that currently have matching articles (All always present).

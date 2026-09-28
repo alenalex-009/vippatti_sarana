@@ -143,9 +143,13 @@ class DemoAroundYouBehaviorTest {
     // no GPS fix: fallback state
     org.junit.Assert.assertTrue(vm.uiState.value.isUserLocationFallback)
     val state = vm.uiState.value
+    // Contract UPDATE (user rule #4): the India-wide 14-state demo scattered
+    // shelters in OTHER STATES than the user ("Vizag -> safe zone in Patna").
+    // The fallback view now shows the honest SIMULATED walking-scale network
+    // generated around the labelled fallback centre it is actually using.
     org.junit.Assert.assertTrue(
-      "fallback view should still show the India-wide demo network",
-      state.hazardZones.any { it.id.startsWith("hz-") }
+      "fallback view shows the demo scenario around the fallback centre",
+      state.hazardZones.any { it.id.startsWith("demo-hz-") }
     )
   }
 }

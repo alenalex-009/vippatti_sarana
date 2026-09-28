@@ -64,8 +64,8 @@
     <string name="instructions_module_intro">உங்கள் பாதுகாப்பே முதலில். ஆபத்தைக் குறைக்க இந்த வழிகாட்டுதல்களைப் பின்பற்றவும்.</string>
 
     <!-- SOS dialogs -->
-    <string name="sos_active_title">SOS செயலில் — இந்தச் சாதனத்திலேயே பதிவு செய்யப்பட்டது</string>
-    <string name="sos_active_notice">எந்த அதிகாரிக்கும் தானியங்கியாக அறிவிக்கப்படவில்லை. அவசர சேவைகளுக்கு 112 அழைக்கவும், அல்லது சேமித்த SOS SMS ஐ உங்கள் குடும்பத் தொடர்புகளுக்கு அனுப்பவும்.</string>
+    <string name="sos_active_title">SOS சேமிக்கப்பட்டது</string>
+    <string name="sos_active_notice">இந்தச் சாதனத்தில் சேமிக்கப்பட்டது. அதிகாரிகளுக்கு அனுப்பப்படவில்லை. உடனடி உதவிக்கு 112 ஐ அழைக்கவும்.</string>
     <string name="sos_label_gps">GPS இருப்பிடம்</string>
     <string name="sos_label_battery">பேட்டரி நிலை</string>
     <string name="sos_label_medical">மருத்துவக் குறி</string>
@@ -73,8 +73,8 @@
     <string name="sos_call_112_now">இப்போது 112 அழைக்கவும்</string>
     <string name="sos_keep_active">உள்ளூர் SOS செயலிலே வைத்திருக்கவும்</string>
     <string name="sos_cancel_false_alarm">SOS ரத்து / தவறான அறிவிப்பு</string>
-    <string name="sos_confirm_title">உள்ளூர் SOS பதிவு செய்யவா?</string>
-    <string name="sos_confirm_body">இது உங்கள் இருப்பிடம், சாதனப் பேட்டரி மற்றும் மருத்துவக் குறிகளுடன் இந்தச் சாதனத்திலேயே அபாயப் பதிவைச் சேமித்து, மேலும் அனுப்பத் தயாராக வைக்கும். இது NDRF, SARANA அல்லது எந்த அதிகாரியையும் தொடர்புபடுத்தாது — இந்தப் பதிப்பில் நிவார உதவி வலைபின்னணி இல்லை. உண்மையான உதவிக்கு 112 அழைக்கவும்.</string>
+    <string name="sos_confirm_title">SOS பதிவு செய்யவா?</string>
+    <string name="sos_confirm_body">இது உங்கள் இருப்பிடம், பேட்டரி, மருத்துவத் தகவலை இந்தச் சாதனத்திலேயே சேமிக்கிறது. எந்த அதிகாரியும் தானாகத் தொடர்புபடுத்தப்பட மாட்டார். உடனடி உதவிக்கு 112 ஐ அழைக்கவும்.</string>
     <string name="sos_save_local">உள்ளூர் SOS சேமிக்கவும்</string>
     <string name="sos_cancel_i_am_safe">ரத்து — நான் பாதுகாப்பாக உள்ளேன்</string>
 

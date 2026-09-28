@@ -64,8 +64,8 @@
     <string name="instructions_module_intro">तुमची सुरक्षा सर्वात महत्त्वाची. धोका कमी करण्यासाठी या सूचनांचे पालन करा.</string>
 
     <!-- SOS dialogs -->
-    <string name="sos_active_title">SOS सक्रिय — याच डिव्हाइसवर नोंदवले</string>
-    <string name="sos_active_notice">कोणत्याही अधिकाऱ्याला आपोआप कळवणे झालेले नाही. आणीबाणी सेवांसाठी 112 क्रमाला करा, किंवा जतन केलेला SMS तुमच्या कुटुंबाच्या संपर्कांना पाठवा.</string>
+    <string name="sos_active_title">SOS जतन केले</string>
+    <string name="sos_active_notice">या डिव्हाइसवर जतन केले. अधिकाऱ्यांना पाठवले नाही. तातडीच्या मदतीसाठी 112 वर कॉल करा.</string>
     <string name="sos_label_gps">GPS ठिकाण</string>
     <string name="sos_label_battery">बॅटरी पातळी</string>
     <string name="sos_label_medical">वैद्यकीय माहिती</string>
@@ -73,8 +73,8 @@
     <string name="sos_call_112_now">आत्ताच 112 क्रमाला करा</string>
     <string name="sos_keep_active">स्थानिक SOS सक्रिय ठेवा</string>
     <string name="sos_cancel_false_alarm">SOS रद्द करा / चुकीची माहिती</string>
-    <string name="sos_confirm_title">स्थानिक SOS नोंदवायचा?</string>
-    <string name="sos_confirm_body">हे तुमचे ठिकाण, डिव्हाइस बॅटरी आणि वैद्यकीय माहिती यासह याच डिव्हाइसवर संकटाची नोंद करते, जेणेकरून ती पुढे पाठवण्यासाठी तयार राहील. हे NDRF, SARANA किंवा कोणत्याही अधिकाऱ्याशी संपर्क साधत नाही — या आवृत्तीत मदत नेटवर्कची सुविधा नाही. खऱ्या मदतीसाठी 112 क्रमाला करा.</string>
+    <string name="sos_confirm_title">SOS नोंदवायचा?</string>
+    <string name="sos_confirm_body">हे तुमचे ठिकाण, बॅटरी आणि वैद्यकीय माहिती याच डिव्हाइसवर सहेजते. कोणत्याही अधिकाऱ्याला स्वयंचलितपणे कळवले जात नाही. तातडीच्या मदतीसाठी 112 वर कॉल करा.</string>
     <string name="sos_save_local">स्थानिक SOS जतन करा</string>
     <string name="sos_cancel_i_am_safe">रद्द करा — मी सुरक्षित आहे</string>
 

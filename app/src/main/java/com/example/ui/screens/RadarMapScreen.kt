@@ -156,6 +156,7 @@ fun RadarMapScreen(
   onRetryWeather: () -> Unit = {},
   // --- EMERGENCY GUIDANCE (nearest safe zone + terrain haven) ---
   onGuidanceGo: () -> Unit = {},
+  onToggleHazardTypeFilter: (com.example.data.model.HazardType) -> Unit = {},
   onGuidanceDismiss: () -> Unit = {},
   onSearchTerrainHaven: () -> Unit = {},
   onRouteToTerrainHaven: () -> Unit = {},
@@ -236,6 +237,8 @@ fun RadarMapScreen(
       else GeoPoint(uiState.userLocation.lat, uiState.userLocation.lon),
       // PLACE VIEW: chosen place flies the camera; banner labels the mode.
       cameraJumpTarget = uiState.cameraJumpTarget,
+      guidanceZoomToken = uiState.guidanceZoomToken,
+      hazardTypeFilter = uiState.hazardTypeFilter,
       viewingPlaceLabel = if (uiState.isViewingChosenPlace) uiState.viewedPlaceLabel else null,
       onExitPlaceView = onExitPlaceView,
       onCameraJumpConsumed = { onCameraJumpConsumed() },
@@ -323,7 +326,11 @@ fun RadarMapScreen(
 
       // 2c. DISASTER-COLOR LEGEND — keys each zone color to its disaster
       //     type. Auto-hides with the empty map (no zones -> no legend).
-      DisasterTypeLegend(types = uiState.hazardZones.map { it.type }.distinct())
+      DisasterTypeLegend(
+        types = uiState.hazardZones.map { it.type }.distinct(),
+        selectedType = uiState.hazardTypeFilter,
+        onSelectType = onToggleHazardTypeFilter
+      )
 
       // 2d. EMERGENCY GUIDANCE — "disaster near you: where do I go?" card.
       //     Derived purely from risk + evaluated shelters; terrain haven

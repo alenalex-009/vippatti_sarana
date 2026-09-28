@@ -26,6 +26,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -92,8 +96,10 @@ internal fun PersonalRiskStrip(
     }
     Column(modifier = Modifier.weight(1f)) {
       Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        // 12-1: one consistent label ("YOUR AREA"), compact verdict; the
+        // full explanation expands on tap instead of truncating at 2 lines.
         Text(
-          text = "RISK ${risk?.level?.label ?: "..."}",
+          text = "RISK " + (risk?.level?.label ?: "...") + " · YOUR AREA",
           fontSize = 10.sp,
           fontWeight = FontWeight.Black,
           color = color,
@@ -101,21 +107,42 @@ internal fun PersonalRiskStrip(
           maxLines = 1
         )
         Text(
-          text = if (isFallbackLocation) "• location approximate" else "• your GPS",
+          text = if (isFallbackLocation) "· approximate location" else "· GPS",
           fontSize = 10.sp,
           fontWeight = FontWeight.Bold,
           color = if (isFallbackLocation) TacticalCyan else NeonEmerald,
           maxLines = 1
         )
       }
-      Text(
-        text = risk?.explanation ?: "Checking hazards around your location…",
-        fontSize = 11.sp,
-        color = TacticalOnSurface,
-        maxLines = 2,
-        overflow = TextOverflow.Ellipsis,
-        lineHeight = 11.sp
-      )
+      val verdict = when (risk?.level) {
+        com.example.data.risk.RiskLevel.RED -> "Danger detected in your area."
+        com.example.data.risk.RiskLevel.ORANGE -> "Hazard risk detected nearby."
+        com.example.data.risk.RiskLevel.YELLOW -> "Watch: conditions are changing."
+        com.example.data.risk.RiskLevel.GREEN -> "No active hazards nearby."
+        null -> "Checking hazards around your location..."
+      }
+      var expandedRisk by remember { mutableStateOf(false) }
+      Column(
+        modifier = Modifier.clickable { expandedRisk = !expandedRisk }
+      ) {
+        Text(
+          text = verdict,
+          fontSize = 11.sp,
+          color = TacticalOnSurface,
+          maxLines = 1,
+          overflow = TextOverflow.Ellipsis,
+          lineHeight = 13.sp
+        )
+        if (expandedRisk && risk != null) {
+          Text(
+            text = risk.explanation,
+            fontSize = 11.sp,
+            color = TacticalOnSurfaceVariant,
+            lineHeight = 14.sp,
+            modifier = Modifier.padding(top = 2.dp)
+          )
+        }
+      }
     }
   }
 }

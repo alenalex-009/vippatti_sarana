@@ -64,8 +64,8 @@
     <string name="instructions_module_intro">আপনার নিরাপত্তাই প্রথম। ঝুঁকি কমাতে এই নির্দেশনাগুলি অনুসরণ করুন।</string>
 
     <!-- SOS dialogs -->
-    <string name="sos_active_title">SOS সক্রিয় — এই ডিভাইসেই নথিভুক্ত</string>
-    <string name="sos_active_notice">কোনো কর্তৃপক্ষকে স্বয়ংক্রিয়ভাবে জানানো হয়নি। জরুরি সেবার জন্য 112 নম্বরে কল করুন, অথবা সংরক্ষিত SOS SMS আপনার পরিবারের সংস্কারকে পাঠান।</string>
+    <string name="sos_active_title">SOS সংরক্ষিত</string>
+    <string name="sos_active_notice">এই ডিভাইসে সংরক্ষিত। কর্তৃপক্ষকে পাঠানো হয়নি। জরুরি সাহায্যের জন্য ১১২-এ কল করুন।</string>
     <string name="sos_label_gps">GPS অবস্থান</string>
     <string name="sos_label_battery">ব্যাটারির মাত্রা</string>
     <string name="sos_label_medical">চিকিৎসা তথ্য</string>
@@ -73,8 +73,8 @@
     <string name="sos_call_112_now">এখনই 112 নম্বরে কল করুন</string>
     <string name="sos_keep_active">স্থানীয় SOS সক্রিয় রাখুন</string>
     <string name="sos_cancel_false_alarm">SOS বাতিল করুন / ভুল তথ্য</string>
-    <string name="sos_confirm_title">স্থানীয় SOS নথিভুক্ত করবেন?</string>
-    <string name="sos_confirm_body">এটি আপনার অবস্থান, ডিভাইসের ব্যাটারি ও চিকিৎসা তথ্যসহ এই ডিভাইসেই বিপদের নথি সংরক্ষণ করে, যাতে তা পাঠানোর জন্য প্রস্তুত থাকে। এটি NDRF, SARANA বা কোনো কর্তৃপক্ষের সঙ্গে যোগাযোগ করে না — এই সংস্করণে ত্রাণ নেটওয়ার্ক ব্যাকএন্ড নেই। সত্যিকারের সাহায্যের জন্য 112 নম্বরে কল করুন।</string>
+    <string name="sos_confirm_title">SOS নথিভুক্ত করবেন?</string>
+    <string name="sos_confirm_body">এটি আপনার অবস্থান, ব্যাটারি ও চিকিৎসা তথ্য এই ডিভাইসেই সংরক্ষণ করে। কোনো কর্তৃপক্ষকে স্বয়ংক্রিয়ভাবে জানানো হয় না। জরুরি সাহায্যের জন্য ১১২-এ কল করুন।</string>
     <string name="sos_save_local">স্থানীয় SOS সংরক্ষণ করুন</string>
     <string name="sos_cancel_i_am_safe">বাতিল — আমি নিরাপদ</string>
 

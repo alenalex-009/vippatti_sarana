@@ -144,7 +144,8 @@ object DemoNetworkAroundUser {
       if (!IndiaGeo.contains(p)) continue
       out += SafeZone(
         id = "demo-sz-${quant(focus)}-$i",
-        name = DEMO_SHELTER_NAMES[i % DEMO_SHELTER_NAMES.size] + " (simulated)",
+        name = DEMO_SHELTER_NAMES[(i + namesOffset(focus)) % DEMO_SHELTER_NAMES.size] +
+          " (simulated)",
         lat = p.lat,
         lon = p.lon,
         locationNote = "SIMULATED record — demo shelter about %.1f km from your location".format(
@@ -159,7 +160,14 @@ object DemoNetworkAroundUser {
         medicalSupport = true,
         accessibility = if (i % 2 == 0) "DEMO — highway access" else "DEMO — district road access",
         womenChildrenSuitability = true,
-        operatingStatus = if (i == DEMO_SHELTER_COUNT - 1 && !hazardBearingOnly) "CLOSED" else "OPEN",
+        // Variety per place: the LAST shelter in the fan is sometimes closed
+        // and another sometimes near-full, so the demo shows real-world
+        // eligibility differences (evaluator rejects them with reasons).
+        operatingStatus = when {
+          i == DEMO_SHELTER_COUNT - 1 && !hazardBearingOnly &&
+            namesOffset(focus) % 2 == 0 -> "CLOSED"
+          else -> "OPEN"
+        },
         verificationStatus = "SIMULATED — not a verified shelter",
         elevationNote = "DEMO placeholder",
         provenance = demoProvenance
@@ -183,7 +191,9 @@ object DemoNetworkAroundUser {
 
   /** Stable bearing (degrees) derived from the focus coordinates. */
   private fun bearingFor(point: GeoPoint): Double {
-    val seed = (((point.lat * 10_000).toLong() xor (point.lon * 10_000).toLong()) % 3600L + 3600L) % 3600L
+    // ~2.2 km quantised (see quant): walking a few metres must not spin the
+    // scenario around the user and orphan the drawn route.
+    val seed = (((point.lat * 50).toLong() xor (point.lon * 50).toLong()) * 71L % 3600L + 3600L) % 3600L
     return seed.toDouble() / 10.0
   }
 
@@ -196,6 +206,17 @@ object DemoNetworkAroundUser {
   }
 
   /** Coordinate bucket inside ids so a moved focus gets fresh ids. */
+  /**
+   * Focus quantised to ~2.2 km buckets (0.02 deg) for IDS + bearing.
+   * CRITICAL: this seeds demo-hz-/demo-sz- ids. A finer grid let 1 Hz GPS
+   * jitter keep minting new ids, so every recompute saw the selected shelter
+   * + its live corridor as 'zone disappeared from scope' and nulled them
+   * (reported: tapping GO broke the route mid-guidance).
+   */
+  /** Place-seeded rotation so each location gets different shelter names. */
+  private fun namesOffset(point: GeoPoint): Int =
+    (((point.lat * 50).toLong() * 13 + (point.lon * 50).toLong()) % 97L).toInt()
+
   private fun quant(point: GeoPoint): String =
-    "${(point.lat * 100).toLong()}_${(point.lon * 100).toLong()}"
+    "${(point.lat * 50).toLong()}_${(point.lon * 50).toLong()}"
 }

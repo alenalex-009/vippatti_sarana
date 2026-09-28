@@ -229,13 +229,13 @@ class NewsPipelineUnitTest {
 
   @Test
   fun `category chips filter via the classifier categories`() {
-    assertTrue(NewsPresentation.matchesCategory(NewsCategory.SEVERE_ALERTS, "Severe Alerts"))
-    assertTrue(NewsPresentation.matchesCategory(NewsCategory.ROAD_IMPACT, "Severe Alerts"))
-    assertTrue(NewsPresentation.matchesCategory(NewsCategory.WEATHER, "Weather Radar"))
+    assertTrue(NewsPresentation.matchesCategory(NewsCategory.SEVERE_ALERTS, "Disaster"))
+    assertTrue(NewsPresentation.matchesCategory(NewsCategory.ROAD_IMPACT, "Disaster"))
+    assertTrue(NewsPresentation.matchesCategory(NewsCategory.WEATHER, "Weather"))
     assertTrue(NewsPresentation.matchesCategory(NewsCategory.SHELTER, "Shelter Updates"))
-    assertTrue(NewsPresentation.matchesCategory(NewsCategory.GOVERNMENT, "Government Bulletins"))
+    assertTrue(NewsPresentation.matchesCategory(NewsCategory.GOVERNMENT, "Disaster"))
     assertTrue(NewsPresentation.matchesCategory(NewsCategory.GENERAL, "All"))
-    assertFalse(NewsPresentation.matchesCategory(NewsCategory.GENERAL, "Severe Alerts"))
+    assertFalse(NewsPresentation.matchesCategory(NewsCategory.GENERAL, "Disaster"))
   }
 
   @Test
@@ -245,7 +245,7 @@ class NewsPipelineUnitTest {
     val weather = article("w", "IMD heavy rain forecast", now, NewsScope.MY_STATE, category = NewsCategory.WEATHER)
     val chips = NewsPresentation.filterChipLabels(listOf(severe, weather))
     // All is always present; Shelter/Government have no articles -> no dead chips.
-    assertEquals(listOf("All", "Severe Alerts", "Weather Radar"), chips)
+    assertEquals(listOf("All", "Disaster", "Weather"), chips)
     assertEquals(listOf("All"), NewsPresentation.filterChipLabels(emptyList()))
   }
 

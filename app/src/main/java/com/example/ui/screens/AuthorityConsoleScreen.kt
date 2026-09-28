@@ -93,7 +93,8 @@ fun AuthorityConsoleScreen(
   onDeleteShelter: (String) -> Unit,
   onSaveHabitation: (Habitation) -> Unit,
   onDeleteHabitation: (String) -> Unit,
-  onRerank: (Boolean) -> Unit
+  onRerank: (Boolean) -> Unit,
+  onViewOnMap: (com.example.data.routing.GeoPoint) -> Unit = {}
 ) {
   var tab by remember { mutableStateOf(0) } // 0 = dashboard, 1 = shelters, 2 = habitations
   var showHabForm by remember { mutableStateOf(false) }
@@ -158,15 +159,19 @@ fun AuthorityConsoleScreen(
     }
 
     when (tab) {
-      0 -> DashboardTab(uiState, onRerank)
-      1 -> SheltersTab(uiState, onSaveShelter, onDeleteShelter)
+      0 -> DashboardTab(uiState, onRerank, onViewOnMap)
+      1 -> SheltersTab(uiState, onSaveShelter, onDeleteShelter, onViewOnMap)
       else -> HabitationsTab(uiState, showHabForm, onToggleForm = { showHabForm = it }, onSaveHabitation, onDeleteHabitation)
     }
   }
 }
 
 @Composable
-private fun DashboardTab(uiState: VippattiUiState, onRerank: (Boolean) -> Unit) {
+private fun DashboardTab(
+  uiState: VippattiUiState,
+  onRerank: (Boolean) -> Unit,
+  onViewOnMap: (com.example.data.routing.GeoPoint) -> Unit = {}
+) {
   var liveScan by remember { mutableStateOf(false) }
   val priorities = uiState.relocationPriorities
   val counts = priorities.groupingBy { it.tier }.eachCount()
@@ -204,6 +209,71 @@ private fun DashboardTab(uiState: VippattiUiState, onRerank: (Boolean) -> Unit) 
       }
     }
     Spacer(Modifier.height(8.dp))
+
+
+
+    // 12-8: immediate situation summary derived from the SAME ranked data
+    // the rows below use (hazard exposure, population, shelter distance/
+    // capacity). Decision-support output, explicitly labelled DERIVED.
+    priorities.firstOrNull()?.let { top ->
+      val hab = top.habitation
+      val hazardCount = com.example.data.risk.HazardAnalysisService
+        .affectingHazards(hab.point, uiState.hazardZones).size
+      val nearbyShelters = (uiState.safeZones + uiState.fieldShelters).count {
+        com.example.data.model.GeoMath.distanceMeters(hab.point, it.point) < 10_000.0
+      }
+      Column(
+        modifier = Modifier
+          .fillMaxWidth()
+          .clip(RoundedCornerShape(12.dp))
+          .background(ObsidianContainerLow)
+          .border(1.dp, tierColor(top.tier).copy(alpha = 0.5f), RoundedCornerShape(12.dp))
+          .padding(12.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+      ) {
+        Text(
+          text = "CURRENT PRIORITY AREA",
+          fontSize = 10.sp, fontWeight = FontWeight.Black, color = TacticalCyan,
+          letterSpacing = 0.8.sp
+        )
+        Text(hab.name, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TacticalOnSurface)
+        Text(
+          buildString {
+            append(if (hazardCount > 0) "Hazard exposure: " + hazardCount + " zone(s)" else "No active hazard over this point")
+            hab.population?.let { append(" · pop " + it.value) }
+            append(" · shelters within 10 km: " + nearbyShelters)
+            append(" · priority: " + top.tier.label)
+          },
+          fontSize = 11.sp, color = TacticalOnSurfaceVariant, lineHeight = 15.sp
+        )
+        top.reasons.firstOrNull()?.let {
+          Text(it, fontSize = 11.sp, color = TacticalOnSurface, maxLines = 2,
+            overflow = TextOverflow.Ellipsis)
+        }
+        Row(
+          modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+          horizontalArrangement = Arrangement.SpaceBetween,
+          verticalAlignment = Alignment.CenterVertically
+        ) {
+          Text(
+            text = "DERIVED — not an official government decision",
+            fontSize = 10.sp, fontWeight = FontWeight.Bold, color = WarningAmber
+          )
+          Box(
+            modifier = Modifier
+              .clip(RoundedCornerShape(8.dp))
+              .background(TacticalCyan.copy(alpha = 0.9f))
+              .clickable { onViewOnMap(hab.point) }
+              .padding(horizontal = 12.dp, vertical = 7.dp)
+              .testTag("console_view_on_map")
+          ) {
+            Text("VIEW ON MAP", fontSize = 11.sp, fontWeight = FontWeight.Black,
+              color = Color.Black)
+          }
+        }
+      }
+      Spacer(Modifier.height(8.dp))
+    }
 
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
       Box(
@@ -405,7 +475,8 @@ private fun PriorityRow(p: HabitationPriority, destination: SafeZone?) {
 private fun SheltersTab(
   uiState: VippattiUiState,
   onSave: (SafeZone) -> Unit,
-  onDelete: (String) -> Unit
+  onDelete: (String) -> Unit,
+  onViewOnMap: (com.example.data.routing.GeoPoint) -> Unit = {}
 ) {
   var editing by remember { mutableStateOf<SafeZone?>(null) }
   Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 12.dp)) {
@@ -450,6 +521,74 @@ private fun SheltersTab(
         )
       }
     }
+    // 12-12: REFERENCE DATA. The console used to read SHELTERS (0) - empty
+    // screens sell nothing. These are demo/reference shelters (every record is
+    // SIMULATED-labelled at the data level), shown READ-ONLY under an explicit
+    // REFERENCE DATA heading, sorted by distance from the focus. They never
+    // claim to be real live shelters, and they stay distinct from the editable
+    // field records above.
+    val referenceShelters = (uiState.safeZones + uiState.fieldShelters)
+      .filter {
+        it.id.startsWith("demo-sz-") || it.verificationStatus.contains("Simulated", true)
+      }
+      .distinctBy { it.id }
+      .sortedBy {
+        com.example.data.model.GeoMath.distanceMeters(uiState.userLocation, it.point)
+      }
+      .take(6)
+    if (referenceShelters.isNotEmpty()) {
+      Spacer(Modifier.height(10.dp))
+      Text(
+        text = "REFERENCE DATA — simulated demo shelters (not real)",
+        fontSize = 10.sp, fontWeight = FontWeight.Black, color = WarningAmber,
+        letterSpacing = 0.6.sp
+      )
+      referenceShelters.forEach { zone ->
+        Row(
+          modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 3.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .background(ObsidianContainerLow)
+            .border(1.dp, WarningAmber.copy(alpha = 0.35f), RoundedCornerShape(8.dp))
+            .clickable { onViewOnMap(zone.point) }
+            .padding(10.dp),
+          verticalAlignment = Alignment.CenterVertically
+        ) {
+          Column(Modifier.weight(1f)) {
+            Text(zone.name, fontSize = 13.sp, fontWeight = FontWeight.Bold,
+              color = TacticalOnSurface, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(
+              buildString {
+                append(zone.capacityTotal)
+                append(" capacity · ")
+                append(zone.capacityCurrent)
+                append(" occupied · ")
+                append(zone.availableCapacity)
+                append(" free")
+                val km = com.example.data.model.GeoMath.distanceMeters(
+                  uiState.userLocation, zone.point) / 1000.0
+                append(" · %.1f km".format(km))
+              },
+              fontSize = 11.sp, color = TacticalOnSurfaceVariant, maxLines = 1,
+              overflow = TextOverflow.Ellipsis)
+            val facilities = listOfNotNull(
+              if (zone.waterAvailable) "Water" else null,
+              if (zone.foodAvailable) "Food" else null,
+              if (zone.electricityAvailable) "Power" else null,
+              if (zone.sanitationAvailable) "Sanitation" else null,
+              if (zone.medicalSupport) "Medical" else null
+            ).joinToString(" · ")
+            if (facilities.isNotBlank()) {
+              Text(facilities, fontSize = 10.sp, color = TacticalOnSurfaceVariant, maxLines = 1)
+            }
+          }
+          Text(zone.operatingStatus, fontSize = 10.sp, fontWeight = FontWeight.Black,
+            color = if (zone.operatingStatus == "OPEN") NeonEmerald else WarningAmber)
+        }
+      }
+    }
+
     editing?.let { target ->
       Spacer(Modifier.height(10.dp))
       ShelterForm(initial = target, onSave = { onSave(it); editing = null }, onCancel = { editing = null })
