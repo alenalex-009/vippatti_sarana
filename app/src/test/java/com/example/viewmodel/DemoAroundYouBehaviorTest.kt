@@ -87,13 +87,30 @@ class DemoAroundYouBehaviorTest {
       "the demo shelter opposite the hazard must rank as feasible",
       state.rankedShelters.isNotEmpty()
     )
+    // The first real fix AUTO-selects + routes the best zone (the "auto
+    // identify a viable safe zone" rule). Depending on when the async
+    // altitude recompute lands, the card is therefore either still
+    // SUGGESTING the zone or already AlreadyRouting to it — both present
+    // the shelter. The contract that must never depend on thread timing:
+    // the presented/targeted zone is the demo shelter facing the hazard.
     val guidance = state.emergencyGuidance
+    val targetedZoneId: String = when (guidance) {
+      is EmergencyGuidance.SuggestShelter -> guidance.evaluation.zone.id
+      is EmergencyGuidance.AlreadyRouting ->
+        state.selectedSafeZone?.id
+          ?: "AlreadyRouting without a selected destination"
+      else -> error("guidance must present a shelter, got $guidance")
+    }
     assertTrue(
-      "guidance must suggest a shelter, got $guidance",
-      guidance is EmergencyGuidance.SuggestShelter
+      "the shelter presented to the user must be the demo zone, got $targetedZoneId",
+      targetedZoneId.startsWith("demo-sz-")
     )
-    val suggestion = (guidance as EmergencyGuidance.SuggestShelter)
-    assertTrue(suggestion.evaluation.zone.id.startsWith("demo-sz-"))
+    // Whatever the card state, the targeted shelter is in the ranked set
+    // computed for THIS exact location.
+    assertTrue(
+      "the targeted zone must be one of the ranked shelters",
+      state.rankedShelters.any { it.zone.id == targetedZoneId }
+    )
   }
 
   @Test
