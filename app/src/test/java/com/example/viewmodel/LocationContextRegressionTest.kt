@@ -102,7 +102,10 @@ class LocationContextRegressionTest {
     weatherFetcher = { WeatherReading.Failure(WeatherFailureKind.NO_CONNECTION) },
     liveRouteFetcher = { o, d, _, _, name, id, _ ->
       spy?.fetch(o, d, name, id) ?: emptyList()
-    }
+    },
+    elevationCacheOverride = com.example.data.suitability.ElevationCache(
+          fetch = { com.example.data.suitability.TerrainFetchResult.Failure("offline (test fake)") }
+        )
   )
 
   // ---------------------------------------------------------------- 1, 2

@@ -89,7 +89,10 @@ class DeviceToolsAndRoutingTest {
       storageDispatcher = mainDispatcherRule.dispatcher
     ),
     weatherFetcher = { WeatherReading.Failure(WeatherFailureKind.NO_CONNECTION) },
-    liveRouteFetcher = liveRouteFetcher
+    liveRouteFetcher = liveRouteFetcher,
+    elevationCacheOverride = com.example.data.suitability.ElevationCache(
+          fetch = { com.example.data.suitability.TerrainFetchResult.Failure("offline (test fake)") }
+        )
   )
 
   private class FailingProvider(override val providerId: DisasterSource) : DisasterDataProvider {

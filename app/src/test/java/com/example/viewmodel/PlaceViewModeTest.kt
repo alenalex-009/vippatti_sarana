@@ -81,7 +81,10 @@ class PlaceViewModeTest {
       ),
       weatherFetcher = { WeatherReading.Failure(WeatherFailureKind.NO_CONNECTION) },
       liveRouteFetcher = { _, _, _, _, _, _, _ -> emptyList() },
-      placeSearcher = searcher
+      placeSearcher = searcher,
+    elevationCacheOverride = com.example.data.suitability.ElevationCache(
+          fetch = { com.example.data.suitability.TerrainFetchResult.Failure("offline (test fake)") }
+        )
     )
 
   @Test

@@ -62,7 +62,10 @@ class EmergencyGuidanceStateTest {
     ),
     weatherFetcher = { WeatherReading.Failure(WeatherFailureKind.NO_CONNECTION) },
     liveRouteFetcher = { _, _, _, _, _, _, _ -> emptyList() },
-    havenFinderOverride = finder
+    havenFinderOverride = finder,
+    elevationCacheOverride = com.example.data.suitability.ElevationCache(
+          fetch = { com.example.data.suitability.TerrainFetchResult.Failure("offline (test fake)") }
+        )
   )
 
   private class OfflineProvider(override val providerId: DisasterSource) : DisasterDataProvider {

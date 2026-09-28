@@ -81,7 +81,10 @@ class PopulationPipelineBehaviorTest {
     ),
     populationProvider = population,
     weatherFetcher = { WeatherReading.Failure(WeatherFailureKind.NO_CONNECTION) },
-    liveRouteFetcher = { _, _, _, _, _, _, _ -> emptyList() }
+    liveRouteFetcher = { _, _, _, _, _, _, _ -> emptyList() },
+    elevationCacheOverride = com.example.data.suitability.ElevationCache(
+          fetch = { com.example.data.suitability.TerrainFetchResult.Failure("offline (test fake)") }
+        )
   )
 
   /** A provider that yields a fixed list, or throws, on every fetch. */

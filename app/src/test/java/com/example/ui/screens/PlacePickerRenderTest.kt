@@ -117,7 +117,10 @@ class PlacePickerRenderTest {
       override suspend fun search(query: String) =
         PlaceSearchResult.Found(listOf(vizag))
     }
-    val vm = VippattiViewModel(placeSearcher = searcher)
+    val vm = VippattiViewModel(placeSearcher = searcher,
+    elevationCacheOverride = com.example.data.suitability.ElevationCache(
+          fetch = { com.example.data.suitability.TerrainFetchResult.Failure("offline (test fake)") }
+        ))
     var renderedBannerLabel: String? = null
     composeTestRule.setContent {
       VippattiTheme {
