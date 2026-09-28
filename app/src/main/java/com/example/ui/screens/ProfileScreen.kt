@@ -601,6 +601,19 @@ internal fun ProfileDetailsCard(uiState: VippattiUiState) {
   val profile = uiState.userProfile
 
   SectionCard {
+    // PHONE — the number the citizen entered at registration (or later in the
+    // editor). Blank means "not provided yet", shown as such rather than
+    // borrowed from another account or a sample value.
+    SettingsRow(
+      icon = Icons.Default.Call,
+      title = stringResource(R.string.profile_phone_label),
+      value = profile.phone.ifBlank { stringResource(R.string.profile_not_set) },
+      valueColor = if (profile.phone.isBlank()) TacticalOnSurfaceVariant else TacticalOnSurface,
+      leadingTint = TacticalCyan
+    )
+
+    RowDivider()
+
     // HOUSEHOLD — same dependents label + detail the card showed before.
     SettingsRow(
       icon = Icons.Default.Group,

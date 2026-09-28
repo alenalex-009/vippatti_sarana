@@ -1,6 +1,7 @@
 package com.example.data.auth
 
 import android.content.Context
+import com.example.data.model.UserProfile
 import java.security.MessageDigest
 import java.util.Locale
 import kotlin.random.Random
@@ -41,6 +42,14 @@ interface AuthStorage {
   /** Stored "salt:hash" for [email], or null when no account exists. */
   fun readCredential(email: String): String?
   fun writeCredential(email: String, stored: String)
+  /**
+   * The citizen profile saved for [email] — the AUTHORITATIVE per-account
+   * profile. Registration writes it when the account is created and the
+   * Profile editor writes every later update, so one account's identity can
+   * never leak into another's. Null means this account has never saved one.
+   */
+  fun readProfile(email: String): UserProfile?
+  fun writeProfile(email: String, profile: UserProfile)
 }
 
 /** SharedPreferences-backed [AuthStorage] used in production. */
@@ -66,16 +75,72 @@ class SharedPrefsAuthStorage(context: Context) : AuthStorage {
     prefs.edit().putString(credKey(email), stored).apply()
   }
 
+  // ---- Per-account citizen profile ------------------------------------------
+  // One pref key per profile field, namespaced by the account email. Storing
+  // the fields individually (instead of one encoded blob) means no escaping or
+  // parser can corrupt a name, note or blood group on the way back in.
+  private fun profileKey(email: String, field: String) =
+    "profile_${email.trim().lowercase(Locale.ROOT)}_$field"
+
+  override fun readProfile(email: String): UserProfile? {
+    // The marker is written with every save, so a saved-but-empty profile is
+    // still distinguishable from "this account never saved one".
+    if (!prefs.contains(profileKey(email, FIELD_PROFILE_SAVED))) return null
+    return UserProfile(
+      fullName = prefs.getString(profileKey(email, FIELD_FULL_NAME), "").orEmpty(),
+      citizenId = prefs.getString(profileKey(email, FIELD_CITIZEN_ID), "").orEmpty(),
+      phone = prefs.getString(profileKey(email, FIELD_PHONE), "").orEmpty(),
+      bloodGroup = prefs.getString(profileKey(email, FIELD_BLOOD_GROUP), "").orEmpty(),
+      medicalTag = prefs.getString(profileKey(email, FIELD_MEDICAL_TAG), "").orEmpty(),
+      medicalNotes = prefs.getString(profileKey(email, FIELD_MEDICAL_NOTES), "").orEmpty(),
+      dependentsCount = prefs.getInt(profileKey(email, FIELD_DEPENDENTS_COUNT), 0),
+      dependentsDetail = prefs.getString(profileKey(email, FIELD_DEPENDENTS_DETAIL), "").orEmpty(),
+      vulnerableCategoryIds = prefs
+        .getStringSet(profileKey(email, FIELD_VULNERABLE), emptySet())
+        ?.toSet()
+        ?: emptySet(),
+      needsMedicalSupport = prefs.getBoolean(profileKey(email, FIELD_MEDICAL_SUPPORT), false)
+    )
+  }
+
+  override fun writeProfile(email: String, profile: UserProfile) {
+    prefs.edit()
+      .putBoolean(profileKey(email, FIELD_PROFILE_SAVED), true)
+      .putString(profileKey(email, FIELD_FULL_NAME), profile.fullName)
+      .putString(profileKey(email, FIELD_CITIZEN_ID), profile.citizenId)
+      .putString(profileKey(email, FIELD_PHONE), profile.phone)
+      .putString(profileKey(email, FIELD_BLOOD_GROUP), profile.bloodGroup)
+      .putString(profileKey(email, FIELD_MEDICAL_TAG), profile.medicalTag)
+      .putString(profileKey(email, FIELD_MEDICAL_NOTES), profile.medicalNotes)
+      .putInt(profileKey(email, FIELD_DEPENDENTS_COUNT), profile.dependentsCount)
+      .putString(profileKey(email, FIELD_DEPENDENTS_DETAIL), profile.dependentsDetail)
+      .putStringSet(profileKey(email, FIELD_VULNERABLE), profile.vulnerableCategoryIds.toSet())
+      .putBoolean(profileKey(email, FIELD_MEDICAL_SUPPORT), profile.needsMedicalSupport)
+      .apply()
+  }
+
   private companion object {
     const val KEY_LOGGED_IN = "logged_in"
     const val KEY_STAY_SIGNED_IN = "stay_signed_in"
     const val KEY_LAST_EMAIL = "last_email"
+    const val FIELD_PROFILE_SAVED = "saved"
+    const val FIELD_FULL_NAME = "full_name"
+    const val FIELD_CITIZEN_ID = "citizen_id"
+    const val FIELD_PHONE = "phone"
+    const val FIELD_BLOOD_GROUP = "blood_group"
+    const val FIELD_MEDICAL_TAG = "medical_tag"
+    const val FIELD_MEDICAL_NOTES = "medical_notes"
+    const val FIELD_DEPENDENTS_COUNT = "dependents_count"
+    const val FIELD_DEPENDENTS_DETAIL = "dependents_detail"
+    const val FIELD_VULNERABLE = "vulnerable_categories"
+    const val FIELD_MEDICAL_SUPPORT = "needs_medical_support"
   }
 }
 
 /** In-memory [AuthStorage] for JVM unit tests. */
 class InMemoryAuthStorage : AuthStorage {
   private val credentials = mutableMapOf<String, String>()
+  private val profiles = mutableMapOf<String, UserProfile>()
   private var loggedIn = false
   private var staySignedIn = true
   private var email: String? = null
@@ -94,6 +159,13 @@ class InMemoryAuthStorage : AuthStorage {
 
   override fun writeCredential(email: String, stored: String) {
     credentials[email.trim().lowercase(Locale.ROOT)] = stored
+  }
+
+  override fun readProfile(email: String): UserProfile? =
+    profiles[email.trim().lowercase(Locale.ROOT)]
+
+  override fun writeProfile(email: String, profile: UserProfile) {
+    profiles[email.trim().lowercase(Locale.ROOT)] = profile
   }
 }
 
@@ -160,6 +232,39 @@ class AuthRepository(private val storage: AuthStorage) {
     storage.setLastEmail(clean)
     return AuthResult.success(clean)
   }
+
+  /**
+   * Creates the account AND stores the profile the user filled in on the same
+   * Registration form, so the account and its citizen identity are created in
+   * one step. The profile is written only when registration actually succeeded:
+   * a rejected attempt leaves no citizen record for an email with no account.
+   */
+  fun register(request: RegistrationRequest): AuthResult {
+    val result = register(request.email, request.password, request.staySignedIn)
+    if (result.ok) saveProfile(result.email, request.profile)
+    return result
+  }
+
+  /**
+   * The citizen profile stored for [email] (the Registration form's values, or
+   * whatever the Profile editor last saved). Null when that account has never
+   * saved a profile — the caller then shows an empty profile rather than any
+   * other account's data or a sample identity.
+   */
+  fun loadProfile(email: String?): UserProfile? {
+    val clean = email?.trim()?.lowercase(Locale.ROOT)?.takeIf { it.isNotEmpty() } ?: return null
+    return storage.readProfile(clean)
+  }
+
+  /** Saves [profile] as the authoritative profile of the account [email]. */
+  fun saveProfile(email: String, profile: UserProfile) {
+    val clean = email.trim().lowercase(Locale.ROOT)
+    if (clean.isEmpty()) return
+    storage.writeProfile(clean, profile)
+  }
+
+  /** Profile of the signed-in account — null when signed out or never saved. */
+  fun currentUserProfile(): UserProfile? = loadProfile(currentUserEmail)
 
   fun logout() {
     processLoggedIn = false

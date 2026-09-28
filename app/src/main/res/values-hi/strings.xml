@@ -190,4 +190,7 @@
     <string name="profile_authority_open">खोलें</string>
     <string name="profile_authority_description">क्षेत्रीय आश्रय और बस्ती रिकॉर्ड दर्ज करें और तत्काल / अल्पकालिक / मध्यकालिक पुनर्वास के लिए बस्तियों को लाइव खतरे की स्थिति (SIH 26191) के अनुसार वर्गीकृत करें। रिकॉर्ड इसी डिवाइस पर रहते हैं; डेमो पंक्तियाँ SIMULATED ही रहती हैं।</string>
     <string name="profile_contacts_empty">अभी कोई आपातकालीन संपर्क नहीं — परिवार या पड़ोसियों को जोड़ें ताकि आपका स्थानीय SOS रिकॉर्ड उन्हें संदर्भित कर सके। संपर्क केवल इसी डिवाइस पर रहते हैं।</string>
+    <!-- Account profile: the citizen's own phone number (registration or editor). -->
+    <string name="profile_phone_label">फ़ोन नंबर</string>
+    <string name="profile_not_set">सेट नहीं है</string>
 </resources>

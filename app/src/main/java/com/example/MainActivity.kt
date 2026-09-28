@@ -203,7 +203,12 @@ class MainActivity : ComponentActivity() {
                   com.example.ui.theme.SharedPreferencesThemePreferenceStore.PREFS_NAME,
                   MODE_PRIVATE
                 )
-              )
+              ),
+              // ACCOUNT PROFILE: the Profile tab renders the signed-in
+              // account's stored citizen profile (registration input +
+              // editor updates). This is the SAME repository instance that owns
+              // the session, so account + profile can never disagree.
+              accountRepository = authGate.repository
             ) as T
         }
       )
@@ -227,11 +232,20 @@ class MainActivity : ComponentActivity() {
           )
         }
         if (signedIn) {
+          // Load the SIGNED-IN account's own stored profile into the UI state on
+          // every authentication change (first sign-in, account switch, and the
+          // cold start where the session is restored but this ViewModel is new).
+          LaunchedEffect(authRepository.currentUserEmail) {
+            viewModel.syncSignedInAccountProfile()
+          }
           VippattiAppRoot(
             viewModel = viewModel,
             accountEmail = authRepository.currentUserEmail,
             onSignOut = {
               authRepository.logout()
+              // Clear the departed account's identity from the UI state so the
+              // next sign-in can never show the previous user's details.
+              viewModel.syncSignedInAccountProfile()
               signedIn = false
             }
           )
@@ -246,8 +260,10 @@ class MainActivity : ComponentActivity() {
                 if (it.ok) signedIn = true
               }
             },
-            onRegister = { email, password, staySignedIn ->
-              authRepository.register(email, password, staySignedIn).also {
+            onRegister = { request ->
+              // Creates the account AND stores the profile typed on the same
+              // Registration form, so Profile opens on the user's real values.
+              authRepository.register(request).also {
                 if (it.ok) signedIn = true
               }
             }

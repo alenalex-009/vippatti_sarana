@@ -179,4 +179,7 @@
     <string name="profile_authority_open">খুলুন</string>
     <string name="profile_authority_description">ক্ষেত্রীয় আশ্রয় ও বসতির রেকর্ড লিখুন এবং তাৎক্ষণিক / স্বল্পমেয়াদি / মধ্যমেয়াদি স্থানান্তরের জন্য বসতিগুলোকে সরাসরি বিপদ পরিস্থিতির (SIH 26191) ভিত্তিতে সাজান। রেকর্ড এই ডিভাইসেই থাকে; ডেমো সারিগুলো SIMULATED থাকেই।</string>
     <string name="profile_contacts_empty">এখনও কোনো জরুরি যোগাযোগ নেই — আপনার স্থানীয় SOS রেকর্ড তাদের উল্লেখ করতে পারে, তাই পরিবার বা প্রতিবেশীদের যোগ করুন। যোগাযোগগুলো শুধু এই ডিভাইসেই থাকে।</string>
+    <!-- Account profile: the citizen's own phone number (registration or editor). -->
+    <string name="profile_phone_label">ফোন নম্বর</string>
+    <string name="profile_not_set">সেট করা হয়নি</string>
 </resources>

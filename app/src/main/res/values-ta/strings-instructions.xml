@@ -179,4 +179,26 @@
     <string name="login_error_title">உள்நுழைய முடியவில்லை</string>
     <string name="login_demo_hint">டெமோ விவரங்களை நிரப்ப டேப் செய்யவும்</string>
     <string name="login_a11y_logo">விப்பட்டி சரண லோகோ</string>
+
+    <string name="register_title">உங்கள் கணக்கை உருவாக்குங்கள்</string>
+    <string name="register_subtitle">உங்கள் விப்பட்டி சரண அடையாளத்தை அமைக்கவும். மற்ற சுயவிவரங்களைப் பின்னர் சேர்க்கலாம்.</string>
+    <string name="register_back_to_login">உள்நுழைவு பக்கத்திற்குத் திரும்பவும்</string>
+    <string name="register_section_account">கணக்கு</string>
+    <string name="register_section_account_hint">கணக்கை உருவாக்கத் தேவையானவை</string>
+    <string name="register_section_profile">சுயவிவரம்</string>
+    <string name="register_section_profile_hint">விருப்பம் - பின்னர் நிறைவு செய்யலாம்</string>
+    <string name="register_section_later">பின்னர் நிறைவு செய்யவும்</string>
+    <string name="register_section_later_hint">நேர்மையான விவரங்கள், பதிவு செய்த பிறகு சுயவிவரத்தில் சேர்க்கப்படும்</string>
+    <string name="register_full_name">முழு பெயர்</string>
+    <string name="register_citizen_id_optional">குடிமை அடையாள எண் (விருப்பம்)</string>
+    <string name="register_dependents_optional">குடும்ப உறுப்பினர்கள் (விருப்பம்)</string>
+    <string name="register_later_fields">இரத்த வகை, மருத்துவ நிலைகள், சார்ந்தவர் விவரங்கள் மற்றும் பாதுகாப்புக் குறியீடுகள் தனிப்பட்டதாக வைக்கப்பட்டு, உங்கள் சுயவிவரத்திலிருந்து எப்போதுும் சேர்க்கலாம்.</string>
+    <string name="register_error_title">கணக்கை உருவாக்க முடியவில்லை</string>
+    <string name="register_error_name">உங்கள் முழு பெயரை உள்ளிடவும்.</string>
+    <string name="register_error_password">குறைந்தது 8 எழுத்துகளைப் பயன்படுத்தவும்.</string>
+    <string name="register_error_dependents">சரியான எண்ணை உள்ளிடவும்.</string>
+    <string name="register_privacy_note">உங்கள் விவரங்கள் இந்தச் சாதனத்திலேயே இருக்கும்; அவை உங்கள் அறிவிப்புகளையும் அறிக்கைகளையும் அடையாளம் காணப் பயன்படும்.</string>
+
+    <string name="login_error_backend_unavailable">உள்நுழைவு சேவையை அணுக முடியவில்லை. இணைப்பைச் சரிபார்த்து மீண்டும் முயற்சிக்கவும்.</string>
+    <string name="login_backend_note">உங்கள் கணக்கு மற்றும் சுயவிவரம் பாதுகாப்பாக ஆன்லைனில் சேமிக்கப்படுகிறது, எனவே உள்நுழைவுக்கு இணைப்பு தேவை.</string>
 </resources>

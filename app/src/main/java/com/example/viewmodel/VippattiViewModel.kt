@@ -245,7 +245,18 @@ class VippattiViewModel(
    * System/Light/Dark choice is READ BACK on every cold start; defaults to an
    * in-memory store so unit tests stay free of Android Context.
    */
-  private val themePreferences: ThemePreferenceStore = InMemoryThemePreferenceStore()
+  private val themePreferences: ThemePreferenceStore = InMemoryThemePreferenceStore(),
+  /**
+   * The signed-in account's stored citizen profile (Registration input plus
+   * every later Profile-editor update), keyed by account email. This is the
+   * SAME [com.example.data.auth.AuthRepository] that owns the session and the
+   * credentials, so there is exactly ONE account layer and no second, competing
+   * store for profile data.
+   *
+   * Null in unit tests: engineering tests keep whatever profile they set on the
+   * state, and nothing in those suites needs an account store.
+   */
+  private val accountRepository: com.example.data.auth.AuthRepository? = null
 ) : ViewModel() {
 
   /** Real GNews disaster-news pipeline (live API + offline cache). */
@@ -259,10 +270,22 @@ class VippattiViewModel(
   private val _uiState = MutableStateFlow(
     VippattiUiState(
       themeMode = themePreferences.load(),
-      colorTheme = themePreferences.loadColorTheme()
+      colorTheme = themePreferences.loadColorTheme(),
+      // The signed-in account's OWN stored profile (or a blank one when it has
+      // never saved a profile) — never another account's data and never a
+      // sample identity. Without an account store this stays the legacy
+      // baseline, which is what the engine unit tests assert against.
+      userProfile = initialAccountProfile()
     )
   )
   val uiState: StateFlow<VippattiUiState> = _uiState.asStateFlow()
+
+  /** Profile to start from: the signed-in account's stored values, else blank. */
+  private fun initialAccountProfile(): UserProfile {
+    val repository = accountRepository ?: return UserProfile()
+    val email = repository.currentUserEmail ?: return UserProfile.blank()
+    return repository.loadProfile(email) ?: UserProfile.blank()
+  }
 
   private var audioJob: Job? = null
   private var sirenJob: Job? = null
@@ -1995,11 +2018,18 @@ class VippattiViewModel(
   }
 
   /**
-   * Saves the edited citizen profile. Vulnerable categories and the medical
+   * Saves the edited citizen profile AND persists it to the signed-in account,
+   * so the values that reach Profile — and the vulnerable/medical inputs the
+   * shelter engines read — are this account's real stored profile on the next
+   * launch, not just this screen's state. Vulnerable categories and the medical
    * flag change shelter ranking and the relocation priority band, so the
    * intelligence pipeline is re-run immediately.
+   *
+   * Without an account store (unit tests) the state update is unchanged.
    */
   fun updateUserProfile(profile: UserProfile) {
+    val email = accountRepository?.currentUserEmail
+    if (email != null) accountRepository.saveProfile(email, profile)
     _uiState.update {
       it.copy(
         userProfile = profile,
@@ -2007,6 +2037,24 @@ class VippattiViewModel(
         snackbarMessage = "Profile saved: ${profile.fullName} | ${profile.bloodGroupLabel} | ${profile.dependentsLabel}"
       )
     }
+    recomputeIntelligence()
+  }
+
+  /**
+   * Re-reads the SUPPLIED account's profile into the UI state — called whenever
+   * authentication changes (sign-in, registration, sign-out).
+   *
+   * WHY: the Profile tab must show the signed-in account's own stored data.
+   * A newly signed-in account loads its own stored profile; an account that has
+   * never saved one gets a BLANK profile (nothing invented, nothing carried over
+   * from the previous user), and signing out clears the identity rather than
+   * leaving the last user's details on screen.
+   */
+  fun syncSignedInAccountProfile() {
+    val repository = accountRepository ?: return
+    val email = repository.currentUserEmail
+    val profile = email?.let { repository.loadProfile(it) } ?: UserProfile.blank()
+    _uiState.update { it.copy(userProfile = profile) }
     recomputeIntelligence()
   }
 

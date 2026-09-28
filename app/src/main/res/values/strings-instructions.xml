@@ -156,4 +156,26 @@
     <string name="login_error_title">Could not sign in</string>
     <string name="login_demo_hint">Tap to fill the demo credentials</string>
     <string name="login_a11y_logo">Vippatti Sarana logo</string>
+
+    <string name="register_title">Create your account</string>
+    <string name="register_subtitle">Set up your Vippatti Sarana identity. You can add the rest of your profile later.</string>
+    <string name="register_back_to_login">Back to sign in</string>
+    <string name="register_section_account">ACCOUNT</string>
+    <string name="register_section_account_hint">Required to create your account</string>
+    <string name="register_section_profile">PROFILE</string>
+    <string name="register_section_profile_hint">Optional - you can complete these later</string>
+    <string name="register_section_later">COMPLETE LATER</string>
+    <string name="register_section_later_hint">Sensitive details, added in Profile after sign-up</string>
+    <string name="register_full_name">Full name</string>
+    <string name="register_citizen_id_optional">Citizen ID (optional)</string>
+    <string name="register_dependents_optional">Household members (optional)</string>
+    <string name="register_later_fields">Blood group, medical conditions, dependent details and vulnerability flags are kept private and can be added at any time from your Profile.</string>
+    <string name="register_error_title">Could not create the account</string>
+    <string name="register_error_name">Enter your full name.</string>
+    <string name="register_error_password">Use at least 8 characters.</string>
+    <string name="register_error_dependents">Enter a valid number.</string>
+    <string name="register_privacy_note">Your details stay on this device and are used only to identify your alerts and reports.</string>
+
+    <string name="login_error_backend_unavailable">Cannot reach the sign-in service. Check your connection and try again.</string>
+    <string name="login_backend_note">Your account and profile are stored securely online, so signing in needs a connection.</string>
 </resources>
