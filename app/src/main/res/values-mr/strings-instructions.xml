@@ -179,4 +179,26 @@
     <string name="login_error_title">साइन इन करता आले नाही</string>
     <string name="login_demo_hint">डेमो तपशील भरण्यासाठी टॅप करा</string>
     <string name="login_a11y_logo">विप्पट्टी सारण लोगो</string>
+
+    <string name="register_title">तुमचे खाते तयार करा</string>
+    <string name="register_subtitle">तुमची विप्पट्टी सारण ओळख सेट करा. उर्वचीत इतर माहिती नंतर भरता येईल.</string>
+    <string name="register_back_to_login">साइन इनकडे परत जा</string>
+    <string name="register_section_account">खाते</string>
+    <string name="register_section_account_hint">खाते तयार करण्यासाठी आवश्यक</string>
+    <string name="register_section_profile">प्रोफाइल</string>
+    <string name="register_section_profile_hint">ऐच्छिक - तुम्ही नंतर पूर्ण करू शकता</string>
+    <string name="register_section_later">नंतर पूर्ण करा</string>
+    <string name="register_section_later_hint">संवेदनशील माहिती, साइन-अपनंतर प्रोफाइलमध्ये जोडली जाईल</string>
+    <string name="register_full_name">पूर्ण नाव</string>
+    <string name="register_citizen_id_optional">नागरिक ओळखीपत्र (ऐच्छिक)</string>
+    <string name="register_dependents_optional">कुटुंबातील सदस्य (ऐच्छिक)</string>
+    <string name="register_later_fields">रक्त गट, आरोग्यस्थिती, अवलंबितांचा तपशील आणि असुरक्षिततेच्या नोंदी गोपीन राखल्या जातात आणि तुम्ही कधीही प्रोफाइलमधून जोडू शकता.</string>
+    <string name="register_error_title">खाते तयार करता आले नाही</string>
+    <string name="register_error_name">तुमचे पूर्ण नाव लिहा.</string>
+    <string name="register_error_password">किमान 8 अक्षरे वापरा.</string>
+    <string name="register_error_dependents">वैध संख्या लिहा.</string>
+    <string name="register_privacy_note">तुमची माहिती याच डिव्हाइसवर राहते आणि फक्त तुमच्या सूचना व अहवालांची ओळख करण्यासाठी वापरली जाते.</string>
+
+    <string name="login_error_backend_unavailable">साइन-इन सेवेशनपर्यंत पोहोचता आले. तुमचे कनेक्शन तपासा आणि पुन्हा प्रयत्न करा.</string>
+    <string name="login_backend_note">तुमचे खाते आणि प्रोफाइल सुरक्षितपणे ऑनलाइन साठवले जाते, म्हणून साइन इनला कनेक्शन आवश्यक आहे.</string>
 </resources>

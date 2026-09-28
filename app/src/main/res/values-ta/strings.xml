@@ -178,4 +178,7 @@
     <string name="profile_authority_open">திற</string>
     <string name="profile_authority_description">பகுதி அடிதலங்கள் மற்றும் குடியேற்றப் பதிவுகளை உள்ளிட்டு, உடனடி / குறுகிய கால / நடுப்பட்ட கால நகர்விற்காக குடியேற்றங்களை நேரடி அபாய நிலைக்கு (SIH 26191) ஏற்ப வகைப்படுத்துங்கள். பதிவுகள் இந்தச் சாதனத்திலேயே இருக்கும்; டெமோ வரிசைகள் SIMULATED என்றே இருக்கும்.</string>
     <string name="profile_contacts_empty">இன்னும் அவசர தொடர்புகள் இல்லை — உங்கள் உள்ளூர் SOS பதிவு அவற்றைக் குறிப்பிட உறும்பங்கள் அல்லது அருகுள்ளவர்களைச் சேர்க்கவும். தொடர்புகள் இந்தச் சாதனத்திலேயே தக்கவைக்கப்படும்.</string>
+    <!-- Account profile: the citizen's own phone number (registration or editor). -->
+    <string name="profile_phone_label">தொலைபேசி எண்</string>
+    <string name="profile_not_set">அமைக்கப்படவில்லை</string>
 </resources>

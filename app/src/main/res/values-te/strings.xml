@@ -178,4 +178,7 @@
     <string name="profile_authority_open">తెరవండి</string>
     <string name="profile_authority_description">ప్రాంతీయ ఆశ్రయ మరియు నివాస గ్రామాల రికార్డులను నమోదు చేసి, తక్షణ / త్వరిత / మధ్యకాలిక నిర్ధారణ కోసం గ్రామాలను ప్రత్యక్ష ప్రమాద పరిస్థితి (SIH 26191) ప్రకారం వర్గీకరించండి. రికార్డులు ఈ పరికరంలోనే ఉంటాయి; డెమో వరుసలు SIMULATEDగానే ఉంటాయి.</string>
     <string name="profile_contacts_empty">ఇంకా అత్యవసర పరిచయాలు లేవు — మీ స్థానిక SOS రికార్డు వారిని సూచించేందుకు కుటుంబం లేదా పొరుగులను జోడించండి. పరిచయాలు ఈ పరికరంలోనే ఉంటాయి.</string>
+    <!-- Account profile: the citizen's own phone number (registration or editor). -->
+    <string name="profile_phone_label">ఫోన్ నంబర్</string>
+    <string name="profile_not_set">సెట్ చేయలేదు</string>
 </resources>

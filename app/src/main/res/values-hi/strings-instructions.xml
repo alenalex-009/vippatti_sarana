@@ -180,4 +180,26 @@
     <string name="login_error_title">साइन इन नहीं हो सका</string>
     <string name="login_demo_hint">डेमो जानकारी भरने के लिए टैप करें</string>
     <string name="login_a11y_logo">विप्पट्टी सारणा लोगो</string>
+
+    <string name="register_title">अपना खाता बनाएं</string>
+    <string name="register_subtitle">अपनी विप्पट्टी सारणा पहचान तय करें। बाकी प्रोफ़ाइल आप बाद में जोड़ सकते हैं।</string>
+    <string name="register_back_to_login">साइन इन पर वापस जाएं</string>
+    <string name="register_section_account">खाता</string>
+    <string name="register_section_account_hint">खाता बनाने के लिए आवश्यक</string>
+    <string name="register_section_profile">प्रोफ़ाइल</string>
+    <string name="register_section_profile_hint">वैकल्पिक - आप यह बाद में पूरा कर सकते हैं</string>
+    <string name="register_section_later">बाद में पूरा करें</string>
+    <string name="register_section_later_hint">संवेदनशील जानकारी, साइन-अप के बाद प्रोफ़ाइल में जोड़ी जाएगी</string>
+    <string name="register_full_name">पूरा नाम</string>
+    <string name="register_citizen_id_optional">नागरिक आईडी (वैकल्पिक)</string>
+    <string name="register_dependents_optional">परिवार के सदस्य (वैकल्पिक)</string>
+    <string name="register_later_fields">रक्त समूह, चिकित्सा स्थितियां, आश्रित विवरण और असुरक्षा संबंधी विवरण निजी रखे जाते हैं और आप कभी भी अपनी प्रोफ़ाइल से जोड़ सकते हैं।</string>
+    <string name="register_error_title">खाता नहीं बनाया जा सका</string>
+    <string name="register_error_name">अपना पूरा नाम दर्ज करें।</string>
+    <string name="register_error_password">कम से कम 8 अक्षरों का उपयोग करें।</string>
+    <string name="register_error_dependents">मान्य संख्या दर्ज करें।</string>
+    <string name="register_privacy_note">आपका विवरण इसी डिवाइस पर रहता है और केवल आपके अलर्ट और रिपोर्ट की पहचान के लिए उपयोग किया जाता है।</string>
+
+    <string name="login_error_backend_unavailable">साइन-इन सेवा तक नहीं पहुँच सके। अपना कनेक्शन जाँचें और फिर से प्रयास करें।</string>
+    <string name="login_backend_note">आपका खाता और प्रोफ़ाइल सुरक्षित रूप से ऑनलाइन संग्रहीत होता है, इसलिए साइन इन के लिए कनेक्शन आवश्यक है।</string>
 </resources>

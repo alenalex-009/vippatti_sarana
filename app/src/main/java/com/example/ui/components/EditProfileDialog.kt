@@ -83,6 +83,7 @@ fun EditProfileDialog(
 ) {
   var fullName by remember { mutableStateOf(profile.fullName) }
   var citizenId by remember { mutableStateOf(profile.citizenId) }
+  var phone by remember { mutableStateOf(profile.phone) }
   var bloodGroup by remember { mutableStateOf(profile.bloodGroupLabel) }
   var medicalTag by remember { mutableStateOf(profile.medicalTag) }
   var medicalNotes by remember { mutableStateOf(profile.medicalNotes) }
@@ -161,6 +162,27 @@ fun EditProfileDialog(
           modifier = Modifier
             .fillMaxWidth()
             .testTag("edit_profile_id_input")
+        )
+
+        // Phone: the citizen's own callback number, collected at registration
+        // and editable here (an empty value stays empty).
+        OutlinedTextField(
+          value = phone,
+          onValueChange = { phone = it },
+          label = { Text(stringResource(R.string.gobag_phone), fontSize = 12.sp) },
+          singleLine = true,
+          keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+            keyboardType = androidx.compose.ui.text.input.KeyboardType.Phone
+          ),
+          colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = NeonEmerald,
+            unfocusedBorderColor = TacticalOutlineVariant,
+            focusedTextColor = TacticalOnSurface,
+            unfocusedTextColor = TacticalOnSurface
+          ),
+          modifier = Modifier
+            .fillMaxWidth()
+            .testTag("edit_profile_phone_input")
         )
 
         // Blood group chip selector
@@ -342,6 +364,7 @@ fun EditProfileDialog(
               UserProfile(
                 fullName = fullName.trim().ifBlank { profile.fullName },
                 citizenId = citizenId.trim().ifBlank { profile.citizenId },
+                phone = phone.trim(),
                 bloodGroup = bloodGroup,
                 medicalTag = medicalTag.trim(),
                 medicalNotes = medicalNotes.trim(),

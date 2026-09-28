@@ -178,4 +178,7 @@
     <string name="profile_authority_open">उघडा</string>
     <string name="profile_authority_description">स्थानिक आश्रय व इग्रह नोंदी भरा आणि तातडीत / अल्पकालीन / मध्यकालीन स्थलांतरासाठी इग्रहांना थेट धोका स्थिती (SIH 26191) अनुसार वर्गीकृत करा. नोंदी याच डिव्हाइसवरच राहतात; डेमो ओळी SIMULATED म्हणूनच राहतात.</string>
     <string name="profile_contacts_empty">अद्यापर्यंत आणीबाणी संपर्क नाहीत — कुटुंब किंवा शेजारी जोडा जेणेकरून तुमचा स्थानिक SOS रेकॉर्ड त्यांचा उल्लेख करू शको. संपर्क केवळ याच डिव्हाइसवर राहतात.</string>
+    <!-- Account profile: the citizen's own phone number (registration or editor). -->
+    <string name="profile_phone_label">फोन क्रमांक</string>
+    <string name="profile_not_set">सेट केलेले नाही</string>
 </resources>

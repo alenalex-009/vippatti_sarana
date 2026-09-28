@@ -179,4 +179,26 @@
     <string name="login_error_title">সাইন ইন করা যায়নি</string>
     <string name="login_demo_hint">ডেমোর তথ্য পূরণ করতে ট্যাপ করুন</string>
     <string name="login_a11y_logo">ভিপ্পত্তি সারণ লোগো</string>
+
+    <string name="register_title">আপনার অ্যাকাউন্ট তৈরি করুন</string>
+    <string name="register_subtitle">আপনার ভিপ্পাট্টি সারণ পরিচয় সেট করুন। বাকি প্রোফাইল পরে যোগ করা যাবে।</string>
+    <string name="register_back_to_login">সাইন ইন-এ ফিরে যান</string>
+    <string name="register_section_account">অ্যাকাউন্ট</string>
+    <string name="register_section_account_hint">অ্যাকাউন্ট তৈরি করতে আবশ্যক</string>
+    <string name="register_section_profile">প্রোফাইল</string>
+    <string name="register_section_profile_hint">ঐচ্ছিক - পরে সম্পূর্ণ করতে পারেন</string>
+    <string name="register_section_later">পরে সম্পূর্ণ করুন</string>
+    <string name="register_section_later_hint">সংবেদনশীল তথ্য, সাইন-আপের পরে প্রোফাইলে যোগ করা হবে</string>
+    <string name="register_full_name">পূর্ণ নাম</string>
+    <string name="register_citizen_id_optional">নাগরিক আইডি (ঐচ্ছিক)</string>
+    <string name="register_dependents_optional">পরিবারের সদস্য (ঐচ্ছিক)</string>
+    <string name="register_later_fields">রক্তের গ্রুপ, চিকিৎসা অবস্থা, আশ্রিতদের বিবরণ ও ঝুঁকির চিহ্নগুলো ব্যক্তিগত রাখা হয় এবং আপনি যেকোনো সময় প্রোফাইল থেকে যোগ করতে পারেন।</string>
+    <string name="register_error_title">অ্যাকাউন্ট তৈরি করা যায়নি</string>
+    <string name="register_error_name">আপনার পূর্ণ নাম লিখুন।</string>
+    <string name="register_error_password">কমপক্ষে 8 অক্ষর ব্যবহার করুন।</string>
+    <string name="register_error_dependents">একটি বৈধ সংখ্যা লিখুন।</string>
+    <string name="register_privacy_note">আপনার তথ্য এই ডিভাইসেই থাকে এবং শুধু আপনার অ্যালার্ট ও প্রতিবেদন শনাক্ত করতে ব্যবহৃত হয়।</string>
+
+    <string name="login_error_backend_unavailable">সাইন-ইন পরিষেবায় পৌঁছানো যায়নি। সংযোগ পরীক্ষা করে আবার চেষ্টা করুন।</string>
+    <string name="login_backend_note">আপনার অ্যাকাউন্ট ও প্রোফাইল নিরাপদে অনলাইনে সংরক্ষিত থাকে, তাই সাইন ইনের জন্য সংযোগ প্রয়োজন।</string>
 </resources>

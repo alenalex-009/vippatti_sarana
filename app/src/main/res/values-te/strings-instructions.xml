@@ -179,4 +179,26 @@
     <string name="login_error_title">సైన్ ఇన్ చేయలేకపోయాము</string>
     <string name="login_demo_hint">డెమో వివరాలు నమోదు చేయడానికి నొక్కండి</string>
     <string name="login_a11y_logo">విప్పట్టి సారణ లోగో</string>
+
+    <string name="register_title">మీ ఖాతాను సృష్టించండి</string>
+    <string name="register_subtitle">మీ విప్పట్టి సారణ గుర్తింపును సెట్ చేయండి. మిగతా ప్రొఫైల్‌ను తర్వాత జోడించవచ్చు.</string>
+    <string name="register_back_to_login">సైన్ ఇన్‌కు తిరిగి వెళ్లండి</string>
+    <string name="register_section_account">ఖాతా</string>
+    <string name="register_section_account_hint">ఖాతాను సృష్టించడానికి అవసరం</string>
+    <string name="register_section_profile">ప్రొఫైల్</string>
+    <string name="register_section_profile_hint">ఐచ్ఛికం - దీనిని మీరు తర్వాత పూర్తి చేయవచ్చు</string>
+    <string name="register_section_later">తర్వాత పూర్తి చేయండి</string>
+    <string name="register_section_later_hint">సంవేదనశీల వివరాలు, సైన్-అప్ తర్వాత ప్రొఫైల్‌లో జోడిస్తారు</string>
+    <string name="register_full_name">పూర్తి పేరు</string>
+    <string name="register_citizen_id_optional">సిటిజన్ ఐడీ (ఐచ్ఛికం)</string>
+    <string name="register_dependents_optional">గృహ సభ్యులు (ఐచ్ఛికం)</string>
+    <string name="register_later_fields">రక్త సమూహం, వైద్య పరిస్థితులు, ఆధారిత వివరాలు మరియు అసురక్షతా గుర్తులు గోప్యంగా ఉంచబడి, మీరు ఎప్పుడైనా మీ ప్రొఫైల్ నుండి జోడించవచ్చు.</string>
+    <string name="register_error_title">ఖాతాను సృష్టించలేకపోయాము</string>
+    <string name="register_error_name">మీ పూర్తి పేరు నమోదు చేయండి.</string>
+    <string name="register_error_password">కనీసం 8 అక్షరాలు ఉపయోగించండి.</string>
+    <string name="register_error_dependents">సరైన సంఖ్యను నమోదు చేయండి.</string>
+    <string name="register_privacy_note">మీ వివరాలు ఈ పరికరంలోనే ఉంటాయి మరియు మీ అలర్ట్‌లు, నివేదికల గుర్తింపును మాత్రమే ఉపయోగించబడతాయి.</string>
+
+    <string name="login_error_backend_unavailable">సైన్-ఇన్ సేవను చేరుకోలేకపోయాము. మీ కనెక్షన్‌ను తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.</string>
+    <string name="login_backend_note">మీ ఖాతా మరియు ప్రొఫైల్ సురక్షితంగా ఆన్‌లైన్‌లో నిల్వ ఉంటాయి, కాబట్టి సైన్ ఇన్‌కు కనెక్షన్ అవసరం.</string>
 </resources>
