@@ -9,6 +9,7 @@ import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -720,6 +721,7 @@ class OsmMapControllerHolder(
       // rotation/tab-switch crashes seen here before this fix).
       setDestroyMode(false)
       setTileSource(tileSources[0])
+      SafeTilesOverlay.install(this, context)
       setMaxZoomLevel(maxZoomFor(tileSources[0]))
       // ONE world map only (issue: routing fit showed the world stacked 3x
       // side by side). osmdroid repeats the canvas horizontally by default at
@@ -742,6 +744,10 @@ class OsmMapControllerHolder(
       // Never zoom out past a whole-India frame (z4.5 ≈ India fits once):
       // no world view, no other countries, no repeated tiles.
       setMinZoomLevel(4.5)
+      // FREEZE FIX (osmdroid #2028): replace the stock base tile overlay
+      // with the projection-guarded one BEFORE the first draw, so no frame
+      // can ever spin MapTileArea.cleanValue and freeze the main thread.
+      SafeTilesOverlay.install(this, context)
       setMultiTouchControls(true)
       zoomController.setVisibility(CustomZoomButtonsController.Visibility.NEVER)
       // Google-style entry: start at CITY scale, not a whole-continent view.
@@ -1255,7 +1261,35 @@ class OsmMapControllerHolder(
   }
 
 /**
-   * Guidance just started (GO / START EVACUATION): frame the corridor at
+ * osmdroid bug #2028 (open since 6.1.14, still in 6.1.20): a
+ * zoomToBoundingBox issued before the MapView has completed its first
+ * layout — or while a projection is degenerate — leaves the tile cache
+ * protection area with a negative/NaN bound, and from then on EVERY frame
+ * spins inside `MapTileArea.cleanValue` on the main thread. On-device
+ * symptom: the whole app freezes (repeated "app is not responding" ANRs,
+ * stack always at protectDisplayedTilesForCache). The fit is the only
+ * entry point that mutates the projection scale, so gate it: only run it
+ * once the view has laid out with real size.
+ */
+/**
+ * Max safe padding for zoomToBoundingBox. osmdroid's zoom solver divides
+ * the pixel span by (bbox span minus 2*margin); once margin >= span/2 the
+ * ratio goes negative, log2 of it is NaN, and the projection is poisoned:
+ * from then on EVERY frame spins MapTileArea.cleanValue on the main thread
+ * (osmdroid #2028 — the on-device "app keeps crashing" freeze) and tiles
+ * stop drawing. 40% of the SMALLEST view dimension keeps BOTH axes' solver
+ * positive with room to spare (on a 720x1604 phone, height/3 = 534 was
+ * larger than 720/2 = 360 -> guaranteed NaN on every route fit).
+ */
+private fun boundingBoxFitMarginCap(mv: MapView): Int =
+  ((minOf(mv.width, mv.height) * 0.4f).toInt()).coerceAtLeast(32)
+
+private fun safeForBoundingBoxFit(mv: MapView): Boolean =
+  mv.isLayoutOccurred() && mv.width > 0 && mv.height > 0 &&
+    mv.zoomLevelDouble.isFinite()
+
+/**
+ * Guidance just started (GO / START EVACUATION): frame the corridor at
    * WALKING scale. A national-zoom fit made the user report "the guide
    breaks the route and the map does not work": the line was technically
    * there but tiny and unusable. Fit the bbox, then guarantee a minimum
@@ -1265,7 +1299,7 @@ class OsmMapControllerHolder(
     val mv = mapView ?: return
     val route = lastDrawnRoute ?: return
     val points = route.pathPoints
-    if (points.size < 2 || mv.width == 0 || mv.height == 0) {
+    if (points.size < 2 || !safeForBoundingBoxFit(mv)) {
       points.firstOrNull()?.let { mv.controller.animateTo(OsmGeoPoint(it.lat, it.lon)) }
       return
     }
@@ -1274,7 +1308,7 @@ class OsmMapControllerHolder(
       points.minOf { it.lat }, points.maxOf { it.lon }
     ).increaseByScale(1.3f)
     val guidanceMargin = (64 + routeFitTopInsetPx + routeFitBottomInsetPx / 2)
-      .coerceAtMost((mv.height / 3).coerceAtLeast(64))
+      .coerceAtMost(boundingBoxFitMarginCap(mv))
     mv.zoomToBoundingBox(box, true, guidanceMargin, 17.0, 500L)
     // Walking scale: never leave guidance looking at a whole state.
     mainHandler.postDelayed({
@@ -1322,6 +1356,7 @@ class OsmMapControllerHolder(
     val mv = mapView ?: return
     tileSourceIndex = (tileSourceIndex + 1) % tileSources.size
     mv.setTileSource(tileSources[tileSourceIndex])
+    SafeTilesOverlay.install(mv, mv.context)
     // Cap zoom to the SOURCE's real data depth so deep-zoom users never see
     // "Map data not yet available" placeholders (Esri light layer = z16).
     mv.setMaxZoomLevel(maxZoomFor(tileSources[tileSourceIndex]))
@@ -1410,7 +1445,9 @@ class OsmMapControllerHolder(
     // FIT THE WHOLE CORRIDOR: without this, longer routes run off-screen and
     // read as "the route stops halfway" (reported bug). Refit only when the
     // route actually changed (id), never on every recompute/GPS nudge.
-    if (route.routeId != lastFittedRouteId && points.size >= 2 && mv.width > 0 && mv.height > 0) {
+    if (route.routeId != lastFittedRouteId && points.size >= 2 &&
+      safeForBoundingBoxFit(mv)
+    ) {
       lastFittedRouteId = route.routeId
       // Fit to the corridor, but INSIDE the India limit: a raw bbox of a long
       // NE->SW route used to zoom out past the single-world frame and show
@@ -1421,8 +1458,28 @@ class OsmMapControllerHolder(
         points.minOf { it.latitude }, points.maxOf { it.longitude }
       ).increaseByScale(1.25f)
       val fitMargin = (64 + routeFitTopInsetPx + routeFitBottomInsetPx / 2)
-        .coerceAtMost((mv.height / 3).coerceAtLeast(64))
+        .coerceAtMost(boundingBoxFitMarginCap(mv))
       mv.zoomToBoundingBox(box, true, fitMargin, 17.0, 600L)
+    } else if (route.routeId != lastFittedRouteId && points.size >= 2) {
+      // NOT laid out yet (cold-start route before first draw): fitting now is
+      // the exact osmdroid #2028 poison that freezes the app. Defer ONE fit
+      // until the view has laid out instead of eating the bad projection.
+      lastFittedRouteId = route.routeId
+      mv.post {
+        val mv2 = mapView ?: return@post
+        if (safeForBoundingBoxFit(mv2)) {
+          val pts = route.pathPoints.map { OsmGeoPoint(it.lat, it.lon) }
+          if (pts.size >= 2) {
+            val box = org.osmdroid.util.BoundingBox(
+              pts.maxOf { it.latitude }, pts.minOf { it.longitude },
+              pts.minOf { it.latitude }, pts.maxOf { it.longitude }
+            ).increaseByScale(1.25f)
+            val fitMargin = (64 + routeFitTopInsetPx + routeFitBottomInsetPx / 2)
+              .coerceAtMost(boundingBoxFitMarginCap(mv2))
+            mv2.zoomToBoundingBox(box, true, fitMargin, 17.0, 600L)
+          }
+        }
+      }
     }
     mv.invalidate()
   }
