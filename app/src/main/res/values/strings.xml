@@ -203,16 +203,16 @@
     <string name="onboarding_log_in">Log In</string>
     <string name="onboarding_brand_label">VIPPATTI SARANA</string>
     <string name="onboarding_emblem_cd">Vippatti Sarana emblem</string>
-    <string name="onboarding_welcome_title">Vippatti Sarana</string>
-    <string name="onboarding_welcome_body">Stay safe. Stay prepared.</string>
-    <string name="onboarding_map_title">Know Your Risk</string>
-    <string name="onboarding_map_body">See hazards and alerts around you.</string>
+    <string name="onboarding_welcome_title">Preparedness Starts Before the Emergency.</string>
+    <string name="onboarding_welcome_body">Vippatti Sarana brings essential disaster information, safety guidance and emergency tools together in one place.</string>
+    <string name="onboarding_map_title">See Risk Around You.</string>
+    <string name="onboarding_map_body">Use the Radar Map to explore disaster alerts, hazards, safer areas and important conditions around your location.</string>
     <string name="onboarding_map_illustration_cd">Illustration of the radar map with hazard and safe-area markers</string>
-    <string name="onboarding_news_title">Be Prepared</string>
-    <string name="onboarding_news_body">Get ready before an emergency happens.</string>
+    <string name="onboarding_news_title">Stay Informed. Stay Ready.</string>
+    <string name="onboarding_news_body">Get disaster-related updates and relevant news so you can understand what is happening and follow important official guidance.</string>
     <string name="onboarding_news_illustration_cd">Illustration of a phone showing disaster news updates</string>
-    <string name="onboarding_guide_title">Stay Local</string>
-    <string name="onboarding_guide_body">Find nearby help and safety resources.</string>
+    <string name="onboarding_guide_title">When It Matters, Know What To Do.</string>
+    <string name="onboarding_guide_body">Find clear Before, During and After guidance for floods, earthquakes, landslides and fires.</string>
     <string name="onboarding_phase_before">Before</string>
     <string name="onboarding_phase_during">During</string>
     <string name="onboarding_phase_after">After</string>
@@ -220,8 +220,8 @@
     <string name="onboarding_hazard_quake">Earthquake</string>
     <string name="onboarding_hazard_landslide">Landslide</string>
     <string name="onboarding_hazard_fire">Fire</string>
-    <string name="onboarding_tools_title">Stay Safe, Stay Ready</string>
-    <string name="onboarding_tools_body">Explore tools that help you respond.</string>
+    <string name="onboarding_tools_title">Your Safety Tools. One Place.</string>
+    <string name="onboarding_tools_body">Access emergency tools, SOS support, reporting, evacuation guidance and other preparedness features when you need them.</string>
     <string name="onboarding_tools_illustration_cd">Illustration of emergency tools around a phone</string>
     <!-- Bottom navigation -->
 

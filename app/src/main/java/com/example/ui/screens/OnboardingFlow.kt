@@ -3,7 +3,6 @@ package com.example.ui.screens
 import android.content.SharedPreferences
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -45,9 +44,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -348,8 +345,7 @@ private fun OnboardingPageBody(
   Column(
     modifier = modifier
       .fillMaxWidth()
-      .padding(horizontal = 24.dp),
-    horizontalAlignment = Alignment.CenterHorizontally
+      .padding(horizontal = 24.dp)
   ) {
     illustration()
     Text(
@@ -357,45 +353,18 @@ private fun OnboardingPageBody(
       fontSize = 24.sp,
       fontWeight = FontWeight.ExtraBold,
       color = OnboardingNavy,
-      textAlign = TextAlign.Center,
       lineHeight = 30.sp,
-      modifier = Modifier.padding(top = 20.dp)
+      modifier = Modifier.padding(top = 16.dp)
     )
     Text(
       text = stringResource(bodyRes),
       fontSize = 14.sp,
       color = OnboardingSlate,
-      textAlign = TextAlign.Center,
       lineHeight = 21.sp,
-      modifier = Modifier.padding(top = 10.dp)
+      modifier = Modifier.padding(top = 8.dp)
     )
     below?.invoke()
   }
-}
-
-/**
- * Supplied card artwork shown whole in a rounded frame. Fit plus a bounded
- * height preserves the original aspect ratio without distortion on any
- * portrait screen size.
- */
-@Composable
-private fun OnboardingCardImage(
-  resId: Int,
-  contentDescription: String,
-  tag: String,
-  modifier: Modifier = Modifier
-) {
-  Image(
-    painter = painterResource(id = resId),
-    contentDescription = contentDescription,
-    contentScale = ContentScale.Fit,
-    modifier = modifier
-      .fillMaxWidth()
-      .heightIn(min = 200.dp, max = 300.dp)
-      .clip(RoundedCornerShape(24.dp))
-      .background(Color.White)
-      .testTag(tag)
-  )
 }
 
 
@@ -409,10 +378,10 @@ private fun MapPageBody() {
     titleRes = R.string.onboarding_map_title,
     bodyRes = R.string.onboarding_map_body,
     illustration = {
-      OnboardingCardImage(
-        resId = R.drawable.onboarding_card_risk,
-        contentDescription = stringResource(R.string.onboarding_map_illustration_cd),
-        tag = "onboarding_card_risk"
+      MapHero(
+        modifier = Modifier
+          .fillMaxWidth()
+          .height(190.dp)
       )
     }
   )
@@ -486,10 +455,10 @@ private fun NewsPageBody() {
     titleRes = R.string.onboarding_news_title,
     bodyRes = R.string.onboarding_news_body,
     illustration = {
-      OnboardingCardImage(
-        resId = R.drawable.onboarding_card_kit,
-        contentDescription = stringResource(R.string.onboarding_news_illustration_cd),
-        tag = "onboarding_card_kit"
+      NewsHero(
+        modifier = Modifier
+          .fillMaxWidth()
+          .height(190.dp)
       )
     }
   )
@@ -593,10 +562,10 @@ private fun GuidePageBody() {
     titleRes = R.string.onboarding_guide_title,
     bodyRes = R.string.onboarding_guide_body,
     illustration = {
-      OnboardingCardImage(
-        resId = R.drawable.onboarding_card_location,
-        contentDescription = stringResource(R.string.onboarding_guide_title),
-        tag = "onboarding_card_location"
+      GuideHero(
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(top = 4.dp)
       )
     }
   )
@@ -744,10 +713,10 @@ private fun ToolsPageBody() {
     titleRes = R.string.onboarding_tools_title,
     bodyRes = R.string.onboarding_tools_body,
     illustration = {
-      OnboardingCardImage(
-        resId = R.drawable.onboarding_card_resilience,
-        contentDescription = stringResource(R.string.onboarding_tools_illustration_cd),
-        tag = "onboarding_card_resilience"
+      ToolsHero(
+        modifier = Modifier
+          .fillMaxWidth()
+          .height(190.dp)
       )
     },
     below = {

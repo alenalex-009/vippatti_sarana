@@ -38,8 +38,12 @@ class OnboardingWelcomeTest {
     render()
 
     composeTestRule.onNodeWithText("VIPPATTI SARANA").assertExists()
-    composeTestRule.onNodeWithText("Vippatti Sarana").assertExists()
-    composeTestRule.onNodeWithText("Stay safe. Stay prepared.").assertExists()
+    composeTestRule.onNodeWithText("Preparedness Starts Before the Emergency.")
+      .assertExists()
+    composeTestRule.onNodeWithText(
+      "Vippatti Sarana brings essential disaster information, safety guidance " +
+        "and emergency tools together in one place."
+    ).assertExists()
     composeTestRule.onNodeWithTag("onboarding_hero_logo").assertExists()
   }
 

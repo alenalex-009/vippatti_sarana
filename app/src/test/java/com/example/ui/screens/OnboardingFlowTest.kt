@@ -55,8 +55,8 @@ class OnboardingFlowTest {
     render()
 
     composeTestRule.onNodeWithText("VIPPATTI SARANA").assertExists()
-    composeTestRule.onNodeWithText("Vippatti Sarana").assertExists()
-    composeTestRule.onNodeWithText("Stay safe. Stay prepared.").assertExists()
+    composeTestRule.onNodeWithText("Preparedness Starts Before the Emergency.")
+      .assertExists()
     composeTestRule.onNodeWithContentDescription("Step 1 of 5").assertExists()
     assertEquals(0, finished)
   }
@@ -67,7 +67,7 @@ class OnboardingFlowTest {
 
     composeTestRule.onNodeWithTag("onboarding_get_started").performClick()
 
-    composeTestRule.onNodeWithText("Know Your Risk").assertExists()
+    composeTestRule.onNodeWithText("See Risk Around You.").assertExists()
     composeTestRule.onNodeWithText("Step 2 of 5").assertExists()
     assertEquals(0, finished)
   }
@@ -77,17 +77,14 @@ class OnboardingFlowTest {
     render()
 
     advance(1)
-    composeTestRule.onNodeWithText("Know Your Risk").assertExists()
-    composeTestRule.onNodeWithText("See hazards and alerts around you.").assertExists()
+    composeTestRule.onNodeWithText("See Risk Around You.").assertExists()
     advanceToNext()
-    composeTestRule.onNodeWithText("Be Prepared").assertExists()
-    composeTestRule.onNodeWithText("Get ready before an emergency happens.").assertExists()
+    composeTestRule.onNodeWithText("Stay Informed. Stay Ready.").assertExists()
     advanceToNext()
-    composeTestRule.onNodeWithText("Stay Local").assertExists()
-    composeTestRule.onNodeWithText("Find nearby help and safety resources.").assertExists()
+    composeTestRule.onNodeWithText("When It Matters, Know What To Do.")
+      .assertExists()
     advanceToNext()
-    composeTestRule.onNodeWithText("Stay Safe, Stay Ready").assertExists()
-    composeTestRule.onNodeWithText("Explore tools that help you respond.").assertExists()
+    composeTestRule.onNodeWithText("Your Safety Tools. One Place.").assertExists()
     composeTestRule.onNodeWithTag("onboarding_ready_status").assertExists()
     assertEquals(0, finished)
   }
@@ -112,18 +109,20 @@ class OnboardingFlowTest {
   fun `back navigation returns to the previous card`() {
     render()
     advance(1)
-    composeTestRule.onNodeWithText("Know Your Risk").assertExists()
+    composeTestRule.onNodeWithText("See Risk Around You.").assertExists()
 
     composeTestRule.onNodeWithTag("onboarding_back").performClick()
-    composeTestRule.onNodeWithText("Vippatti Sarana").assertExists()
+    composeTestRule.onNodeWithText("Preparedness Starts Before the Emergency.")
+      .assertExists()
 
     // Deeper: card 4 back lands on card 3.
     advance(1)
     advanceToNext()
     advanceToNext()
-    composeTestRule.onNodeWithText("Stay Local").assertExists()
+    composeTestRule.onNodeWithText("When It Matters, Know What To Do.")
+      .assertExists()
     composeTestRule.onNodeWithTag("onboarding_back").performClick()
-    composeTestRule.onNodeWithText("Be Prepared").assertExists()
+    composeTestRule.onNodeWithText("Stay Informed. Stay Ready.").assertExists()
     assertEquals(0, finished)
   }
 
@@ -154,7 +153,7 @@ class OnboardingFlowTest {
     advanceToNext()
     advanceToNext()
     advanceToNext()
-    composeTestRule.onNodeWithText("Stay Safe, Stay Ready").assertExists()
+    composeTestRule.onNodeWithText("Your Safety Tools. One Place.").assertExists()
     composeTestRule.onNodeWithText("Continue to Sign Up").assertExists()
 
     composeTestRule.onNodeWithTag("onboarding_primary").performClick()
