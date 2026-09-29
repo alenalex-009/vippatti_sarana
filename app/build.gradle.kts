@@ -227,6 +227,7 @@ implementation(libs.okhttp)
 // REAL backend authentication: encrypted local token storage (the JWT never
 // sits in plaintext prefs) + EncryptedSharedPreferences handling.
 implementation(libs.androidx.security.crypto)
+implementation("androidx.browser:browser:1.8.0")
 
 // implementation(libs.play.services.location)
 

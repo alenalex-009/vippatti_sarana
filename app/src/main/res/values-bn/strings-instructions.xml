@@ -180,4 +180,7 @@
     <string name="register_new_password_hint">কমপক্ষে ৮ অক্ষরের শক্তিশালী পাসওয়ার্ড</string>
     <string name="register_confirm_hint">পাসওয়ার্ড আবার লিখুন</string>
     <string name="register_pending_note">অ্যাকাউন্ট তৈরির পর নিশ্চিতকরণ ইমেইল পাঠানো হবে।</string>
+    <string name="login_google_action">Google দিয়ে চালিয়ে যান</string>
+    <string name="login_google_waiting">Google সাইন-ইনের অপেক্ষায়…</string>
+    <string name="login_or_divider">অথবা</string>
 </resources>

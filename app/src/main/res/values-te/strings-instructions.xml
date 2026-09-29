@@ -180,4 +180,7 @@
     <string name="register_new_password_hint">కనీసం 8 అక్షరాల బలమైన పాస్‌వర్డ్</string>
     <string name="register_confirm_hint">పాస్‌వర్డ్‌ను మళ్లీ టైప్ చేయండి</string>
     <string name="register_pending_note">ఖాతా సృష్టించిన తర్వాత నిర్ధారిక ఇమెయిల్ పంపబడుతుంది.</string>
+    <string name="login_google_action">Googleతో కొనసాగించండి</string>
+    <string name="login_google_waiting">Google సైన్-ఇన్ కోసం వేచి ఉంది…</string>
+    <string name="login_or_divider">లేదా</string>
 </resources>

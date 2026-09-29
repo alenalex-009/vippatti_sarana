@@ -65,4 +65,17 @@ interface AuthApiService {
   suspend fun me(accessToken: String): AuthApiResult
   suspend fun refresh(refreshToken: String): AuthApiResult
   suspend fun logout(accessToken: String, refreshToken: String?): SimpleApiResult
+
+  /**
+   * Completes a native-app Google OAuth that came back with a one-time
+   * `code` instead of a direct session (GoTrue PKCE flow state). Backends
+   * that do not speak OAuth simply report the failure.
+   */
+  suspend fun exchangeGoogleCode(
+    authCode: String,
+    verifier: String,
+    redirectTo: String
+  ): AuthApiResult = AuthApiResult.Failure(
+    ApiErrorKind.SERVER, "Google sign-in is not available for this backend."
+  )
 }

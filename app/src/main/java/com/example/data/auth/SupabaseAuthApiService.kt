@@ -114,6 +114,32 @@ class SupabaseAuthApiService(
     executeForTokensOrUser(request, defaultFullName = "")
   }
 
+  /**
+   * Completes the native-app Google PKCE flow: exchanges the one-time
+   * `code` GoTrue redirected back to the app for a real session, proving
+   * possession of the [verifier] generated before the browser opened.
+   * POST /auth/v1/token?grant_type=pkce.
+   */
+  override suspend fun exchangeGoogleCode(
+    authCode: String,
+    verifier: String,
+    redirectUrl: String
+  ): AuthApiResult = withContext(Dispatchers.IO) {
+    val body = org.json.JSONObject().apply {
+      put("authenticator", "google")
+      put("auth_code", authCode)
+      put("code_verifier", verifier)
+      put("redirect_to", redirectUrl)
+    }
+    val request = Request.Builder()
+      .post(body.toString().toRequestBody(jsonMediaType))
+      .url(authUrl("token?grant_type=pkce"))
+      .header("apikey", apiKey)
+      .header("Authorization", "Bearer $apiKey")
+      .build()
+    executeForTokensOrUser(request, defaultFullName = "")
+  }
+
   override suspend fun logout(accessToken: String, refreshToken: String?): SimpleApiResult =
     withContext(Dispatchers.IO) {
       val request = Request.Builder()

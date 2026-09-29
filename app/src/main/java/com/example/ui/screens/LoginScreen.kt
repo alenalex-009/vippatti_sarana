@@ -53,6 +53,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
@@ -120,6 +124,7 @@ fun LoginScreen(
   uiState: AuthUiState,
   onLogin: (email: String, password: String) -> Unit,
   onGoToSignup: () -> Unit,
+  onGoogleSignIn: () -> Unit = {},
   modifier: Modifier = Modifier
 ) {
   var email by rememberSaveable { mutableStateOf("") }
@@ -191,7 +196,6 @@ fun LoginScreen(
         text = when {
           uiState.isRateLimited && uiState.cooldownSeconds > 0 ->
             "${stringResource(R.string.login_sign_in_action)} (${uiState.cooldownSeconds}s)"
-          uiState.isSubmitting -> stringResource(R.string.login_sign_in_action)
           else -> stringResource(R.string.login_sign_in_action)
         },
         loading = uiState.isSubmitting,
@@ -202,6 +206,23 @@ fun LoginScreen(
           onLogin(email.trim(), password)
         }
       )
+
+      // OR divider + Google: the divider says the button is an ALTERNATIVE,
+      // not part of the form above it.
+      AuthOrDivider()
+      AuthGoogleButton(
+        pending = uiState.isGooglePending,
+        enabled = !busy,
+        testTag = "login_google_button",
+        onClick = {
+          focusManager.clearFocus()
+          onGoogleSignIn()
+        }
+      )
+      uiState.googleError?.let { message ->
+        Spacer(Modifier.height(10.dp))
+        AuthErrorPanel(message)
+      }
     }
     AuthSwitchLink(
       text = stringResource(R.string.login_new_to_network),
@@ -639,6 +660,123 @@ private fun AuthPendingConfirmationPanel(email: String, acknowledged: () -> Unit
     )
   }
   Spacer(Modifier.height(16.dp))
+}
+
+/** Thin "or" rule between password auth and federated options. */
+@Composable
+private fun AuthOrDivider() {
+  Row(
+    modifier = Modifier
+      .fillMaxWidth()
+      .padding(vertical = 16.dp),
+    verticalAlignment = Alignment.CenterVertically,
+    horizontalArrangement = Arrangement.spacedBy(12.dp)
+  ) {
+    Box(
+      Modifier
+        .weight(1f)
+        .height(1.dp)
+        .background(TacticalOutlineVariant)
+    )
+    Text(
+      text = stringResource(R.string.login_or_divider),
+      style = MaterialTheme.typography.labelMedium,
+      color = TacticalOnSurfaceVariant
+    )
+    Box(
+      Modifier
+        .weight(1f)
+        .height(1.dp)
+        .background(TacticalOutlineVariant)
+    )
+  }
+}
+
+/**
+ * "Continue with Google" — official four-color 'G' glyph drawn as arcs +
+ * bars (brand-correct, no bitmap asset). While the browser tab owns the
+ * flow the button shows a pending spinner instead of pretending idle.
+ */
+@Composable
+private fun AuthGoogleButton(
+  pending: Boolean,
+  enabled: Boolean,
+  testTag: String,
+  onClick: () -> Unit
+) {
+  Box(
+    modifier = Modifier
+      .fillMaxWidth()
+      .height(54.dp)
+      .clip(RoundedCornerShape(14.dp))
+      .background(
+        if (enabled && !pending) ObsidianContainerHigh
+        else ObsidianContainerHigh.copy(alpha = 0.5f)
+      )
+      .border(1.dp, TacticalOutlineVariant, RoundedCornerShape(14.dp))
+      .testTag(testTag)
+      .then(
+        if (enabled && !pending) Modifier.clickable(onClick = onClick) else Modifier
+      ),
+    contentAlignment = Alignment.Center
+  ) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+      if (pending) {
+        CircularProgressIndicator(
+          color = TacticalOnSurface,
+          strokeWidth = 2.5.dp,
+          modifier = Modifier.size(20.dp)
+        )
+        Spacer(Modifier.width(10.dp))
+        Text(
+          text = stringResource(R.string.login_google_waiting),
+          style = MaterialTheme.typography.titleMedium,
+          fontWeight = FontWeight.SemiBold,
+          color = TacticalOnSurface
+        )
+      } else {
+        GoogleGlyph(modifier = Modifier.size(20.dp))
+        Spacer(Modifier.width(12.dp))
+        Text(
+          text = stringResource(R.string.login_google_action),
+          style = MaterialTheme.typography.titleMedium,
+          fontWeight = FontWeight.SemiBold,
+          color = TacticalOnSurface
+        )
+      }
+    }
+  }
+}
+
+/** Google's 'G' in the official palette, drawn with pure Compose arcs. */
+@Composable
+private fun GoogleGlyph(modifier: Modifier = Modifier) {
+  val blue = Color(0xFF4285F4)
+  val green = Color(0xFF34A853)
+  val yellow = Color(0xFFFBBC05)
+  val red = Color(0xFFEA4335)
+  androidx.compose.foundation.Canvas(modifier = modifier) {
+    val stroke = size.minDimension * 0.22f
+    val r = (size.minDimension - stroke) / 2f
+    val arcSize = Size(r * 2f, r * 2f)
+    val topLeft = Offset((size.width - arcSize.width) / 2f, (size.height - arcSize.height) / 2f)
+    fun arc(color: Color, start: Float, sweep: Float) = drawArc(
+      color = color, startAngle = start, sweepAngle = sweep,
+      useCenter = false, topLeft = topLeft, size = arcSize,
+      style = androidx.compose.ui.graphics.drawscope.Stroke(width = stroke)
+    )
+    arc(blue, -45f, 90f)
+    arc(green, 90f, 80f)
+    arc(yellow, 170f, 90f)
+    arc(red, 260f, 100f)
+    // The horizontal blue bar of the G.
+    drawRoundRect(
+      color = blue,
+      topLeft = Offset(center.x, center.y - stroke / 2f),
+      size = Size(r + stroke / 2f, stroke),
+      cornerRadius = CornerRadius(stroke / 3f, stroke / 3f)
+    )
+  }
 }
 
 // ---------------------------------------------------------------- BUTTON

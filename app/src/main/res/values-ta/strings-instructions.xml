@@ -180,4 +180,7 @@
     <string name="register_new_password_hint">குறைந்தது 8 எழுத்து கொண்ட வலிமையான கடவுச்சொல்</string>
     <string name="register_confirm_hint">கடவுச்சொல்லை மீண்டும் தட்டச்சு செய்யவும்</string>
     <string name="register_pending_note">கணக்கை உருவாக்கிய பின் உறுதிப்படுத்தல் அஞ்சல் அனுப்பப்படும்.</string>
+    <string name="login_google_action">Google உடன் தொடரவும்</string>
+    <string name="login_google_waiting">Google உள்நுழைவு காத்திருக்கிறது…</string>
+    <string name="login_or_divider">அல்லது</string>
 </resources>

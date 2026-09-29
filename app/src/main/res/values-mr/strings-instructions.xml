@@ -180,4 +180,7 @@
     <string name="register_new_password_hint">किमान 8 अक्षरांचा मजबूत पासवर्ड</string>
     <string name="register_confirm_hint">पासवर्ड पुन्हा टाइप करा</string>
     <string name="register_pending_note">खाते तयार केल्यावर पुष्टीकरणाचा ईमेल पाठवला जाईल.</string>
+    <string name="login_google_action">Google सह चालू ठेवा</string>
+    <string name="login_google_waiting">Google साइन-इनची वाट पाहत आहे…</string>
+    <string name="login_or_divider">किंवा</string>
 </resources>

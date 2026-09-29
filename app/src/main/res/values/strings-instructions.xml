@@ -145,4 +145,7 @@
     <string name="register_new_password_hint">Strong password, 8+ characters</string>
     <string name="register_confirm_hint">Type your password again</string>
     <string name="register_pending_note">After creating the account we will email you a confirmation link.</string>
+    <string name="login_google_action">Continue with Google</string>
+    <string name="login_google_waiting">Waiting for Google sign-in…</string>
+    <string name="login_or_divider">or</string>
 </resources>

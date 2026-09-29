@@ -1,8 +1,10 @@
 package com.example.viewmodel
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.data.auth.SupabaseGoogleOAuth
 import com.example.data.auth.AuthApiResult
 import com.example.data.auth.AuthError
 import com.example.data.auth.AuthRepository
@@ -37,7 +39,11 @@ data class AuthUiState(
   /** Email of an account awaiting email confirmation (signup without a
    * session). Non-null means the UI must show the 'check your inbox' state
    * and must NOT enter the app. */
-  val pendingConfirmationEmail: String? = null
+  val pendingConfirmationEmail: String? = null,
+  /** Google browser-flow in flight (waiting for the app tab to come back). */
+  val isGooglePending: Boolean = false,
+  /** Google-specific failure text (cancel, no session, exchange error). */
+  val googleError: String? = null
 ) {
   val isAuthenticated: Boolean get() = user != null
 }
@@ -52,7 +58,104 @@ data class AuthUiState(
  * App start: [restoreSession] validates the stored tokens against the
  * backend; a valid session opens the main app, otherwise Login is shown.
  */
-class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
+class AuthViewModel(
+  private val repository: AuthRepository,
+  private val supabaseUrl: String = "",
+  private val supabaseAnonKey: String = ""
+) : ViewModel() {
+
+  /** The verifier+state for the Google attempt currently open in a browser
+   * tab. Memory-only; cleared the moment the callback resolves. */
+  private var pendingGoogleAttempt: SupabaseGoogleOAuth.GoogleAttempt? = null
+
+  /**
+   * Starts native Google sign-in: mints a PKCE verifier + state, builds the
+   * GoTrue /authorize URL for the system browser, and returns it. Null when
+   * the project is not configured (the UI then shows the error state).
+   */
+  fun beginGoogleSignIn(): String? {
+    if (supabaseUrl.isBlank() || supabaseAnonKey.isBlank()) return null
+    val attempt = SupabaseGoogleOAuth.newAttempt()
+    pendingGoogleAttempt = attempt
+    _uiState.update {
+      it.copy(isGooglePending = true, googleError = null, loginError = null)
+    }
+    return SupabaseGoogleOAuth.buildAuthorizeUrl(supabaseUrl, supabaseAnonKey, attempt)
+  }
+
+  /** No browser component on the device to open the consent page. */
+  fun reportNoBrowser() {
+    pendingGoogleAttempt = null
+    _uiState.update {
+      it.copy(
+        isGooglePending = false,
+        googleError = "No browser is available on this device for Google sign-in."
+      )
+    }
+  }
+
+  /** Project not configured for Google (missing URL/key at build time). */
+  fun reportGoogleUnavailable() {
+    pendingGoogleAttempt = null
+    _uiState.update {
+      it.copy(
+        isGooglePending = false,
+        googleError = "Google sign-in is not configured for this build."
+      )
+    }
+  }
+
+  /**
+   * Completes the Google browser round-trip. Returns true when [uri] WAS an
+   * auth callback (handled or failed honestly); false lets the caller route
+   * other deep links elsewhere. Both GoTrue callback shapes are supported:
+   *  - implicit: session in the fragment (verified against /auth/v1/user),
+   *  - PKCE: a one-time code exchanged with the stored verifier.
+   * Nothing is trusted and nothing is stored until the backend confirms it.
+   */
+  fun handleGoogleCallback(uri: Uri?, onSuccess: () -> Unit): Boolean {
+    if (!SupabaseGoogleOAuth.isAuthCallback(uri) || uri == null) return false
+    val session = SupabaseGoogleOAuth.parseFragmentSession(uri)
+    val code = if (session == null) SupabaseGoogleOAuth.parseCode(uri) else null
+    val error = if (session == null && code == null)
+      SupabaseGoogleOAuth.parseFailureError(uri) else null
+    val attempt = pendingGoogleAttempt
+    pendingGoogleAttempt = null
+    _uiState.update { it.copy(isGooglePending = false, isSubmitting = true) }
+    viewModelScope.launch {
+      val result = when {
+        session != null -> repository.adoptGoogleTokens(session)
+        code != null && attempt != null ->
+          repository.completeGoogleSignIn(code, attempt.verifier)
+        else -> com.example.data.auth.AuthResult.failure(
+          com.example.data.auth.AuthError.SERVER,
+          error ?: "Google sign-in returned no session."
+        )
+      }
+      if (result.ok) {
+        _uiState.update {
+          it.copy(
+            isSubmitting = false,
+            googleError = null,
+            user = BackendUser(
+              id = "", fullName = result.fullName, email = result.email,
+              createdAt = "", updatedAt = ""
+            )
+          )
+        }
+        onSuccess()
+      } else {
+        _uiState.update {
+          it.copy(
+            isSubmitting = false,
+            user = null,
+            googleError = result.errorMessage ?: "Google sign-in failed."
+          )
+        }
+      }
+    }
+    return true
+  }
 
   private val _uiState = MutableStateFlow(AuthUiState(isRestoring = true))
   val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
@@ -225,7 +328,7 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
       it.copy(
         loginError = null, signupError = null,
         loginFieldError = null, signupFieldError = null,
-        pendingConfirmationEmail = null
+        pendingConfirmationEmail = null, googleError = null
       )
     }
   }
@@ -233,10 +336,14 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
   private val genericError = "Something went wrong. Please try again."
 
   companion object {
-    fun factory(repository: AuthRepository) = object : ViewModelProvider.Factory {
+    fun factory(
+      repository: AuthRepository,
+      supabaseUrl: String = "",
+      supabaseAnonKey: String = ""
+    ) = object : ViewModelProvider.Factory {
       @Suppress("UNCHECKED_CAST")
       override fun <T : ViewModel> create(modelClass: Class<T>): T =
-        AuthViewModel(repository) as T
+        AuthViewModel(repository, supabaseUrl, supabaseAnonKey) as T
     }
   }
 }

@@ -207,6 +207,54 @@ class AuthRepository(
   }
 
   /**
+   * ADOPTS a session delivered by the Google OAuth browser flow: confirms the
+   * fragment tokens against /auth/v1/user BEFORE storing them (a callback the
+   * app cannot verify is never trusted). Offline at that moment is the same
+   * honest case as startup: the freshly delivered session is stored, identity
+   * fields fall back to empty, and Profile/refresh resolve it on next sync.
+   */
+  suspend fun adoptGoogleTokens(tokens: TokenPair): AuthResult =
+    when (val me = api.me(tokens.accessToken)) {
+      is AuthApiResult.Success -> {
+        store.saveSession(
+          accessToken = me.tokens.accessToken.takeIf { it.isNotBlank() } ?: tokens.accessToken,
+          refreshToken = tokens.refreshToken,
+          email = me.user.email,
+          fullName = me.user.fullName
+        )
+        AuthResult.success(me.user.email, me.user.fullName)
+      }
+      is AuthApiResult.PendingConfirmation -> AuthResult.failure(
+        AuthError.INVALID_CREDENTIALS,
+        "Google account is not ready yet: " + me.user.email
+      )
+      is AuthApiResult.Failure -> {
+        // A FRESH callback token has never been verified by this app, and any
+        // app on the device can fire the deep link — so unlike the startup
+        // path (which trusts a previously-VERIFIED stored session), an
+        // offline /me here is NOT grounds to adopt. Fail honestly; the user
+        // retries when the network returns.
+        AuthResult.failure(
+          if (me.errorKind == ApiErrorKind.NETWORK) AuthError.NETWORK
+          else AuthError.INVALID_CREDENTIALS,
+          me.errorMessage
+        )
+      }
+    }
+
+  /**
+   * Completes the PKCE callback shape (code -> token exchange -> adopt).
+   */
+  suspend fun completeGoogleSignIn(authCode: String, verifier: String): AuthResult =
+    when (val exchanged = api.exchangeGoogleCode(authCode, verifier, com.example.data.auth.SupabaseGoogleOAuth.REDIRECT_URL)) {
+      is AuthApiResult.Success -> adoptGoogleTokens(exchanged.tokens)
+      is AuthApiResult.PendingConfirmation -> AuthResult.failure(
+        AuthError.INVALID_CREDENTIALS, "Google account needs email confirmation."
+      )
+      is AuthApiResult.Failure -> exchanged.toAuthResult()
+    }
+
+  /**
    * One authenticated GET /me with the stored access token. Returns the
    * failure (so callers can distinguish NETWORK from auth problems) or the
    * real user. Never rotates tokens — that is restoreSession's job.

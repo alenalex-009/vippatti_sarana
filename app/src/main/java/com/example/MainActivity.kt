@@ -105,6 +105,20 @@ import kotlinx.coroutines.withContext
 import java.io.File
 
 class MainActivity : ComponentActivity() {
+
+  /**
+   * Google OAuth callbacks arrive here as NEW intents (singleTop keeps this
+   * Activity alive while the browser tab closes). Exposed as a StateFlow so
+   * the composable tree — not the Activity — performs the verifiable
+   * exchange once it has its AuthViewModel.
+   */
+  private val _authCallback = kotlinx.coroutines.flow.MutableStateFlow<android.net.Uri?>(null)
+
+  override fun onNewIntent(intent: android.content.Intent) {
+    super.onNewIntent(intent)
+    intent.data?.let { _authCallback.value = it }
+  }
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     enableEdgeToEdge()
@@ -140,15 +154,52 @@ class MainActivity : ComponentActivity() {
           store = TokenStorage(appContext)
         )
       }
-      val authViewModel: AuthViewModel = viewModel(factory = AuthViewModel.factory(authRepository))
+      val authViewModel: AuthViewModel = viewModel(
+        factory = AuthViewModel.factory(authRepository, supabaseUrl, supabaseKey)
+      )
 
-      var signedIn by remember { mutableStateOf(authRepository.hasStoredSession()) }
+      var signedIn by remember { mutableStateOf(false) }
       var showSignup by rememberSaveable { mutableStateOf(false) }
 
       // App-start session restoration: validate the stored token session
       // against the backend; a valid session opens the main app directly.
       LaunchedEffect(Unit) {
         authViewModel.restoreSession { restored -> signedIn = restored }
+      }
+
+      // GOOGLE OAUTH: browser callback intents (session or one-time code)
+      // are consumed here once the tree exists, including a callback that
+      // arrives BEFORE this composition (cold start straight into the tab).
+      val callbackUri by _authCallback.collectAsStateWithLifecycle()
+      LaunchedEffect(callbackUri) {
+        val uri = callbackUri ?: return@LaunchedEffect
+        _authCallback.value = null
+        authViewModel.handleGoogleCallback(uri) { signedIn = true }
+      }
+
+      // Cold start straight from a callback: the intent that launched the
+      // process is not delivered via onNewIntent — read it once.
+      LaunchedEffect(Unit) {
+        intent?.data?.let { _authCallback.value = it }
+      }
+
+      // Opens the Google consent page in a CUSTOM TAB (an in-app browser
+      // session; the app never sees the password). The callback returns to
+      // vippattisarana://auth-callback via the manifest deep link.
+      val startGoogleSignIn = {
+        val url = authViewModel.beginGoogleSignIn()
+        if (url != null) {
+          try {
+            androidx.browser.customtabs.CustomTabsIntent.Builder()
+              .setColorScheme(androidx.browser.customtabs.CustomTabsIntent.COLOR_SCHEME_SYSTEM)
+              .build()
+              .launchUrl(context, android.net.Uri.parse(url))
+          } catch (e: android.content.ActivityNotFoundException) {
+            authViewModel.reportNoBrowser()
+          }
+        } else {
+          authViewModel.reportGoogleUnavailable()
+        }
       }
 
       // First-run onboarding: shown once, before the auth gate, and never
@@ -293,7 +344,8 @@ class MainActivity : ComponentActivity() {
             onLogin = { email, password ->
               authViewModel.login(email, password) { signedIn = true }
             },
-            onGoToSignup = { showSignup = true }
+            onGoToSignup = { showSignup = true },
+            onGoogleSignIn = startGoogleSignIn
           )
         }
       }

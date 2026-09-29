@@ -180,4 +180,7 @@
     <string name="register_new_password_hint">कम से कम 8 अक्षर का मज़बूत पासवर्ड</string>
     <string name="register_confirm_hint">पासवर्ड दोबारा लिखें</string>
     <string name="register_pending_note">खाता बनाने के बाद पुष्टि ईमेल भेजा जाएगा।</string>
+    <string name="login_google_action">Google के साथ जारी रखें</string>
+    <string name="login_google_waiting">Google साइन-इन की प्रतीक्षा है…</string>
+    <string name="login_or_divider">या</string>
 </resources>
