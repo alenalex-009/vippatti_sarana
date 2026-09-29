@@ -9,8 +9,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -103,18 +110,24 @@ fun AuthorityConsoleScreen(
     modifier = Modifier
       .fillMaxSize()
       .background(ObsidianSurface)
+      // Console opens full-bleed (no Scaffold), so it must respect the
+      // status bar above and the Android navigation bar below.
+      .windowInsetsPadding(WindowInsets.statusBars)
+      .windowInsetsPadding(WindowInsets.navigationBars)
   ) {
     // Header -----------------------------------------------------------------
     Row(
       modifier = Modifier
         .fillMaxWidth()
         .background(ObsidianContainerLow)
-        .padding(horizontal = 12.dp, vertical = 10.dp),
+        .padding(horizontal = 12.dp)
+        .padding(top = 6.dp, bottom = 8.dp),
       verticalAlignment = Alignment.CenterVertically
     ) {
+      // 48dp touch target, compact visual.
       Box(
         modifier = Modifier
-          .size(34.dp)
+          .size(44.dp)
           .clip(CircleShape)
           .background(TacticalCyan.copy(alpha = 0.15f))
           .clickable(onClick = onBack),
@@ -122,12 +135,12 @@ fun AuthorityConsoleScreen(
       ) {
         Icon(Icons.Default.ArrowBack, "Back", tint = TacticalCyan, modifier = Modifier.size(18.dp))
       }
-      Spacer(Modifier.width(10.dp))
+      Spacer(Modifier.width(8.dp))
       Column(Modifier.weight(1f)) {
-        Text("AUTHORITY CONSOLE", fontSize = 14.sp, fontWeight = FontWeight.Black, color = TacticalOnSurface)
+        Text("Authority Console", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = TacticalOnSurface)
         Text(
-          "Field registry + relocation prioritization — demo data stays labelled",
-          fontSize = 11.sp, color = TacticalOnSurfaceVariant, maxLines = 2, overflow = TextOverflow.Ellipsis
+          "Field registry & relocation prioritization · demo data stays labelled",
+          fontSize = 12.sp, color = TacticalOnSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis
         )
       }
     }
@@ -136,13 +149,16 @@ fun AuthorityConsoleScreen(
     Row(
       modifier = Modifier
         .fillMaxWidth()
-        .padding(horizontal = 12.dp, vertical = 8.dp),
+        .padding(horizontal = 12.dp)
+        .padding(top = 4.dp, bottom = 8.dp),
       horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
       listOf("PRIORITIZATION", "SHELTERS (${uiState.fieldShelters.size})", "HABITATIONS (${uiState.fieldHabitations.size})")
         .forEachIndexed { index, label ->
           Box(
             modifier = Modifier
+              .weight(1f)
+              .heightIn(min = 44.dp)
               .clip(RoundedCornerShape(8.dp))
               .background(if (tab == index) TacticalCyan.copy(alpha = 0.2f) else ObsidianContainerLow)
               .border(
@@ -151,9 +167,12 @@ fun AuthorityConsoleScreen(
                 RoundedCornerShape(8.dp)
               )
               .clickable { tab = index }
-              .padding(horizontal = 10.dp, vertical = 6.dp)
+              .padding(horizontal = 6.dp, vertical = 4.dp),
+            contentAlignment = Alignment.Center
           ) {
-            Text(label, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = TacticalOnSurface)
+            Text(label, fontSize = 12.sp, fontWeight = FontWeight.SemiBold,
+              color = if (tab == index) TacticalCyan else TacticalOnSurface,
+              maxLines = 1, overflow = TextOverflow.Ellipsis)
           }
         }
     }
@@ -180,7 +199,7 @@ private fun DashboardTab(
     modifier = Modifier
       .fillMaxSize()
       .verticalScroll(rememberScrollState())
-      .padding(horizontal = 12.dp)
+      .padding(horizontal = 16.dp)
   ) {
     // Tier summary chips - TAPPABLE: selecting a tier filters the
     // order list below to just that urgency band (tap again to clear).
@@ -191,19 +210,21 @@ private fun DashboardTab(
         Box(
           modifier = Modifier
             .weight(1f)
-            .clip(RoundedCornerShape(8.dp))
-            .background(tierColor(tier).copy(alpha = if (active) 0.35f else 0.15f))
+            .heightIn(min = 72.dp)
+            .clip(RoundedCornerShape(10.dp))
+            .background(tierColor(tier).copy(alpha = if (active) 0.30f else 0.12f))
             .border(
-              1.dp, tierColor(tier).copy(alpha = if (active) 1f else 0.6f),
-              RoundedCornerShape(8.dp)
+              1.dp, tierColor(tier).copy(alpha = if (active) 0.9f else 0.45f),
+              RoundedCornerShape(10.dp)
             )
             .clickable { tierFilter = if (active) null else tier }
-            .padding(vertical = 6.dp),
+            .padding(vertical = 8.dp),
           contentAlignment = Alignment.Center
         ) {
           Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text("${counts[tier] ?: 0}", fontSize = 15.sp, fontWeight = FontWeight.Black, color = tierColor(tier))
-            Text(tier.label, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = TacticalOnSurfaceVariant)
+            Text("${counts[tier] ?: 0}", fontSize = 22.sp, fontWeight = FontWeight.SemiBold, color = tierColor(tier))
+            Text(tier.label, fontSize = 10.sp, fontWeight = FontWeight.Medium, color = TacticalOnSurfaceVariant,
+              maxLines = 1, overflow = TextOverflow.Ellipsis)
           }
         }
       }
@@ -225,26 +246,27 @@ private fun DashboardTab(
       Column(
         modifier = Modifier
           .fillMaxWidth()
-          .clip(RoundedCornerShape(12.dp))
+          .clip(RoundedCornerShape(14.dp))
           .background(ObsidianContainerLow)
-          .border(1.dp, tierColor(top.tier).copy(alpha = 0.5f), RoundedCornerShape(12.dp))
-          .padding(12.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+          .border(1.dp, tierColor(top.tier).copy(alpha = 0.4f), RoundedCornerShape(14.dp))
+          .padding(14.dp),
+        verticalArrangement = Arrangement.spacedBy(5.dp)
       ) {
         Text(
           text = "CURRENT PRIORITY AREA",
-          fontSize = 10.sp, fontWeight = FontWeight.Black, color = TacticalCyan,
-          letterSpacing = 0.8.sp
+          fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = TacticalCyan,
+          letterSpacing = 0.6.sp
         )
-        Text(hab.name, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TacticalOnSurface)
+        Text(hab.name, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = TacticalOnSurface,
+          maxLines = 2, overflow = TextOverflow.Ellipsis)
         Text(
           buildString {
-            append(if (hazardCount > 0) "Hazard exposure: " + hazardCount + " zone(s)" else "No active hazard over this point")
+            append(if (hazardCount > 0) "LIVE hazard: " + hazardCount + " zone(s)" else "No active hazard over this point")
             hab.population?.let { append(" · pop " + it.value) }
             append(" · shelters within 10 km: " + nearbyShelters)
             append(" · priority: " + top.tier.label)
           },
-          fontSize = 11.sp, color = TacticalOnSurfaceVariant, lineHeight = 15.sp
+          fontSize = 12.sp, color = TacticalOnSurfaceVariant, lineHeight = 16.sp
         )
         top.reasons.firstOrNull()?.let {
           Text(it, fontSize = 11.sp, color = TacticalOnSurface, maxLines = 2,
@@ -257,17 +279,18 @@ private fun DashboardTab(
         ) {
           Text(
             text = "DERIVED — not an official government decision",
-            fontSize = 10.sp, fontWeight = FontWeight.Bold, color = WarningAmber
+            fontSize = 10.sp, fontWeight = FontWeight.Medium, color = WarningAmber
           )
           Box(
             modifier = Modifier
               .clip(RoundedCornerShape(8.dp))
               .background(TacticalCyan.copy(alpha = 0.9f))
               .clickable { onViewOnMap(hab.point) }
-              .padding(horizontal = 12.dp, vertical = 7.dp)
+              .heightIn(min = 40.dp)
+              .padding(horizontal = 14.dp, vertical = 8.dp)
               .testTag("console_view_on_map")
           ) {
-            Text("VIEW ON MAP", fontSize = 11.sp, fontWeight = FontWeight.Black,
+            Text("View on Map", fontSize = 13.sp, fontWeight = FontWeight.SemiBold,
               color = Color.Black)
           }
         }
@@ -275,34 +298,72 @@ private fun DashboardTab(
       Spacer(Modifier.height(8.dp))
     }
 
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+    Row(
+      modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
+      verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
       Box(
         modifier = Modifier
           .clip(RoundedCornerShape(8.dp))
           .background(TacticalCyan.copy(alpha = 0.9f))
           .clickable { onRerank(liveScan) }
-          .padding(horizontal = 12.dp, vertical = 8.dp)
+          .heightIn(min = 44.dp),
+        contentAlignment = Alignment.Center
       ) {
         Text(
-          if (uiState.isRankingPriorities) "RANKING..." else "RANK HABITATIONS",
-          fontSize = 11.sp, fontWeight = FontWeight.Black, color = Color.Black
+          if (uiState.isRankingPriorities) "Ranking…" else "Rank Habitations",
+          fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = Color.Black,
+          modifier = Modifier.padding(horizontal = 16.dp)
         )
       }
-      Row(verticalAlignment = Alignment.CenterVertically) {
+      Row(
+        modifier = Modifier.heightIn(min = 48.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(2.dp)
+      ) {
         Checkbox(
           checked = liveScan,
-          onCheckedChange = { liveScan = it },
-          modifier = Modifier.size(22.dp)
+          onCheckedChange = { liveScan = it }
         )
-        Text("live terrain scan\n(SRTM + rain per site)", fontSize = 11.sp, color = TacticalOnSurfaceVariant)
+        Text("Live terrain scan", fontSize = 13.sp, color = TacticalOnSurface)
       }
     }
-    Spacer(Modifier.height(6.dp))
     Text(
-      "Ranking is transparent multi-criteria: hazard exposure 35%, terrain habitability 30%, vulnerability 20%, EM-DAT history 15% (history escalates at most one band). Every reason is shown per row.",
-      fontSize = 11.sp, color = TacticalOnSurfaceVariant
+      "SRTM + rain per site (adds ~30 s to ranking)", fontSize = 11.sp,
+      color = TacticalOnSurfaceVariant, modifier = Modifier.padding(top = 2.dp, start = 4.dp)
     )
-    Spacer(Modifier.height(10.dp))
+    Spacer(Modifier.height(8.dp))
+
+    // Ranking explanation as a scannable mini-table (same real weights).
+    Column(
+      modifier = Modifier
+        .fillMaxWidth()
+        .clip(RoundedCornerShape(10.dp))
+        .background(ObsidianContainerLow)
+        .border(1.dp, TacticalOutlineVariant.copy(alpha = 0.25f), RoundedCornerShape(10.dp))
+        .padding(12.dp),
+      verticalArrangement = Arrangement.spacedBy(3.dp)
+    ) {
+      Text("Ranking criteria", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = TacticalOnSurface)
+      listOf(
+        "Hazard exposure" to "35%",
+        "Terrain habitability" to "30%",
+        "Vulnerability" to "20%",
+        "EM-DAT history" to "15%"
+      ).forEach { (name, pct) ->
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+          Text(name, fontSize = 12.sp, color = TacticalOnSurfaceVariant)
+          Text(pct, fontSize = 12.sp, fontWeight = FontWeight.Medium, color = TacticalOnSurface)
+        }
+      }
+      Text(
+        "History escalates at most one band · reasons shown per row",
+        fontSize = 11.sp, color = TacticalOnSurfaceVariant,
+        modifier = Modifier.padding(top = 3.dp)
+      )
+    }
+    Spacer(Modifier.height(12.dp))
 
     if (uiState.isRankingPriorities && priorities.isEmpty()) {
       Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -320,8 +381,8 @@ private fun DashboardTab(
       else if (shown.isEmpty()) "No records in this tier - tap the tier again to clear."
       else if (tierFilter == null) "Relocation order — most urgent first"
       else "Filtered: " + tierFilter?.label + " only — tap the tier again to clear",
-      fontSize = 13.sp, fontWeight = FontWeight.Black, color = TacticalOnSurface,
-      modifier = Modifier.padding(vertical = 6.dp)
+      fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = TacticalOnSurface,
+      modifier = Modifier.padding(top = 8.dp, bottom = 6.dp)
     )
     shown.forEach { p -> PriorityRow(p, zonesById[p.nearestSafeZoneId]) }
     if (priorities.isEmpty() && !uiState.isRankingPriorities) {
@@ -353,29 +414,31 @@ private fun PriorityRow(p: HabitationPriority, destination: SafeZone?) {
     Row(
       modifier = Modifier
         .fillMaxWidth()
-        .background(color.copy(alpha = 0.16f))
-        .padding(horizontal = 12.dp, vertical = 6.dp),
+        .background(color.copy(alpha = 0.14f))
+        .padding(horizontal = 14.dp, vertical = 5.dp),
       verticalAlignment = Alignment.CenterVertically,
       horizontalArrangement = Arrangement.spacedBy(6.dp)
     ) {
+      // Shape + text, not only color: color-blind-safe priority reading.
       Box(Modifier.size(8.dp).clip(CircleShape).background(color))
       Text(
-        p.tier.label, fontSize = 11.sp, fontWeight = FontWeight.Black,
-        color = color, letterSpacing = 0.6.sp
+        p.tier.label, fontSize = 12.sp, fontWeight = FontWeight.SemiBold,
+        color = color, letterSpacing = 0.5.sp
       )
       Spacer(Modifier.weight(1f))
       Text(
-        "SCORE ${p.score}", fontSize = 11.sp, fontWeight = FontWeight.Black,
+        "SCORE ${p.score}", fontSize = 12.sp, fontWeight = FontWeight.SemiBold,
         color = TacticalOnSurfaceVariant
       )
     }
     Column(
-      modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
-      verticalArrangement = Arrangement.spacedBy(6.dp)
+      modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+      verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
       Text(
-        p.habitation.name, fontSize = 15.sp, fontWeight = FontWeight.Bold,
-        color = TacticalOnSurface, maxLines = 1, overflow = TextOverflow.Ellipsis,
+        p.habitation.name, fontSize = 16.sp, fontWeight = FontWeight.SemiBold,
+        color = TacticalOnSurface, maxLines = 2, overflow = TextOverflow.Ellipsis,
+        lineHeight = 21.sp,
         modifier = Modifier.testTag("priority_row_${p.habitation.id}")
       )
       Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.Top) {
@@ -462,8 +525,9 @@ private fun PriorityRow(p: HabitationPriority, destination: SafeZone?) {
         )
       }
       Text(
-        if (expanded) "TAP TO COLLAPSE" else "TAP FOR ALL REASONS",
-        fontSize = 11.sp, fontWeight = FontWeight.Bold, color = TacticalCyan
+        if (expanded) "Tap to collapse" else "Tap for all reasons",
+        fontSize = 12.sp, fontWeight = FontWeight.Medium, color = TacticalCyan,
+        modifier = Modifier.padding(top = 2.dp)
       )
     }
   }
@@ -479,21 +543,24 @@ private fun SheltersTab(
   onViewOnMap: (com.example.data.routing.GeoPoint) -> Unit = {}
 ) {
   var editing by remember { mutableStateOf<SafeZone?>(null) }
-  Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 12.dp)) {
+  Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp)) {
     Text(
-      "Field-entered shelters join the LIVE shelter network (they are real records, so they are never hidden by the demo switch).",
-      fontSize = 11.sp, color = TacticalOnSurfaceVariant, modifier = Modifier.padding(bottom = 8.dp)
+      "Field-entered shelters join the LIVE shelter network (real records — never hidden by the demo switch).",
+      fontSize = 12.sp, color = TacticalOnSurfaceVariant, lineHeight = 16.sp,
+      modifier = Modifier.padding(bottom = 8.dp)
     )
     Box(
       modifier = Modifier
+        .fillMaxWidth()
         .clip(RoundedCornerShape(8.dp))
         .background(NeonEmerald.copy(alpha = 0.9f))
         .clickable { editing = blankShelter() }
-        .padding(horizontal = 12.dp, vertical = 8.dp)
+        .heightIn(min = 44.dp),
+      contentAlignment = Alignment.Center
     ) {
-      Row(verticalAlignment = Alignment.CenterVertically) {
-        Icon(Icons.Default.Add, null, tint = Color.Black, modifier = Modifier.size(14.dp))
-        Text(" NEW SHELTER RECORD", fontSize = 11.sp, fontWeight = FontWeight.Black, color = Color.Black)
+      Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        Icon(Icons.Default.Add, null, tint = Color.Black, modifier = Modifier.size(16.dp))
+        Text("New Shelter Record", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
       }
     }
     Spacer(Modifier.height(8.dp))
@@ -509,16 +576,23 @@ private fun SheltersTab(
         verticalAlignment = Alignment.CenterVertically
       ) {
         Column(Modifier.weight(1f)) {
-          Text(zone.name, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = TacticalOnSurface)
+          Text(zone.name, fontSize = 14.sp, fontWeight = FontWeight.Medium, color = TacticalOnSurface,
+            maxLines = 2, overflow = TextOverflow.Ellipsis)
           Text(
-            "${zone.lat.fmt()}, ${zone.lon.fmt()} • cap ${zone.capacityTotal - zone.capacityCurrent}/${zone.capacityTotal} open • ${zone.operatingStatus}",
-            fontSize = 11.sp, color = TacticalOnSurfaceVariant
+            "${zone.lat.fmt()}, ${zone.lon.fmt()} • free ${zone.capacityTotal - zone.capacityCurrent}/${zone.capacityTotal} • ${zone.operatingStatus}",
+            fontSize = 12.sp, color = TacticalOnSurfaceVariant, maxLines = 1,
+            overflow = TextOverflow.Ellipsis
           )
         }
-        Icon(
-          Icons.Default.Delete, "Delete", tint = EmergencyRedBright,
-          modifier = Modifier.size(16.dp).clickable { onDelete(zone.id) }
-        )
+        Box(
+          modifier = Modifier.size(44.dp).clickable { onDelete(zone.id) },
+          contentAlignment = Alignment.Center
+        ) {
+          Icon(
+            Icons.Default.Delete, "Delete shelter record", tint = EmergencyRedBright,
+            modifier = Modifier.size(18.dp)
+          )
+        }
       }
     }
     // 12-12: REFERENCE DATA. The console used to read SHELTERS (0) - empty
@@ -540,8 +614,8 @@ private fun SheltersTab(
       Spacer(Modifier.height(10.dp))
       Text(
         text = "REFERENCE DATA — simulated demo shelters (not real)",
-        fontSize = 10.sp, fontWeight = FontWeight.Black, color = WarningAmber,
-        letterSpacing = 0.6.sp
+        fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = WarningAmber,
+        letterSpacing = 0.4.sp
       )
       referenceShelters.forEach { zone ->
         Row(
@@ -694,19 +768,22 @@ private fun HabitationsTab(
   onDelete: (String) -> Unit
 ) {
   var editing by remember { mutableStateOf<Habitation?>(null) }
-  Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 12.dp)) {
+  Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp)) {
     Text(
       "Surveyed habitations feed the relocation ranking with REAL population figures instead of demo data.",
-      fontSize = 11.sp, color = TacticalOnSurfaceVariant, modifier = Modifier.padding(bottom = 8.dp)
+      fontSize = 12.sp, color = TacticalOnSurfaceVariant, lineHeight = 16.sp,
+      modifier = Modifier.padding(bottom = 8.dp)
     )
     Box(
       modifier = Modifier
+        .fillMaxWidth()
         .clip(RoundedCornerShape(8.dp))
         .background(NeonEmerald.copy(alpha = 0.9f))
         .clickable { editing = blankHabitation(); onToggleForm(true) }
-        .padding(horizontal = 12.dp, vertical = 8.dp)
+        .heightIn(min = 44.dp),
+      contentAlignment = Alignment.Center
     ) {
-      Text(" NEW HABITATION RECORD", fontSize = 11.sp, fontWeight = FontWeight.Black, color = Color.Black)
+      Text("New Habitation Record", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
     }
     Spacer(Modifier.height(8.dp))
     uiState.fieldHabitations.forEach { hab ->
@@ -721,16 +798,23 @@ private fun HabitationsTab(
         verticalAlignment = Alignment.CenterVertically
       ) {
         Column(Modifier.weight(1f)) {
-          Text(hab.name, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = TacticalOnSurface)
+          Text(hab.name, fontSize = 14.sp, fontWeight = FontWeight.Medium, color = TacticalOnSurface,
+            maxLines = 2, overflow = TextOverflow.Ellipsis)
           Text(
             "${hab.point.lat.fmt()}, ${hab.point.lon.fmt()} • pop ${hab.population?.value ?: "not provided"} • ${hab.historicalEventCount} archive events",
-            fontSize = 11.sp, color = TacticalOnSurfaceVariant
+            fontSize = 12.sp, color = TacticalOnSurfaceVariant, maxLines = 1,
+            overflow = TextOverflow.Ellipsis
           )
         }
-        Icon(
-          Icons.Default.Delete, "Delete", tint = EmergencyRedBright,
-          modifier = Modifier.size(16.dp).clickable { onDelete(hab.id) }
-        )
+        Box(
+          modifier = Modifier.size(44.dp).clickable { onDelete(hab.id) },
+          contentAlignment = Alignment.Center
+        ) {
+          Icon(
+            Icons.Default.Delete, "Delete habitation record", tint = EmergencyRedBright,
+            modifier = Modifier.size(18.dp)
+          )
+        }
       }
     }
     editing?.let { target ->
@@ -825,12 +909,12 @@ private fun FormCard(title: String, content: @Composable () -> Unit) {
 @Composable
 private fun FormText(label: String, value: String, modifier: Modifier = Modifier, onValueChange: (String) -> Unit) {
   Column(modifier) {
-    Text(label, fontSize = 11.sp, color = TacticalOnSurfaceVariant)
+    Text(label, fontSize = 12.sp, color = TacticalOnSurfaceVariant)
     TextField(
       value = value,
       onValueChange = onValueChange,
       singleLine = true,
-      textStyle = androidx.compose.ui.text.TextStyle(fontSize = 11.sp, color = TacticalOnSurface),
+      textStyle = androidx.compose.ui.text.TextStyle(fontSize = 14.sp, color = TacticalOnSurface),
       colors = TextFieldDefaults.colors(
         focusedContainerColor = ObsidianSurface,
         unfocusedContainerColor = ObsidianSurface,
@@ -858,15 +942,17 @@ private fun FormButtons(onSave: () -> Unit, onCancel: () -> Unit) {
         .clip(RoundedCornerShape(8.dp))
         .background(NeonEmerald.copy(alpha = 0.9f))
         .clickable(onClick = onSave)
-        .padding(horizontal = 14.dp, vertical = 8.dp)
-    ) { Text("SAVE RECORD", fontSize = 10.sp, fontWeight = FontWeight.Black, color = Color.Black) }
+        .heightIn(min = 44.dp)
+        .padding(horizontal = 18.dp, vertical = 4.dp)
+    ) { Text("Save Record", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = Color.Black) }
     Box(
       modifier = Modifier
         .clip(RoundedCornerShape(8.dp))
         .background(TacticalOnSurfaceVariant.copy(alpha = 0.25f))
         .clickable(onClick = onCancel)
-        .padding(horizontal = 14.dp, vertical = 8.dp)
-    ) { Text("CANCEL", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = TacticalOnSurface) }
+        .heightIn(min = 44.dp)
+        .padding(horizontal = 18.dp, vertical = 4.dp)
+    ) { Text("Cancel", fontSize = 13.sp, fontWeight = FontWeight.Medium, color = TacticalOnSurface) }
   }
 }
 

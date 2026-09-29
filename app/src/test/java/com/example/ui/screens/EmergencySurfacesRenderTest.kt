@@ -183,7 +183,7 @@ class EmergencySurfacesRenderTest {
         )
       }
     }
-    composeTestRule.onNodeWithText("AUTHORITY CONSOLE").assertExists()
+    composeTestRule.onNodeWithText("Authority Console").assertExists()
     assert(
       composeTestRule.onAllNodesWithText("Test settlement")
         .fetchSemanticsNodes().isNotEmpty()
