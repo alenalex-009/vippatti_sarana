@@ -1,10 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-  English (default) strings that belong EXCLUSIVELY to the Instructions module.
-  The rest of the English instruction labels live in values/strings.xml; this
-  file only holds the poster (instruction-image) strings added by the
-  InstructionImages integration, so the shared strings.xml stays untouched.
--->
 <resources>
     <string name="instructions_poster_title">Safety poster</string>
     <string name="instructions_poster_subtitle">Before · During · After at a glance</string>
@@ -14,15 +8,6 @@
     <string name="instructions_poster_content_desc">Safety poster for %1$s showing the before, during and after guidance</string>
     <string name="instructions_choose_disaster">Choose a disaster</string>
     <string name="instructions_kit_subtitle">72-hour self-reliance pack</string>
-
-    <!--
-      Display labels for the instruction content model.
-      The safety copy in DisasterInstructions.kt stays the single English
-      source of truth and is NOT changed; these keys translate only the
-      user-visible category / module headings that wrap that copy, resolved
-      by the existing stable ids (flood, landslide, fire, earthquake,
-      evacuation, emergency_contacts, emergency_kit).
-    -->
     <string name="instructions_disaster_flood">Flood</string>
     <string name="instructions_disaster_flood_subtitle">Periyar valley &amp; low-lying settlement guidance</string>
     <string name="instructions_disaster_landslide">Landslide</string>
@@ -31,7 +16,6 @@
     <string name="instructions_disaster_fire_subtitle">Household, grassland &amp; plantation guidance</string>
     <string name="instructions_disaster_earthquake">Earthquake</string>
     <string name="instructions_disaster_earthquake_subtitle">Drop, cover and hold guidance</string>
-
     <string name="instructions_module_contacts">Emergency Contacts</string>
     <string name="instructions_module_contacts_subtitle">Official Indian emergency lines</string>
     <string name="instructions_module_evacuation">Evacuation Essentials</string>
@@ -39,8 +23,6 @@
     <string name="instructions_module_kit">Emergency Kit</string>
     <string name="instructions_module_kit_subtitle">72-hour self-reliance pack</string>
     <string name="instructions_module_intro">Your safety comes first. Follow these instructions to reduce risk.</string>
-
-    <!-- SOS dialogs -->
     <string name="sos_active_title">SOS RECORD SAVED</string>
     <string name="sos_active_notice">Recorded on this device. NOT SENT TO AUTHORITIES. Call 112 if you need immediate help.</string>
     <string name="sos_label_gps">GPS Location</string>
@@ -54,34 +36,22 @@
     <string name="sos_confirm_body">This saves your current location, battery and selected emergency information on this device.</string>
     <string name="sos_save_local">SAVE SOS RECORD</string>
     <string name="sos_cancel_i_am_safe">CANCEL</string>
-
-    <!-- Login / authentication -->
     <string name="login_passwords_do_not_match">Passwords do not match.</string>
     <string name="login_sos_badge">SOS</string>
     <string name="login_title">VIPPATTI SARANA</string>
     <string name="login_subtitle">Disaster Relief • Civil Safety Network</string>
-    <string name="login_tab_create">CREATE EMERGENCY ACCOUNT</string>
-    <string name="login_tab_signin">SIGN IN TO THE NETWORK</string>
     <string name="login_email">Email</string>
     <string name="login_password_min">Password (min %1$d characters)</string>
     <string name="login_hide_password">Hide password</string>
     <string name="login_show_password">Show password</string>
     <string name="login_confirm_password">Confirm password</string>
-    <string name="login_stay_signed_in">Stay signed in on this device</string>
-    <string name="login_create_account">CREATE ACCOUNT</string>
-    <string name="login_sign_in">SIGN IN</string>
     <string name="login_have_account">Already have an account? Sign in</string>
-    <string name="login_new_to_network">New to the network? Create an account</string>
-    <string name="login_demo_account">DEMO ACCOUNT (works offline)</string>
+    <string name="login_new_to_network">New here? Create an account</string>
     <string name="login_error_invalid_email">Enter a valid email address.</string>
     <string name="login_error_password_short">Password must be at least 6 characters.</string>
     <string name="login_error_account_exists">An account already exists for this email — sign in instead.</string>
-    <string name="login_error_no_account">No account found for this email — create one below.</string>
     <string name="login_error_incorrect">Incorrect email or password.</string>
     <string name="login_error_generic">Something went wrong. Please try again.</string>
-
-
-    <!-- Home dashboard -->
     <string name="home_question">what should I do right now?</string>
     <string name="home_look_elsewhere">Look at another state/city</string>
     <string name="home_chosen_place">Chosen place</string>
@@ -103,8 +73,6 @@
     <string name="home_assessing_body">Reading live hazard feeds (earthquakes, fires, official alerts) for your location…</string>
     <string name="home_action_show_where_to_go">SHOW ME WHERE TO GO</string>
     <string name="home_action_open_hazard_map">OPEN THE HAZARD MAP</string>
-
-    <!-- Edit profile / contact / situation-report dialogs -->
     <string name="dialog_close">Close</string>
     <string name="dialog_close_content_desc">Close</string>
     <string name="edit_profile_title">Edit Citizen Profile</string>
@@ -146,36 +114,35 @@
     <string name="gobag_save_button">Save to Emergency Net</string>
     <string name="gobag_done_complete">Kit Complete — Done</string>
     <string name="gobag_mark_complete">Mark as Complete</string>
-
-    <!-- Login redesign: new supporting copy. Existing login_* keys are reused. -->
     <string name="login_welcome_title">Welcome back</string>
-    <string name="login_welcome_subtitle">Sign in to the Vippatti Sarana safety network</string>
+    <string name="login_welcome_subtitle">Sign in to your Vippatti Sarana safety account</string>
     <string name="login_create_welcome_title">Create your account</string>
     <string name="login_create_welcome_subtitle">Set up offline access to your safety tools</string>
     <string name="login_brand_tagline">Preparedness starts before the emergency</string>
-    <string name="login_error_title">Could not sign in</string>
-    <string name="login_demo_hint">Tap to fill the demo credentials</string>
+    <string name="login_error_title">Sign-in failed</string>
     <string name="login_a11y_logo">Vippatti Sarana logo</string>
-
     <string name="register_title">Create your account</string>
-    <string name="register_subtitle">Set up your Vippatti Sarana identity. You can add the rest of your profile later.</string>
-    <string name="register_back_to_login">Back to sign in</string>
-    <string name="register_section_account">ACCOUNT</string>
-    <string name="register_section_account_hint">Required to create your account</string>
-    <string name="register_section_profile">PROFILE</string>
-    <string name="register_section_profile_hint">Optional - you can complete these later</string>
-    <string name="register_section_later">COMPLETE LATER</string>
-    <string name="register_section_later_hint">Sensitive details, added in Profile after sign-up</string>
     <string name="register_full_name">Full name</string>
-    <string name="register_citizen_id_optional">Citizen ID (optional)</string>
-    <string name="register_dependents_optional">Household members (optional)</string>
-    <string name="register_later_fields">Blood group, medical conditions, dependent details and vulnerability flags are kept private and can be added at any time from your Profile.</string>
     <string name="register_error_title">Could not create the account</string>
     <string name="register_error_name">Enter your full name.</string>
     <string name="register_error_password">Use at least 8 characters.</string>
-    <string name="register_error_dependents">Enter a valid number.</string>
-    <string name="register_privacy_note">Your details stay on this device and are used only to identify your alerts and reports.</string>
-
-    <string name="login_error_backend_unavailable">Cannot reach the sign-in service. Check your connection and try again.</string>
-    <string name="login_backend_note">Your account and profile are stored securely online, so signing in needs a connection.</string>
+    <string name="register_privacy_note">Your account is protected with an encrypted password. Vippatti Sarana never sees or stores your plaintext password.</string>
+    <string name="login_backend_note">Your account is stored securely on the Vippatti Sarana server. Signing in needs an internet connection.</string>
+    <string name="login_password">Password</string>
+    <string name="login_error_empty_password">Enter your password.</string>
+    <string name="login_sign_in_action">Sign in</string>
+    <string name="login_error_network">Cannot reach the sign-in service. Check your connection and try again.</string>
+    <string name="register_welcome_title">Create your account</string>
+    <string name="register_welcome_subtitle">Join the Vippatti Sarana safety network</string>
+    <string name="register_create_account_action">Create account</string>
+    <string name="login_pending_title">Confirm your email</string>
+    <string name="login_pending_body">We sent a confirmation link to %1$s. Open it first, then sign in.</string>
+    <string name="login_pending_action">Got it</string>
+    <string name="login_password_hint">At least 8 characters</string>
+    <string name="login_email_hint">Enter your email</string>
+    <string name="login_password_field_hint">Enter your password</string>
+    <string name="register_name_hint">As on your ID</string>
+    <string name="register_new_password_hint">Strong password, 8+ characters</string>
+    <string name="register_confirm_hint">Type your password again</string>
+    <string name="register_pending_note">After creating the account we will email you a confirmation link.</string>
 </resources>

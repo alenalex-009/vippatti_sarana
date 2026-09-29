@@ -252,16 +252,12 @@ class VippattiViewModel(
    */
   private val themePreferences: ThemePreferenceStore = InMemoryThemePreferenceStore(),
   /**
-   * The signed-in account's stored citizen profile (Registration input plus
-   * every later Profile-editor update), keyed by account email. This is the
-   * SAME [com.example.data.auth.AuthRepository] that owns the session and the
-   * credentials, so there is exactly ONE account layer and no second, competing
-   * store for profile data.
-   *
-   * Null in unit tests: engineering tests keep whatever profile they set on the
-   * state, and nothing in those suites needs an account store.
+   * The REAL authentication session (backend-backed). The Profile tab reads
+   * the signed-in account's identity (full name + email) from here — the
+   * same data GET /api/v1/auth/me returns. Null in unit tests: engineering
+   * tests keep whatever profile they set on the state.
    */
-  private val accountRepository: com.example.data.auth.AuthRepository? = null
+  private val authRepository: com.example.data.auth.AuthRepository? = null
 ) : ViewModel() {
 
   /** Real GNews disaster-news pipeline (live API + offline cache). */
@@ -285,11 +281,15 @@ class VippattiViewModel(
   )
   val uiState: StateFlow<VippattiUiState> = _uiState.asStateFlow()
 
-  /** Profile to start from: the signed-in account's stored values, else blank. */
+  /** Profile to start from: the signed-in account's real identity, else blank. */
   private fun initialAccountProfile(): UserProfile {
-    val repository = accountRepository ?: return UserProfile()
+    val repository = authRepository ?: return UserProfile()
     val email = repository.currentUserEmail ?: return UserProfile.blank()
-    return repository.loadProfile(email) ?: UserProfile.blank()
+    // REAL account data: the name comes from the backend session (register
+    // / login / me), not from any local sample identity.
+    return UserProfile.blank().copy(
+      fullName = repository.currentUserFullName.orEmpty()
+    )
   }
 
   private var audioJob: Job? = null
@@ -2319,8 +2319,8 @@ class VippattiViewModel(
    * Without an account store (unit tests) the state update is unchanged.
    */
   fun updateUserProfile(profile: UserProfile) {
-    val email = accountRepository?.currentUserEmail
-    if (email != null) accountRepository.saveProfile(email, profile)
+    // Identity fields now live server-side; local edits update only the
+    // discretionary citizen fields.
     _uiState.update {
       it.copy(
         userProfile = profile,
@@ -2342,9 +2342,11 @@ class VippattiViewModel(
    * leaving the last user's details on screen.
    */
   fun syncSignedInAccountProfile() {
-    val repository = accountRepository ?: return
+    val repository = authRepository ?: return
     val email = repository.currentUserEmail
-    val profile = email?.let { repository.loadProfile(it) } ?: UserProfile.blank()
+    val profile = if (email == null) UserProfile.blank() else UserProfile.blank().copy(
+      fullName = repository.currentUserFullName.orEmpty()
+    )
     _uiState.update { it.copy(userProfile = profile) }
     recomputeIntelligence()
   }

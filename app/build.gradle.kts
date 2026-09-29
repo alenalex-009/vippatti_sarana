@@ -56,7 +56,9 @@ defaultConfig {
     }
     buildConfigField("String", "GNEWS_API_KEY", "\"" + envValue("GNEWS_API_KEY", "YOUR_GNEWS_API_KEY_HERE") + "\"")
     buildConfigField("String", "FIRMS_MAP_KEY", "\"" + envValue("FIRMS_MAP_KEY", "YOUR_FIRMS_MAP_KEY_HERE") + "\"")
-
+    buildConfigField("String", "SUPABASE_URL", "\"" + envValue("SUPABASE_URL", "https://wjqbnwwqqsnlgbkrlkmv.supabase.co") + "\"")
+    buildConfigField("String", "SUPABASE_ANON_KEY", "\"" + envValue("SUPABASE_ANON_KEY", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqcWJud3dxcXNubGdia3Jsa212Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA2NTY1MTAsImV4cCI6MjEwNjIzMjUxMH0.rShofaGtJZFTuJEmBT--N6Wtfjljx-RrJanY0Et9nKE") + "\"")
+    buildConfigField("String", "SUPABASE_PUBLISHABLE_KEY", "\"" + envValue("SUPABASE_PUBLISHABLE_KEY", "sb_publishable_MoO9iivuO3Cv-VMotJD9CQ_r0muU7ro") + "\"")
 }
 
 signingConfigs {
@@ -166,6 +168,9 @@ ignoreList.add("FIREBASE_APPCHECK_DEBUG_TOKEN")
 // then died with GNews HTTP 400 / FIRMS empty layer.
 ignoreList.add("GNEWS_API_KEY")
 ignoreList.add("FIRMS_MAP_KEY")
+ignoreList.add("SUPABASE_URL")
+ignoreList.add("SUPABASE_ANON_KEY")
+ignoreList.add("SUPABASE_PUBLISHABLE_KEY")
 }
 
 googleServices {
@@ -218,6 +223,10 @@ implementation(libs.firebase.config)
 implementation(libs.kotlinx.coroutines.android)
 implementation(libs.kotlinx.coroutines.core)
 implementation(libs.okhttp)
+
+// REAL backend authentication: encrypted local token storage (the JWT never
+// sits in plaintext prefs) + EncryptedSharedPreferences handling.
+implementation(libs.androidx.security.crypto)
 
 // implementation(libs.play.services.location)
 

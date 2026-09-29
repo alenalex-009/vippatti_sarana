@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Marathi: instructions. Concise, safety-accurate. -->
 <resources>
     <string name="instructions_manual_title">जगण्याची नियमावली</string>
     <string name="instructions_manual_subtitle">माहिती घ्या. तयार राहा. सुरक्षित राहा.</string>
@@ -36,9 +35,6 @@
     <string name="instructions_back">सूचनांकडे परत</string>
     <string name="instructions_region_format">प्रादेशिक: %1$s</string>
     <string name="instructions_call_format">डायल %1$s</string>
-
-
-    <!-- Safety poster (instruction image). -->
     <string name="instructions_poster_title">सुरक्षा पोस्टर</string>
     <string name="instructions_poster_subtitle">आधी · दरम्यान · नंतर — एका दृष्टीक्षेपात</string>
     <string name="instructions_poster_open">मोठे करण्यासाठी टॅप करा</string>
@@ -62,8 +58,6 @@
     <string name="instructions_module_kit">आणीबाणी किट</string>
     <string name="instructions_module_kit_subtitle">72 तासांचा स्वयंपूर्ण पॅक</string>
     <string name="instructions_module_intro">तुमची सुरक्षा सर्वात महत्त्वाची. धोका कमी करण्यासाठी या सूचनांचे पालन करा.</string>
-
-    <!-- SOS dialogs -->
     <string name="sos_active_title">SOS जतन केले</string>
     <string name="sos_active_notice">या डिव्हाइसवर जतन केले. अधिकाऱ्यांना पाठवले नाही. तातडीच्या मदतीसाठी 112 वर कॉल करा.</string>
     <string name="sos_label_gps">GPS ठिकाण</string>
@@ -77,34 +71,22 @@
     <string name="sos_confirm_body">हे तुमचे ठिकाण, बॅटरी आणि वैद्यकीय माहिती याच डिव्हाइसवर सहेजते. कोणत्याही अधिकाऱ्याला स्वयंचलितपणे कळवले जात नाही. तातडीच्या मदतीसाठी 112 वर कॉल करा.</string>
     <string name="sos_save_local">स्थानिक SOS जतन करा</string>
     <string name="sos_cancel_i_am_safe">रद्द करा — मी सुरक्षित आहे</string>
-
-    <!-- Login / authentication -->
     <string name="login_passwords_do_not_match">पासवर्ड जुळत नाहीत.</string>
     <string name="login_sos_badge">SOS</string>
     <string name="login_title">VIPPATTI SARANA</string>
     <string name="login_subtitle">आपत्ती मदत • नागरिक सुरक्षा जाळे</string>
-    <string name="login_tab_create">आणीबाणी खाते तयार करा</string>
-    <string name="login_tab_signin">जाळ्यात साइन इन करा</string>
     <string name="login_email">ईमेल</string>
     <string name="login_password_min">पासवर्ड (किमान %1$d अक्षरे)</string>
     <string name="login_hide_password">पासवर्ड लपवा</string>
     <string name="login_show_password">पासवर्ड दाखवा</string>
     <string name="login_confirm_password">पासवर्डची खात्री करा</string>
-    <string name="login_stay_signed_in">या डिव्हाइसवर साइन इन राहा</string>
-    <string name="login_create_account">खाते तयार करा</string>
-    <string name="login_sign_in">साइन इन</string>
     <string name="login_have_account">आधीपासून खाते आहे? साइन इन करा</string>
-    <string name="login_new_to_network">जाळ्यात नवीन आहात? खाते तयार करा</string>
-    <string name="login_demo_account">डेमो खाते (ऑफलाइन काम करते)</string>
+    <string name="login_new_to_network">नवीन आहात? खाते तयार करा</string>
     <string name="login_error_invalid_email">वैध ईमेल पत्ता टाका.</string>
     <string name="login_error_password_short">पासवर्ड किमान 6 अक्षरांचा असावा.</string>
     <string name="login_error_account_exists">या ईमेलसाठी खाते आधीपासून आहे — त्याऐवजी साइन इन करा.</string>
-    <string name="login_error_no_account">या ईमेलसाठी खाते सापडले नाही — खाली खाते तयार करा.</string>
     <string name="login_error_incorrect">ईमेल किंवा पासवर्ड चुकीचा आहे.</string>
     <string name="login_error_generic">काहीतरी चूक झाली. कृपया पुन्हा प्रयत्न करा.</string>
-
-
-    <!-- Home dashboard -->
     <string name="home_question">आता मला काय करावे?</string>
     <string name="home_look_elsewhere">दुसरे राज्य/शहर पहा</string>
     <string name="home_chosen_place">निवडलेले ठिकाण</string>
@@ -126,8 +108,6 @@
     <string name="home_assessing_body">तुमच्या ठिकाणासाठी थेट धोक्याची माहिती (भूकंप, आग, अधिकृत सूचना) वाचली जात आहे…</string>
     <string name="home_action_show_where_to_go">मला कुठे जायचे ते दाखवा</string>
     <string name="home_action_open_hazard_map">धोका नकाशा उघडा</string>
-
-    <!-- Edit profile / contact / situation-report dialogs -->
     <string name="dialog_close">बंद करा</string>
     <string name="dialog_close_content_desc">बंद करा</string>
     <string name="edit_profile_title">नागरिक प्रोफाइल संपादित करा</string>
@@ -169,36 +149,35 @@
     <string name="gobag_save_button">आणीबाणी जाळ्यात जतन करा</string>
     <string name="gobag_done_complete">किट पूर्ण — झाले</string>
     <string name="gobag_mark_complete">पूर्ण म्हणून चिन्हांकित करा</string>
-
-    <!-- Login redesign: new supporting copy. Existing login_* keys are reused. -->
-    <string name="login_welcome_title">पुन्हा स्वागत</string>
-    <string name="login_welcome_subtitle">विप्पट्टी सारण सुरक्षा जाळ्यात साइन इन करा</string>
+    <string name="login_welcome_title">पुन्हा स्वागत आहे</string>
+    <string name="login_welcome_subtitle">तुमच्या विपत्ती सरणी सुरक्षा खात्यात साइन इन करा</string>
     <string name="login_create_welcome_title">तुमचे खाते तयार करा</string>
     <string name="login_create_welcome_subtitle">तुमच्या सुरक्षा अवजारांसाठी ऑफलाइन प्रवेश सेट करा</string>
     <string name="login_brand_tagline">सवयत आपत्तीच्या आधीपासून सुरू होते</string>
-    <string name="login_error_title">साइन इन करता आले नाही</string>
-    <string name="login_demo_hint">डेमो तपशील भरण्यासाठी टॅप करा</string>
+    <string name="login_error_title">साइन-इन अयशस्वी</string>
     <string name="login_a11y_logo">विप्पट्टी सारण लोगो</string>
-
     <string name="register_title">तुमचे खाते तयार करा</string>
-    <string name="register_subtitle">तुमची विप्पट्टी सारण ओळख सेट करा. उर्वचीत इतर माहिती नंतर भरता येईल.</string>
-    <string name="register_back_to_login">साइन इनकडे परत जा</string>
-    <string name="register_section_account">खाते</string>
-    <string name="register_section_account_hint">खाते तयार करण्यासाठी आवश्यक</string>
-    <string name="register_section_profile">प्रोफाइल</string>
-    <string name="register_section_profile_hint">ऐच्छिक - तुम्ही नंतर पूर्ण करू शकता</string>
-    <string name="register_section_later">नंतर पूर्ण करा</string>
-    <string name="register_section_later_hint">संवेदनशील माहिती, साइन-अपनंतर प्रोफाइलमध्ये जोडली जाईल</string>
     <string name="register_full_name">पूर्ण नाव</string>
-    <string name="register_citizen_id_optional">नागरिक ओळखीपत्र (ऐच्छिक)</string>
-    <string name="register_dependents_optional">कुटुंबातील सदस्य (ऐच्छिक)</string>
-    <string name="register_later_fields">रक्त गट, आरोग्यस्थिती, अवलंबितांचा तपशील आणि असुरक्षिततेच्या नोंदी गोपीन राखल्या जातात आणि तुम्ही कधीही प्रोफाइलमधून जोडू शकता.</string>
     <string name="register_error_title">खाते तयार करता आले नाही</string>
     <string name="register_error_name">तुमचे पूर्ण नाव लिहा.</string>
     <string name="register_error_password">किमान 8 अक्षरे वापरा.</string>
-    <string name="register_error_dependents">वैध संख्या लिहा.</string>
-    <string name="register_privacy_note">तुमची माहिती याच डिव्हाइसवर राहते आणि फक्त तुमच्या सूचना व अहवालांची ओळख करण्यासाठी वापरली जाते.</string>
-
-    <string name="login_error_backend_unavailable">साइन-इन सेवेशनपर्यंत पोहोचता आले. तुमचे कनेक्शन तपासा आणि पुन्हा प्रयत्न करा.</string>
-    <string name="login_backend_note">तुमचे खाते आणि प्रोफाइल सुरक्षितपणे ऑनलाइन साठवले जाते, म्हणून साइन इनला कनेक्शन आवश्यक आहे.</string>
+    <string name="register_privacy_note">तुमचे खाते एन्क्रिप्टेड संकेतशब्दाने सुरक्षित आहे. विपत्ती सरणी तुमचा साधा संकेतशब्द कधीही पाहत नाही किंवा साठवत नाही.</string>
+    <string name="login_backend_note">तुमचे खाते विपत्ती सरणी सर्व्हरवर सुरक्षितपणे साठवले आहे. साइन इनसाठी इंटरनेट कनेक्शन आवश्यक आहे.</string>
+    <string name="login_password">संकेतशब्द</string>
+    <string name="login_error_empty_password">तुमचा संकेतशब्द प्रविष्ट करा.</string>
+    <string name="login_sign_in_action">साइन इन करा</string>
+    <string name="login_error_network">साइन-इन सेवेपर्यंत पोहोचता आले नाही. तुमचे कनेक्शन तपासा आणि पुन्हा प्रयत्न करा.</string>
+    <string name="register_welcome_title">तुमचे खाते तयार करा</string>
+    <string name="register_welcome_subtitle">विपत्ती सरणी सुरक्षा जाळ्यात सामील व्हा</string>
+    <string name="register_create_account_action">खाते तयार करा</string>
+    <string name="login_pending_title">ईमेलची पुष्टी करा</string>
+    <string name="login_pending_body">पुष्टीकरणाची लिंक %1$s पाठवली आहे. आधी लिंक उघडा, नंतर साइन इन करा.</string>
+    <string name="login_pending_action">समजले</string>
+    <string name="login_password_hint">किमान 8 अक्षरे</string>
+    <string name="login_email_hint">तुमचे ईमेल टाका</string>
+    <string name="login_password_field_hint">तुमचा पासवर्ड टाका</string>
+    <string name="register_name_hint">ओळखीच्या कागदाप्रमाणे</string>
+    <string name="register_new_password_hint">किमान 8 अक्षरांचा मजबूत पासवर्ड</string>
+    <string name="register_confirm_hint">पासवर्ड पुन्हा टाइप करा</string>
+    <string name="register_pending_note">खाते तयार केल्यावर पुष्टीकरणाचा ईमेल पाठवला जाईल.</string>
 </resources>

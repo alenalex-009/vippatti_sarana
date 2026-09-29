@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Bengali: instructions. Concise, safety-accurate. -->
 <resources>
     <string name="instructions_manual_title">বাঁচার নির্দেশিকা</string>
     <string name="instructions_manual_subtitle">জানুন। প্রস্তুত থাকুন। নিরাপদ থাকুন।</string>
@@ -36,9 +35,6 @@
     <string name="instructions_back">নির্দেশনায় ফিরুন</string>
     <string name="instructions_region_format">আঞ্চলিক: %1$s</string>
     <string name="instructions_call_format">ডায়াল %1$s</string>
-
-
-    <!-- Safety poster (instruction image). -->
     <string name="instructions_poster_title">নিরাপত্তা পোস্টার</string>
     <string name="instructions_poster_subtitle">আগে · চলাকালীন · পরে — এক নজরে</string>
     <string name="instructions_poster_open">বড় করতে ট্যাপ করুন</string>
@@ -62,8 +58,6 @@
     <string name="instructions_module_kit">জরুরি কিট</string>
     <string name="instructions_module_kit_subtitle">72 ঘণ্টার স্বনির্ভর প্যাক</string>
     <string name="instructions_module_intro">আপনার নিরাপত্তাই প্রথম। ঝুঁকি কমাতে এই নির্দেশনাগুলি অনুসরণ করুন।</string>
-
-    <!-- SOS dialogs -->
     <string name="sos_active_title">SOS সংরক্ষিত</string>
     <string name="sos_active_notice">এই ডিভাইসে সংরক্ষিত। কর্তৃপক্ষকে পাঠানো হয়নি। জরুরি সাহায্যের জন্য ১১২-এ কল করুন।</string>
     <string name="sos_label_gps">GPS অবস্থান</string>
@@ -77,34 +71,22 @@
     <string name="sos_confirm_body">এটি আপনার অবস্থান, ব্যাটারি ও চিকিৎসা তথ্য এই ডিভাইসেই সংরক্ষণ করে। কোনো কর্তৃপক্ষকে স্বয়ংক্রিয়ভাবে জানানো হয় না। জরুরি সাহায্যের জন্য ১১২-এ কল করুন।</string>
     <string name="sos_save_local">স্থানীয় SOS সংরক্ষণ করুন</string>
     <string name="sos_cancel_i_am_safe">বাতিল — আমি নিরাপদ</string>
-
-    <!-- Login / authentication -->
     <string name="login_passwords_do_not_match">পাসওয়ার্ড মেলেনি।</string>
     <string name="login_sos_badge">SOS</string>
     <string name="login_title">VIPPATTI SARANA</string>
     <string name="login_subtitle">দুর্যোগ ত্রাণ • নাগরিক নিরাপত্তা নেটওয়ার্ক</string>
-    <string name="login_tab_create">জরুরি অ্যাকাউন্ট খুলুন</string>
-    <string name="login_tab_signin">নেটওয়ার্কে সাইন ইন করুন</string>
     <string name="login_email">ইমেল</string>
     <string name="login_password_min">পাসওয়ার্ড (কমপক্ষে %1$d অক্ষর)</string>
     <string name="login_hide_password">পাসওয়ার্ড লুকান</string>
     <string name="login_show_password">পাসওয়ার্ড দেখান</string>
     <string name="login_confirm_password">পাসওয়ার্ড নিশ্চিত করুন</string>
-    <string name="login_stay_signed_in">এই ডিভাইসে সাইন ইন থাকুন</string>
-    <string name="login_create_account">অ্যাকাউন্ট খুলুন</string>
-    <string name="login_sign_in">সাইন ইন</string>
     <string name="login_have_account">অ্যাকাউন্ট আগে থেকেই আছে? সাইন ইন করুন</string>
-    <string name="login_new_to_network">নেটওয়ার্কে নতুন? অ্যাকাউন্ট খুলুন</string>
-    <string name="login_demo_account">ডেমো অ্যাকাউন্ট (অফলাইনে কাজ করে)</string>
+    <string name="login_new_to_network">নতুন এসেছেন? অ্যাকাউন্ট তৈরি করুন</string>
     <string name="login_error_invalid_email">একটি বৈধ ইমেল ঠিকানা লিখুন।</string>
     <string name="login_error_password_short">পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।</string>
     <string name="login_error_account_exists">এই ইমেলের অ্যাকাউন্ট আগে থেকেই আছে — বরং সাইন ইন করুন।</string>
-    <string name="login_error_no_account">এই ইমেলে কোনো অ্যাকাউন্ট পাওয়া যায়নি — নিচে অ্যাকাউন্ট খুলুন।</string>
     <string name="login_error_incorrect">ইমেল বা পাসওয়ার্ড ভুল।</string>
     <string name="login_error_generic">কিছু একটা ভুল হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।</string>
-
-
-    <!-- Home dashboard -->
     <string name="home_question">এখন আমি কী করব?</string>
     <string name="home_look_elsewhere">অন্য রাজ্য/শহর দেখুন</string>
     <string name="home_chosen_place">নির্বাচিত স্থান</string>
@@ -126,8 +108,6 @@
     <string name="home_assessing_body">আপনার অবস্থানের জন্য সরাসরি বিপদের তথ্য (ভূমিকম্প, আগুন, সরকারি সতর্কতা) পড়া হচ্ছে…</string>
     <string name="home_action_show_where_to_go">আমাকে কোথায় যেতে হবে দেখান</string>
     <string name="home_action_open_hazard_map">বিপদের মানচিত্র খুলুন</string>
-
-    <!-- Edit profile / contact / situation-report dialogs -->
     <string name="dialog_close">বন্ধ করুন</string>
     <string name="dialog_close_content_desc">বন্ধ করুন</string>
     <string name="edit_profile_title">নাগরিক প্রোফাইল সম্পাদনা করুন</string>
@@ -169,36 +149,35 @@
     <string name="gobag_save_button">জরুরি নেটওয়ার্কে সংরক্ষণ করুন</string>
     <string name="gobag_done_complete">কিট সম্পূর্ণ — হয়ে গেছে</string>
     <string name="gobag_mark_complete">সম্পূর্ণ হিসেবে চিহ্নিত করুন</string>
-
-    <!-- Login redesign: new supporting copy. Existing login_* keys are reused. -->
-    <string name="login_welcome_title">আবার স্বাগতম</string>
-    <string name="login_welcome_subtitle">ভিপ্পত্তি সারণ নিরাপত্তা নেটওয়ার্কে সাইন ইন করুন</string>
+    <string name="login_welcome_title">ফিরে আসায় স্বাগতম</string>
+    <string name="login_welcome_subtitle">আপনার বিপত্তি সরণি সুরক্ষা অ্যাকাউন্টে সাইন ইন করুন</string>
     <string name="login_create_welcome_title">আপনার অ্যাকাউন্ট খুলুন</string>
     <string name="login_create_welcome_subtitle">আপনার নিরাপত্তা সরঞ্জামের অফলাইন অ্যাক্সেস সেট করুন</string>
     <string name="login_brand_tagline">প্রস্তুতি বিপর্যয়ের আগেই শুরু</string>
-    <string name="login_error_title">সাইন ইন করা যায়নি</string>
-    <string name="login_demo_hint">ডেমোর তথ্য পূরণ করতে ট্যাপ করুন</string>
+    <string name="login_error_title">সাইন-ইন ব্যর্থ</string>
     <string name="login_a11y_logo">ভিপ্পত্তি সারণ লোগো</string>
-
     <string name="register_title">আপনার অ্যাকাউন্ট তৈরি করুন</string>
-    <string name="register_subtitle">আপনার ভিপ্পাট্টি সারণ পরিচয় সেট করুন। বাকি প্রোফাইল পরে যোগ করা যাবে।</string>
-    <string name="register_back_to_login">সাইন ইন-এ ফিরে যান</string>
-    <string name="register_section_account">অ্যাকাউন্ট</string>
-    <string name="register_section_account_hint">অ্যাকাউন্ট তৈরি করতে আবশ্যক</string>
-    <string name="register_section_profile">প্রোফাইল</string>
-    <string name="register_section_profile_hint">ঐচ্ছিক - পরে সম্পূর্ণ করতে পারেন</string>
-    <string name="register_section_later">পরে সম্পূর্ণ করুন</string>
-    <string name="register_section_later_hint">সংবেদনশীল তথ্য, সাইন-আপের পরে প্রোফাইলে যোগ করা হবে</string>
     <string name="register_full_name">পূর্ণ নাম</string>
-    <string name="register_citizen_id_optional">নাগরিক আইডি (ঐচ্ছিক)</string>
-    <string name="register_dependents_optional">পরিবারের সদস্য (ঐচ্ছিক)</string>
-    <string name="register_later_fields">রক্তের গ্রুপ, চিকিৎসা অবস্থা, আশ্রিতদের বিবরণ ও ঝুঁকির চিহ্নগুলো ব্যক্তিগত রাখা হয় এবং আপনি যেকোনো সময় প্রোফাইল থেকে যোগ করতে পারেন।</string>
     <string name="register_error_title">অ্যাকাউন্ট তৈরি করা যায়নি</string>
     <string name="register_error_name">আপনার পূর্ণ নাম লিখুন।</string>
     <string name="register_error_password">কমপক্ষে 8 অক্ষর ব্যবহার করুন।</string>
-    <string name="register_error_dependents">একটি বৈধ সংখ্যা লিখুন।</string>
-    <string name="register_privacy_note">আপনার তথ্য এই ডিভাইসেই থাকে এবং শুধু আপনার অ্যালার্ট ও প্রতিবেদন শনাক্ত করতে ব্যবহৃত হয়।</string>
-
-    <string name="login_error_backend_unavailable">সাইন-ইন পরিষেবায় পৌঁছানো যায়নি। সংযোগ পরীক্ষা করে আবার চেষ্টা করুন।</string>
-    <string name="login_backend_note">আপনার অ্যাকাউন্ট ও প্রোফাইল নিরাপদে অনলাইনে সংরক্ষিত থাকে, তাই সাইন ইনের জন্য সংযোগ প্রয়োজন।</string>
+    <string name="register_privacy_note">আপনার অ্যাকাউন্ট এনক্রিপ্টেড পাসওয়ার্ড দিয়ে সুরক্ষিত। বিপত্তি সরণি আপনার সাধারণ পাসওয়ার্ড কখনও দেখে না বা সংরক্ষণ করে না।</string>
+    <string name="login_backend_note">আপনার অ্যাকাউন্ট বিপত্তি সরণি সার্ভারে নিরাপদে সংরক্ষিত। সাইন ইন করতে ইন্টারনেট সংযোগ প্রয়োজন।</string>
+    <string name="login_password">পাসওয়ার্ড</string>
+    <string name="login_error_empty_password">আপনার পাসওয়ার্ড লিখুন।</string>
+    <string name="login_sign_in_action">সাইন ইন করুন</string>
+    <string name="login_error_network">সাইন-ইন পরিষেবায় পৌঁছানো যায়নি। সংযোগ পরীক্ষা করে আবার চেষ্টা করুন।</string>
+    <string name="register_welcome_title">আপনার অ্যাকাউন্ট তৈরি করুন</string>
+    <string name="register_welcome_subtitle">বিপত্তি সরণি সুরক্ষা নেটওয়ার্কে যোগ দিন</string>
+    <string name="register_create_account_action">অ্যাকাউন্ট তৈরি করুন</string>
+    <string name="login_pending_title">ইমেইল নিশ্চিত করুন</string>
+    <string name="login_pending_body">নিশ্চিতকরণ লিঙ্ক %1$s পাঠানো হয়েছে। প্রথমে লিঙ্কটি খুলুন, তারপর সাইন ইন করুন।</string>
+    <string name="login_pending_action">বুঝেছি</string>
+    <string name="login_password_hint">কমপক্ষে ৮টি অক্ষর</string>
+    <string name="login_email_hint">আপনার ইমেইল লিখুন</string>
+    <string name="login_password_field_hint">আপনার পাসওয়ার্ড লিখুন</string>
+    <string name="register_name_hint">পরিচয়পत्रে যেমন আছে তেমন</string>
+    <string name="register_new_password_hint">কমপক্ষে ৮ অক্ষরের শক্তিশালী পাসওয়ার্ড</string>
+    <string name="register_confirm_hint">পাসওয়ার্ড আবার লিখুন</string>
+    <string name="register_pending_note">অ্যাকাউন্ট তৈরির পর নিশ্চিতকরণ ইমেইল পাঠানো হবে।</string>
 </resources>

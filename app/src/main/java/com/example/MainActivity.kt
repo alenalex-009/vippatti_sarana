@@ -48,6 +48,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.core.content.ContextCompat
@@ -79,7 +80,7 @@ import com.example.ui.components.SosConfirmDialog
 import com.example.ui.components.VippattiBottomNavBar
 import com.example.ui.components.NavTabs
 import com.example.data.auth.AuthRepository
-import com.example.data.auth.SharedPrefsAuthStorage
+import com.example.data.auth.TokenStorage
 import com.example.ui.screens.AuthorityConsoleScreen
 import com.example.ui.screens.DispatchesScreen
 import com.example.ui.screens.HomeScreen
@@ -87,12 +88,13 @@ import com.example.ui.screens.InstructionsScreen
 import com.example.ui.screens.LoginScreen
 import com.example.ui.screens.ProfileScreen
 import com.example.ui.screens.RadarMapScreen
+import com.example.ui.screens.SignupScreen
 import com.example.ui.theme.EmergencyRed
 import com.example.ui.theme.ObsidianSurface
 import com.example.ui.theme.TacticalOnSurface
 import com.example.ui.theme.VippattiTheme
+import com.example.viewmodel.AuthViewModel
 import com.example.viewmodel.ScreenTab
-import com.example.viewmodel.AuthGateViewModel
 import com.example.viewmodel.TORCH_REASON_PERMISSION
 import com.example.viewmodel.TorchState
 import com.example.viewmodel.VippattiViewModel
@@ -107,35 +109,48 @@ class MainActivity : ComponentActivity() {
     super.onCreate(savedInstanceState)
     enableEdgeToEdge()
     // Application context for auth storage: the repository outlives any single
-    // Activity instance (retained by AuthGateViewModel across rotation), so it
+    // Activity instance (retained by AuthViewModel across rotation), so it
     // must never hold the destroyed Activity.
     val appContext = applicationContext
     setContent {
       val context = LocalContext.current
 
-      // Local offline auth gate: seeded demo account + stay-signed-in session
-      // (see AuthRepository). No network, no Google accounts — deliberately.
-      // The repository lives in an activity-scoped ViewModel (NOT remember):
-      // remember {} is rebuilt on every Activity recreation, which dropped the
-      // in-process session flag and bounced stay-signed-out users back to the
-      // login screen on every rotation. The ViewModel survives recreation, so
-      // rotation keeps the session; process death still re-reads the store.
-      val authGate: AuthGateViewModel = viewModel(
-        factory = object : ViewModelProvider.Factory {
-          @Suppress("UNCHECKED_CAST")
-          override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            AuthGateViewModel(
-              AuthRepository(SharedPrefsAuthStorage(appContext)).apply {
-              // B12: the shared demo account is a DEBUG-ONLY convenience for
-              // judges and testing. A release build ships NO known-password
-              // account: users register their own.
-              if (BuildConfig.DEBUG) seedDemoAccount()
-            }
-            ) as T
-        }
-      )
-      val authRepository = authGate.repository
-      var signedIn by remember { mutableStateOf(authGate.isSignedIn()) }
+      // REAL AUTHENTICATION (the only auth system in the app):
+      // AuthViewModel -> AuthRepository -> SupabaseAuthApiService (GoTrue
+      // REST) -> Supabase project. Sessions live in EncryptedSharedPreferences
+      // (AES-256, Android Keystore). No demo accounts, no local credentials,
+      // no fake success paths.
+      //
+      // PROJECT CONFIG is build-time (app/.env -> BuildConfig) with runtime
+      // overrides for testing another project without a rebuild: the
+      // SUPABASE_URL / SUPABASE_ANON_KEY Intent extras, or the same env vars.
+      val supabaseUrl = intent?.getStringExtra("SUPABASE_URL")
+        ?: System.getenv("SUPABASE_URL")
+        ?: BuildConfig.SUPABASE_URL
+      val supabaseKey = intent?.getStringExtra("SUPABASE_ANON_KEY")
+        ?: System.getenv("SUPABASE_ANON_KEY")
+        ?: BuildConfig.SUPABASE_ANON_KEY
+
+      val authRepository = remember {
+        AuthRepository(
+          api = com.example.data.auth.SupabaseAuthApiService(
+            supabaseUrl = supabaseUrl,
+            apiKey = supabaseKey
+          ),
+          store = TokenStorage(appContext)
+        )
+      }
+      val authViewModel: AuthViewModel = viewModel(factory = AuthViewModel.factory(authRepository))
+
+      var signedIn by remember { mutableStateOf(authRepository.hasStoredSession()) }
+      var showSignup by rememberSaveable { mutableStateOf(false) }
+
+      // App-start session restoration: validate the stored token session
+      // against the backend; a valid session opens the main app directly.
+      LaunchedEffect(Unit) {
+        authViewModel.restoreSession { restored -> signedIn = restored }
+      }
+
       // First-run onboarding: shown once, before the auth gate, and never
       // again once completed. Signed-in sessions skip it entirely. The flag
       // is written only on skip / sign-in / final-page completion, never for
@@ -210,15 +225,14 @@ class MainActivity : ComponentActivity() {
                   MODE_PRIVATE
                 )
               ),
-              // ACCOUNT PROFILE: the Profile tab renders the signed-in
-              // account's stored citizen profile (registration input +
-              // editor updates). This is the SAME repository instance that owns
-              // the session, so account + profile can never disagree.
-              accountRepository = authGate.repository
+              // ACCOUNT: the Profile tab renders the signed-in account's
+              // REAL identity (name/email) from the authentication session.
+              authRepository = authRepository
             ) as T
         }
       )
       val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+      val authUiState by authViewModel.uiState.collectAsStateWithLifecycle()
 
       // Remote config is read ONCE, here at the app root, and handed to the
       // theme as plain data (audit B3: the override is testable because the
@@ -243,9 +257,8 @@ class MainActivity : ComponentActivity() {
           )
         }
         if (signedIn) {
-          // Load the SIGNED-IN account's own stored profile into the UI state on
-          // every authentication change (first sign-in, account switch, and the
-          // cold start where the session is restored but this ViewModel is new).
+          // The signed-in account's identity is shown on Profile from the
+          // authentication session (restored/refreshed via /me).
           LaunchedEffect(authRepository.currentUserEmail) {
             viewModel.syncSignedInAccountProfile()
           }
@@ -253,31 +266,34 @@ class MainActivity : ComponentActivity() {
             viewModel = viewModel,
             accountEmail = authRepository.currentUserEmail,
             onSignOut = {
-              authRepository.logout()
-              // Clear the departed account's identity from the UI state so the
-              // next sign-in can never show the previous user's details.
-              viewModel.syncSignedInAccountProfile()
-              signedIn = false
+              // Revoke server-side + clear the encrypted local session.
+              authViewModel.logout {
+                // Clear the departed account's identity from the UI state so the
+                // next sign-in can never show the previous user's details.
+                viewModel.syncSignedInAccountProfile()
+                signedIn = false
+              }
             }
           )
         } else if (!onboardingDone) {
           com.example.ui.screens.OnboardingFlowScreen(
             onFinish = { completeOnboarding() }
           )
+        } else if (showSignup) {
+          SignupScreen(
+            uiState = authUiState,
+            onSignup = { fullName, email, password, confirmPassword ->
+              authViewModel.signup(fullName, email, password, confirmPassword) { signedIn = true }
+            },
+            onBackToLogin = { showSignup = false }
+          )
         } else {
           LoginScreen(
-            onLogin = { email, password, staySignedIn ->
-              authRepository.login(email, password, staySignedIn).also {
-                if (it.ok) signedIn = true
-              }
+            uiState = authUiState,
+            onLogin = { email, password ->
+              authViewModel.login(email, password) { signedIn = true }
             },
-            onRegister = { request ->
-              // Creates the account AND stores the profile typed on the same
-              // Registration form, so Profile opens on the user's real values.
-              authRepository.register(request).also {
-                if (it.ok) signedIn = true
-              }
-            }
+            onGoToSignup = { showSignup = true }
           )
         }
       }

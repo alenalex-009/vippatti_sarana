@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Tamil: instructions. Concise, safety-accurate. -->
 <resources>
     <string name="instructions_manual_title">உயிர் பாதுகாப்பு கையேடு</string>
     <string name="instructions_manual_subtitle">அறிந்து கொள்ளுங்கள். தயாராக இருங்கள். பாதுகாப்பாக இருங்கள்.</string>
@@ -36,9 +35,6 @@
     <string name="instructions_back">வழிகாட்டலுக்குத் திரும்பு</string>
     <string name="instructions_region_format">பகுதி: %1$s</string>
     <string name="instructions_call_format">அழைக்கவும் %1$s</string>
-
-
-    <!-- Safety poster (instruction image). -->
     <string name="instructions_poster_title">பாதுகாப்பு சுவரொட்டி</string>
     <string name="instructions_poster_subtitle">முன் · இடையே · பின் — ஒரே பார்வையில்</string>
     <string name="instructions_poster_open">பெரிதாக்க தட்டவும்</string>
@@ -62,8 +58,6 @@
     <string name="instructions_module_kit">அவசர பொருள் தொகுப்பு</string>
     <string name="instructions_module_kit_subtitle">72 மணி சுயசார்பு பொதி</string>
     <string name="instructions_module_intro">உங்கள் பாதுகாப்பே முதலில். ஆபத்தைக் குறைக்க இந்த வழிகாட்டுதல்களைப் பின்பற்றவும்.</string>
-
-    <!-- SOS dialogs -->
     <string name="sos_active_title">SOS சேமிக்கப்பட்டது</string>
     <string name="sos_active_notice">இந்தச் சாதனத்தில் சேமிக்கப்பட்டது. அதிகாரிகளுக்கு அனுப்பப்படவில்லை. உடனடி உதவிக்கு 112 ஐ அழைக்கவும்.</string>
     <string name="sos_label_gps">GPS இருப்பிடம்</string>
@@ -77,34 +71,22 @@
     <string name="sos_confirm_body">இது உங்கள் இருப்பிடம், பேட்டரி, மருத்துவத் தகவலை இந்தச் சாதனத்திலேயே சேமிக்கிறது. எந்த அதிகாரியும் தானாகத் தொடர்புபடுத்தப்பட மாட்டார். உடனடி உதவிக்கு 112 ஐ அழைக்கவும்.</string>
     <string name="sos_save_local">உள்ளூர் SOS சேமிக்கவும்</string>
     <string name="sos_cancel_i_am_safe">ரத்து — நான் பாதுகாப்பாக உள்ளேன்</string>
-
-    <!-- Login / authentication -->
     <string name="login_passwords_do_not_match">கடவுச்சொற்கள் பொருந்தவில்லை.</string>
     <string name="login_sos_badge">SOS</string>
     <string name="login_title">VIPPATTI SARANA</string>
     <string name="login_subtitle">அபாய நிவாரம் • குடிமை பாதுகாப்பு வலை</string>
-    <string name="login_tab_create">அவசர கணக்கை உருவாக்கவும்</string>
-    <string name="login_tab_signin">வலையில் உள்நுழையவும்</string>
     <string name="login_email">மின்னஞ்சல்</string>
     <string name="login_password_min">கடவுச்சொல் (குறைந்தது %1$d எழுத்துகள்)</string>
     <string name="login_hide_password">கடவுச்சொல்லை மறைக்கவும்</string>
     <string name="login_show_password">கடவுச்சொல்லைக் காட்டவும்</string>
     <string name="login_confirm_password">கடவுச்சொல்லை உறுதிசெய்யவும்</string>
-    <string name="login_stay_signed_in">இந்தச் சாதனத்தில் உள்நுழைந்திருக்கவும்</string>
-    <string name="login_create_account">கணக்கை உருவாக்கு</string>
-    <string name="login_sign_in">உள்நுழை</string>
     <string name="login_have_account">ஏற்கனவே கணக்கு உள்ளதா? உள்நுழையவும்</string>
-    <string name="login_new_to_network">வலையில் புதியவரா? கணக்கை உருவாக்கவும்</string>
-    <string name="login_demo_account">டெமோ கணக்கு (இணையமில்லாமல் வேலை செய்கிறது)</string>
+    <string name="login_new_to_network">புதியவரா? கணக்கை உருவாக்குங்கள்</string>
     <string name="login_error_invalid_email">சரியான மின்னஞ்சல் முகவரியை உள்ளிடவும்.</string>
     <string name="login_error_password_short">கடவுச்சொல் குறைந்தது 6 எழுத்துகள் இருக்க வேண்டும்.</string>
     <string name="login_error_account_exists">இந்த மின்னஞ்சலுக்கு ஏற்கனவே கணக்கு உள்ளது — அதற்குப் பதிலாக உள்நுழையவும்.</string>
-    <string name="login_error_no_account">இந்த மின்னஞ்சலுக்குக் கணக்கு கிடைக்கவில்லை — கீழே உருவாக்கவும்.</string>
     <string name="login_error_incorrect">மின்னஞ்சல் அல்லது கடவுச்சொல் தவறானது.</string>
     <string name="login_error_generic">ஏதோ தவறு நடந்தது. மீண்டும் முயற்சிக்கவும்.</string>
-
-
-    <!-- Home dashboard -->
     <string name="home_question">இப்போது நான் என்ன செய்ய வேண்டும்?</string>
     <string name="home_look_elsewhere">வேறு மாநிலம்/நகரத்தைப் பார்க்கவும்</string>
     <string name="home_chosen_place">தேர்ந்தெடுத்த இடம்</string>
@@ -126,8 +108,6 @@
     <string name="home_assessing_body">உங்கள் இருப்பிடத்திற்கான நேரடி ஆபத்து விவரங்கள் (புவி அதிர்ச்சி, தீ, அதிகாரப்பூர அறிவிப்புகள்) வாசிக்கப்படுகிறது…</string>
     <string name="home_action_show_where_to_go">எங்கே செல்வது என்று காட்டவும்</string>
     <string name="home_action_open_hazard_map">ஆபத்து வரைபடத்தைத் திற</string>
-
-    <!-- Edit profile / contact / situation-report dialogs -->
     <string name="dialog_close">மூடு</string>
     <string name="dialog_close_content_desc">மூடு</string>
     <string name="edit_profile_title">குடிமைச் சுயவிவரத்தைத் திருத்தவும்</string>
@@ -169,36 +149,35 @@
     <string name="gobag_save_button">அவசர வலையில் சேமிக்கவும்</string>
     <string name="gobag_done_complete">கிட் முடிந்தது — முடிந்தது</string>
     <string name="gobag_mark_complete">முடிந்ததாகக் குறிக்கவும்</string>
-
-    <!-- Login redesign: new supporting copy. Existing login_* keys are reused. -->
-    <string name="login_welcome_title">மீண்டும் வருக</string>
-    <string name="login_welcome_subtitle">விப்பட்டி சரண பாதுகாப்பு வலையில் உள்நுழையவும்</string>
+    <string name="login_welcome_title">மீண்டும் வரவேற்கிறோம்</string>
+    <string name="login_welcome_subtitle">உங்கள் விபத்து சரணி பாதுகாப்பு கணக்கில் உள்நுழையுங்கள்</string>
     <string name="login_create_welcome_title">உங்கள் கணக்கை உருவாக்குங்கள்</string>
     <string name="login_create_welcome_subtitle">உங்கள் பாதுகாப்புக் கருவிகளுக்கு இணையமில்லா அணுகலை அமைக்கவும்</string>
     <string name="login_brand_tagline">அன்பு நிகழ்வதற்கு முன்பே தயார்</string>
-    <string name="login_error_title">உள்நுழைய முடியவில்லை</string>
-    <string name="login_demo_hint">டெமோ விவரங்களை நிரப்ப டேப் செய்யவும்</string>
+    <string name="login_error_title">உள்நுழைவு தோல்வி</string>
     <string name="login_a11y_logo">விப்பட்டி சரண லோகோ</string>
-
     <string name="register_title">உங்கள் கணக்கை உருவாக்குங்கள்</string>
-    <string name="register_subtitle">உங்கள் விப்பட்டி சரண அடையாளத்தை அமைக்கவும். மற்ற சுயவிவரங்களைப் பின்னர் சேர்க்கலாம்.</string>
-    <string name="register_back_to_login">உள்நுழைவு பக்கத்திற்குத் திரும்பவும்</string>
-    <string name="register_section_account">கணக்கு</string>
-    <string name="register_section_account_hint">கணக்கை உருவாக்கத் தேவையானவை</string>
-    <string name="register_section_profile">சுயவிவரம்</string>
-    <string name="register_section_profile_hint">விருப்பம் - பின்னர் நிறைவு செய்யலாம்</string>
-    <string name="register_section_later">பின்னர் நிறைவு செய்யவும்</string>
-    <string name="register_section_later_hint">நேர்மையான விவரங்கள், பதிவு செய்த பிறகு சுயவிவரத்தில் சேர்க்கப்படும்</string>
     <string name="register_full_name">முழு பெயர்</string>
-    <string name="register_citizen_id_optional">குடிமை அடையாள எண் (விருப்பம்)</string>
-    <string name="register_dependents_optional">குடும்ப உறுப்பினர்கள் (விருப்பம்)</string>
-    <string name="register_later_fields">இரத்த வகை, மருத்துவ நிலைகள், சார்ந்தவர் விவரங்கள் மற்றும் பாதுகாப்புக் குறியீடுகள் தனிப்பட்டதாக வைக்கப்பட்டு, உங்கள் சுயவிவரத்திலிருந்து எப்போதுும் சேர்க்கலாம்.</string>
     <string name="register_error_title">கணக்கை உருவாக்க முடியவில்லை</string>
     <string name="register_error_name">உங்கள் முழு பெயரை உள்ளிடவும்.</string>
     <string name="register_error_password">குறைந்தது 8 எழுத்துகளைப் பயன்படுத்தவும்.</string>
-    <string name="register_error_dependents">சரியான எண்ணை உள்ளிடவும்.</string>
-    <string name="register_privacy_note">உங்கள் விவரங்கள் இந்தச் சாதனத்திலேயே இருக்கும்; அவை உங்கள் அறிவிப்புகளையும் அறிக்கைகளையும் அடையாளம் காணப் பயன்படும்.</string>
-
-    <string name="login_error_backend_unavailable">உள்நுழைவு சேவையை அணுக முடியவில்லை. இணைப்பைச் சரிபார்த்து மீண்டும் முயற்சிக்கவும்.</string>
-    <string name="login_backend_note">உங்கள் கணக்கு மற்றும் சுயவிவரம் பாதுகாப்பாக ஆன்லைனில் சேமிக்கப்படுகிறது, எனவே உள்நுழைவுக்கு இணைப்பு தேவை.</string>
+    <string name="register_privacy_note">உங்கள் கணக்கு என்க்ரிப்ட் செய்யப்பட்ட கடவுச்சொல்லால் பாதுகாக்கப்படுகிறது. விபத்து சரணி உங்கள் வெற்று கடவுச்சொல்லை எப்போதும் பார்க்காது அல்லது சேமிக்காது.</string>
+    <string name="login_backend_note">உங்கள் கணக்கு விபத்து சரணி சேவையகத்தில் பாதுகாப்பாக சேமிக்கப்பட்டுள்ளது. உள்நுழைய இணைய இணைப்பு தேவை.</string>
+    <string name="login_password">கடவுச்சொல்</string>
+    <string name="login_error_empty_password">உங்கள் கடவுச்சொல்லை உள்ளிடுங்கள்.</string>
+    <string name="login_sign_in_action">உள்நுழை</string>
+    <string name="login_error_network">உள்நுழைவு சேவையை அடைய முடியவில்லை. உங்கள் இணைப்பைச் சரிபார்த்து மீண்டும் முயற்சிக்கவும்.</string>
+    <string name="register_welcome_title">உங்கள் கணக்கை உருவாக்குங்கள்</string>
+    <string name="register_welcome_subtitle">விபத்து சரணி பாதுகாப்பு வலையமைப்பில் சேருங்கள்</string>
+    <string name="register_create_account_action">கணக்கை உருவாக்கு</string>
+    <string name="login_pending_title">அஞ்சலை உறுதிப்படுத்தவும்</string>
+    <string name="login_pending_body">உறுதிப்படுத்தல் இணைப்பு %1$s அனுப்பப்பட்டுள்ளது. முதலில் இணைப்பைத் திறக்கவும், பின் உள்நுழையவும்.</string>
+    <string name="login_pending_action">புரிந்தது</string>
+    <string name="login_password_hint">குறைந்தது 8 எழுத்துகள்</string>
+    <string name="login_email_hint">உங்கள் மின்னஞ்சலை உள்ளிடவும்</string>
+    <string name="login_password_field_hint">உங்கள் கடவுச்சொல்லை உள்ளிடவும்</string>
+    <string name="register_name_hint">அடையாள அட்டையில் உள்ளபடி</string>
+    <string name="register_new_password_hint">குறைந்தது 8 எழுத்து கொண்ட வலிமையான கடவுச்சொல்</string>
+    <string name="register_confirm_hint">கடவுச்சொல்லை மீண்டும் தட்டச்சு செய்யவும்</string>
+    <string name="register_pending_note">கணக்கை உருவாக்கிய பின் உறுதிப்படுத்தல் அஞ்சல் அனுப்பப்படும்.</string>
 </resources>
