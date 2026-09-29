@@ -1638,7 +1638,7 @@ private fun ProfileSectionHeader(title: String, modifier: Modifier = Modifier) {
     fontWeight = FontWeight.Bold,
     letterSpacing = 0.6.sp,
     color = TacticalOnSurfaceVariant,
-    modifier = modifier.padding(start = 4.dp, top = 20.dp, bottom = 8.dp)
+    modifier = modifier.padding(start = 4.dp, top = 16.dp, bottom = 8.dp)
   )
 }
 
@@ -1701,11 +1701,16 @@ internal fun ProfileHeaderCard(
           modifier = Modifier.size(16.dp)
         )
       }
-      Text(
-        text = stringResource(R.string.profile_id_label, uiState.userProfile.citizenId),
-        fontSize = 12.sp,
-        color = TacticalOnSurfaceVariant
-      )
+      // The ID line exists ONLY when the citizen actually has one. A bare
+      // "ID:" label with an empty value read as a broken field (device
+      // audit): absent data must be absent, not announced.
+      if (uiState.userProfile.citizenId.isNotBlank()) {
+        Text(
+          text = stringResource(R.string.profile_id_label, uiState.userProfile.citizenId),
+          fontSize = 12.sp,
+          color = TacticalOnSurfaceVariant
+        )
+      }
       Text(
         text = if (accountEmail.isNullOrBlank()) {
           stringResource(R.string.profile_account_no_email)
@@ -1723,18 +1728,23 @@ internal fun ProfileHeaderCard(
       horizontalAlignment = Alignment.CenterHorizontally,
       verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-      Box(
-        modifier = Modifier
-          .clip(CircleShape)
-          .background(EmergencyRedContainer.copy(alpha = 0.35f))
-          .padding(horizontal = 10.dp, vertical = 3.dp)
-      ) {
-        Text(
-          text = uiState.userProfile.bloodGroupLabel,
-          fontSize = 11.sp,
-          fontWeight = FontWeight.Black,
-          color = EmergencyRedBright
-        )
+      // Blood group chip renders ONLY with a real value. An unset group drew
+      // an empty red disc that looked like a stray clipped circle (device
+      // audit: 'ghost pink circle top-right').
+      if (uiState.userProfile.bloodGroupLabel.isNotBlank()) {
+        Box(
+          modifier = Modifier
+            .clip(CircleShape)
+            .background(EmergencyRedContainer.copy(alpha = 0.35f))
+            .padding(horizontal = 10.dp, vertical = 3.dp)
+        ) {
+          Text(
+            text = uiState.userProfile.bloodGroupLabel,
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Black,
+            color = EmergencyRedBright
+          )
+        }
       }
       Box(
         modifier = Modifier

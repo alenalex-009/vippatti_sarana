@@ -44,6 +44,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -56,6 +57,39 @@ import com.example.ui.theme.TacticalCyan
 import com.example.ui.theme.TacticalOnSurface
 import com.example.ui.theme.TacticalOnSurfaceVariant
 import com.example.ui.theme.TacticalOutlineVariant
+
+/**
+ * One label/value line of the SOS data card: 40% / 60% columns, top-aligned,
+ * values bold and end-aligned. Used by BOTH dialogs so the grid rhythm is
+ * identical everywhere.
+ */
+@Composable
+private fun SosDataRow(
+  label: String,
+  value: String,
+  valueColor: Color
+) {
+  Row(
+    modifier = Modifier.fillMaxWidth(),
+    horizontalArrangement = Arrangement.spacedBy(12.dp)
+  ) {
+    Text(
+      text = label,
+      fontSize = 12.sp,
+      color = TacticalOnSurfaceVariant,
+      lineHeight = 16.sp,
+      modifier = Modifier.weight(2f)
+    )
+    Text(
+      text = value,
+      fontSize = 12.sp,
+      fontWeight = FontWeight.Bold,
+      color = valueColor,
+      textAlign = TextAlign.End,
+      modifier = Modifier.weight(3f)
+    )
+  }
+}
 
 @Composable
 fun SosBroadcastDialog(
@@ -90,8 +124,11 @@ fun SosBroadcastDialog(
         modifier = Modifier
           .padding(24.dp)
           .fillMaxWidth()
-          // Emergency dialog content must remain reachable on short screens,
-          // landscape and with the keyboard open — scroll instead of clip.
+          // Bounded height FIRST, then scroll: without the cap the Surface
+          // just grew and the device clipped the last button (DONE was
+          // half-cut). The cap leaves the dialog title visible while the
+          // content scrolls on short screens, landscape and IME-open.
+          .heightIn(max = 560.dp)
           .verticalScroll(rememberScrollState())
           .imePadding(),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -148,56 +185,33 @@ fun SosBroadcastDialog(
             .padding(14.dp),
           verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-          // The label takes the flexible half so a longer translated label
-          // wraps under itself instead of shoving the value off the row.
-          Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-          ) {
-            Text(
-              stringResource(R.string.sos_label_gps),
-              fontSize = 12.sp,
-              color = TacticalOnSurfaceVariant,
-              modifier = Modifier.weight(1f)
-            )
-            Text(locationLabel, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = NeonEmerald)
-          }
-          Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-          ) {
-            Text(
-              stringResource(R.string.sos_label_battery),
-              fontSize = 12.sp,
-              color = TacticalOnSurfaceVariant,
-              modifier = Modifier.weight(1f)
-            )
-            Text(batteryLabel, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TacticalOnSurface)
-          }
-          Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-          ) {
-            Text(
-              stringResource(R.string.sos_label_medical),
-              fontSize = 12.sp,
-              color = TacticalOnSurfaceVariant,
-              modifier = Modifier.weight(1f)
-            )
-            Text(medicalTagLabel, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TacticalCyan)
-          }
-          Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-          ) {
-            Text(
-              stringResource(R.string.sos_label_delivery),
-              fontSize = 12.sp,
-              color = TacticalOnSurfaceVariant,
-              modifier = Modifier.weight(1f)
-            )
-            Text(relaysLabel, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TacticalOnSurface)
-          }
+          // TRUE TWO-COLUMN GRID: the label column has a fixed share and the
+          // value column gets the larger share — a long value (coordinates!)
+          // used to squeeze the label until "Location" broke mid-word. Both
+          // sides now wrap cleanly inside their own column, top-aligned so a
+          // two-line value never floats away from its label.
+          SosDataRow(
+            label = stringResource(R.string.sos_label_gps),
+            // A failed fix must never read as success green.
+            value = locationLabel,
+            valueColor = if (locationLabel.contains("NO GPS FIX", ignoreCase = true))
+              EmergencyRed else NeonEmerald
+          )
+          SosDataRow(
+            label = stringResource(R.string.sos_label_battery),
+            value = batteryLabel,
+            valueColor = TacticalOnSurface
+          )
+          SosDataRow(
+            label = stringResource(R.string.sos_label_medical),
+            value = medicalTagLabel,
+            valueColor = TacticalCyan
+          )
+          SosDataRow(
+            label = stringResource(R.string.sos_label_delivery),
+            value = relaysLabel,
+            valueColor = TacticalOnSurface
+          )
         }
 
         Spacer(modifier = Modifier.height(20.dp))
@@ -282,7 +296,9 @@ fun SosConfirmDialog(
         modifier = Modifier
           .padding(24.dp)
           .fillMaxWidth()
-          // Keep the YES/CANCEL emergency actions reachable on short screens.
+          // Bounded height + scroll, so SAVE/CALL/CANCEL can never be
+          // clipped off the bottom on short screens (device audit).
+          .heightIn(max = 560.dp)
           .verticalScroll(rememberScrollState())
           .imePadding(),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -322,30 +338,17 @@ fun SosConfirmDialog(
             .padding(14.dp),
           verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-          Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-          ) {
-            Text(
-              stringResource(R.string.sos_label_gps),
-              fontSize = 12.sp,
-              color = TacticalOnSurfaceVariant,
-              modifier = Modifier.weight(1f)
-            )
-            Text(locationLabel, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = NeonEmerald)
-          }
-          Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-          ) {
-            Text(
-              stringResource(R.string.sos_label_battery),
-              fontSize = 12.sp,
-              color = TacticalOnSurfaceVariant,
-              modifier = Modifier.weight(1f)
-            )
-            Text(batteryLabel, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TacticalOnSurface)
-          }
+          SosDataRow(
+            label = stringResource(R.string.sos_label_gps),
+            value = locationLabel,
+            valueColor = if (locationLabel.contains("NO GPS FIX", ignoreCase = true))
+              EmergencyRed else NeonEmerald
+          )
+          SosDataRow(
+            label = stringResource(R.string.sos_label_battery),
+            value = batteryLabel,
+            valueColor = TacticalOnSurface
+          )
         }
 
         Spacer(modifier = Modifier.height(20.dp))
