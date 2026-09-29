@@ -202,11 +202,13 @@ fun SosBroadcastDialog(
             value = batteryLabel,
             valueColor = TacticalOnSurface
           )
-          SosDataRow(
-            label = stringResource(R.string.sos_label_medical),
-            value = medicalTagLabel,
-            valueColor = TacticalCyan
-          )
+          if (medicalTagLabel.isNotBlank()) {
+            SosDataRow(
+              label = stringResource(R.string.sos_label_medical),
+              value = medicalTagLabel,
+              valueColor = TacticalCyan
+            )
+          }
           SosDataRow(
             label = stringResource(R.string.sos_label_delivery),
             value = relaysLabel,
