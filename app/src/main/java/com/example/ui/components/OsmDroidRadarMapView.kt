@@ -157,7 +157,8 @@ enum class GpsRequestState {
  *   HAZARD    = large faded pulsing circles in the DISASTER-TYPE color
  *               (flood blue, fire orange, cyclone purple ... — see
  *               DisasterTypeColors; legend row above the map keys each color)
- *   SAFE ZONE = large faded pulsing safe circles (emerald = open, amber = full)
+ *   SAFE ZONE = compact green shelter pins (emerald = open, amber = full;
+ *                 the selected one is highlighted with a halo)
  *   USER      = hardware GPS location overlay (dot + accuracy ring)
  *   ROUTE     = OSRM evacuation polyline
  */
@@ -938,14 +939,17 @@ class OsmMapControllerHolder(
         zone.capacityStatus == com.example.data.model.CapacityStatus.FULL -> 0xFFF59E0B.toInt() // amber = full
         else -> 0xFF00E297.toInt() // emerald = available
       }
+      val isSelected = zone.id == selectedSafeZoneId
       val overlay = PinOrAreaOverlay(
         center = OsmGeoPoint(zone.lat, zone.lon),
         radiusMeters = SAFE_ZONE_RADIUS_METERS,
         colorArgb = color,
         pulsePeriodMs = SAFE_ZONE_PULSE_MS,
-        // Shelters matter at walking scale: show their (small, honest) area
-        // from city zoom up, dots beyond that.
+        // Shelters matter at walking scale: show their (small, honest)
+        // footprint from city zoom up, compact pins beyond that.
         areaFromZoom = MapFocus.SAFE_DOT_MIN_ZOOM,
+        dotRadiusPx = if (isSelected) 17f else 12f,
+        showHalo = isSelected,
         onTapped = { onSafeZoneTapped(zone) }
       )
       safeZoneOverlays.add(overlay)
@@ -1367,7 +1371,16 @@ private fun safeForBoundingBoxFit(mv: MapView): Boolean =
   }
 
   fun focusOnSafeZone(zone: SafeZone) {
+    setSelectedSafeZoneId(zone.id)
     mapView?.controller?.animateTo(OsmGeoPoint(zone.lat, zone.lon))
+  }
+
+  /** Spec part 12: the SELECTED safe zone renders as a highlighted pin. */
+  private var selectedSafeZoneId: String? = null
+  fun setSelectedSafeZoneId(id: String?) {
+    if (selectedSafeZoneId == id) return
+    selectedSafeZoneId = id
+    deploySafeZones(lastSafeZones)
   }
 
   /** Fly to a chosen place and stop GPS-following while viewing elsewhere. */
@@ -1576,7 +1589,10 @@ private fun safeForBoundingBoxFit(mv: MapView): Boolean =
     private const val HISTORICAL_PULSE_MS = 5200L
     private const val HISTORICAL_MARKER_RADIUS_METERS = 2600.0
     private const val HISTORICAL_MARKER_COLOR = 0xFF64748B.toInt()
-    private const val SAFE_ZONE_RADIUS_METERS = 900.0
+    // A shelter is a BUILDING (spec part 12): draw its honest small
+    // footprint at walking zoom — never a 900 m green blob that reads
+    // like a hazard zone. Dots below SAFE_DOT_MIN_ZOOM stay small pins.
+    private const val SAFE_ZONE_RADIUS_METERS = 150.0
     private const val DISASTER_MARKER_RADIUS_METERS = 1200.0
     /** Hard timeout for the GPS one-shot locate before reporting TIMEOUT. */
     private const val LOCATION_TIMEOUT_MS = 20_000L

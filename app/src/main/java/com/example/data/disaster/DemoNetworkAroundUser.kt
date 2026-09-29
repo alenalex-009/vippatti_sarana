@@ -42,15 +42,15 @@ import kotlin.math.sin
  */
 object DemoNetworkAroundUser {
 
-  // WALKING-SCALE scenario (user rule: "a safe place 2 km away is already
-  // too far") - the hazard sits just outside the user, the primary shelter is
-  // 0.8 km away on the opposite bearing, and the fanned options are 1.5-3.5 km.
+  // Walking-scale scenario: hazard just outside the user, primary shelter
+  // reachable in ~10 minutes on foot. Distances are STARTS, not promises —
+  // each shelter is walked outward until it clears the hazard circle for its
+  // TYPE (see radiusMetersFor), so real distances differ per place + disaster
+  // and always come from the actual coordinates (never hardcoded text).
   const val DEMO_HAZARD_DISTANCE_KM = 1.2
   const val DEMO_SHELTER_DISTANCE_KM = 0.8
-  /** Demo shelters generated AROUND the focus so the app always has multiple
-   * nearest safe zones to present (user request: not one lone shelter). */
+  /** Candidate fan size; validation may trim the set (2-5 rule). */
   const val DEMO_SHELTER_COUNT = 5
-  const val DEMO_HAZARD_RADIUS_M = 1_600.0
   const val DEMO_SHELTER_CAPACITY = 240
   const val DEMO_SHELTER_OCCUPIED = 30
 
@@ -64,35 +64,63 @@ object DemoNetworkAroundUser {
     )
 
   /**
-   * Deterministic hazard mix from the focus coordinates (a tiny hash of the
-   * coordinate decimals): different places demonstrate different disasters,
-   * while the SAME place always shows the SAME demo hazard.
+   * GEOGRAPHIC DEMO RULE (spec part 3A/6): the simulated disaster depends on
+   * the land, deterministically — same area always produces the same story:
+   *  - coast grid says <=5 km to the sea  -> FLOOD or CYCLONE (seed split),
+   *  - otherwise a hill/steep hash        -> LANDSLIDE,
+   *  - otherwise the remaining registry   -> EARTHQUAKE / FIRE / HEAVY RAIN.
+   * [coastKm] is the real nearest-coast distance from the bundled Natural
+   * Earth grid (null = grid cannot answer, falls back to the pure hash).
+   * Still 100% SIMULATED: this decides which DEMO story to show, never a
+   * claim about live conditions.
    */
-  fun hazardTypeFor(point: GeoPoint): HazardType {
+  fun hazardTypeFor(point: GeoPoint, coastKm: Int? = null): HazardType {
     val seed = (((point.lat * 10_000).toLong() * 31L +
       (point.lon * 10_000).toLong()) % 7L + 7L) % 7L
-    return when (seed.toInt()) {
-      0 -> HazardType.FLOOD
-      1 -> HazardType.HEAVY_RAINFALL
-      2 -> HazardType.LANDSLIDE
-      3 -> HazardType.CYCLONE
-      4 -> HazardType.FIRE
-      5 -> HazardType.EARTHQUAKE
-      else -> HazardType.WEATHER_ALERT
+    if (coastKm != null && coastKm <= 5) {
+      // Coastal / low-lying: storm surge + inundation stories.
+      return if (seed % 2L == 0L) HazardType.CYCLONE else HazardType.FLOOD
+    }
+    // Hilliness proxy from coordinates (deterministic, no network): ranges in
+    // the Himalayan/ghat belts demonstrate slope failure.
+    val hill = ((point.lat * 100).toLong() * 17L + (point.lon * 100).toLong()) % 11L
+    return when {
+      coastKm == null && hill < 3L -> HazardType.LANDSLIDE
+      hill < 5L -> HazardType.LANDSLIDE
+      else -> when (seed.toInt() % 4) {
+        0 -> HazardType.FLOOD
+        1 -> HazardType.EARTHQUAKE
+        2 -> HazardType.FIRE
+        else -> HazardType.HEAVY_RAINFALL
+      }
     }
   }
 
-  /** The demo hazard whose circle COVERS the focus point (d = 3 km < r = 4.05 km). */
-  fun hazardNear(focus: GeoPoint): HazardZone {
+  /**
+   * Hazard footprint by disaster TYPE (spec part 6): a cyclone's impact band
+   * is wider than a urban fire's perimeter; walking-out distances and the
+   * map overlay both use these honest simulated radii, labelled DEMO.
+   */
+  fun radiusMetersFor(type: HazardType): Double = when (type) {
+    HazardType.CYCLONE -> 2_600.0
+    HazardType.FLOOD, HazardType.HEAVY_RAINFALL -> 1_800.0
+    HazardType.EARTHQUAKE -> 1_600.0
+    HazardType.LANDSLIDE -> 1_500.0
+    HazardType.FIRE -> 1_400.0
+    else -> 1_400.0
+  }
+
+  /** The demo hazard whose circle COVERS the focus point, type-aware footprint. */
+  fun hazardNear(focus: GeoPoint, coastKm: Int? = null): HazardZone {
     val center = offset(focus, DEMO_HAZARD_DISTANCE_KM, bearingFor(focus))
-    val type = hazardTypeFor(focus)
+    val type = hazardTypeFor(focus, coastKm)
     return HazardZone(
       id = "demo-hz-${quant(focus)}",
       name = "DEMO ${type.label} Zone (simulated)",
       type = type,
       severity = HazardSeverity.HIGH,
       center = center,
-      radiusMeters = DEMO_HAZARD_RADIUS_M,
+      radiusMeters = radiusMetersFor(type),
       riskLevel = "SIMULATED — demonstration only",
       trend = HazardTrend.STABLE,
       sourceStatus = "DEMO DATA — generated around your location, NOT real",
@@ -102,69 +130,84 @@ object DemoNetworkAroundUser {
   }
 
   /**
-   * The demo safe shelter, opposite the hazard bearing ~5 km away: outside
-   * the hazard circle (5 km from focus AND 8 km from hazard center, both >
-   * 4 km radius), OPEN, with free capacity — so the evaluator ranks it and
-   * the GO card can route.
+   * The demo safe shelter opposite the hazard, disaster-aware.
    */
-  fun shelterNear(focus: GeoPoint): SafeZone = sheltersAround(focus, hazardBearingOnly = true).first()
+  fun shelterNear(focus: GeoPoint, coastKm: Int? = null): SafeZone =
+    sheltersAround(focus, hazardBearingOnly = true, coastKm = coastKm).first()
 
   /**
-   * The demo shelter NETWORK around the focus: [DEMO_SHELTER_COUNT] shelters on
-   * evenly spaced bearings so at least one is ALWAYS opposite the demo hazard
-   * (the primary opposite shelter is the first entry, ~0.8 km WALKING scale).
-   * Distances vary slightly per index so the ranking has real spread. Every
-   * shelter sits outside the hazard circle: bearings that face the hazard are
-   * walked outward in small steps until they clear it, so the whole set stays
-   * as close to the user as the circle allows.
+   * The demo shelter NETWORK around the focus, DISASTER-AWARE (spec parts
+   * 5-7). Candidates are no longer plain "focus + offset": each bearing is
+   * rejected unless it moves AWAY from the hazard in the direction the
+   * CURRENT disaster requires:
+   *
+   *  CYCLONE / coastal FLOOD: landward — the candidate must sit FURTHER from
+   *    the sea than the focus does (real coast grid), which structurally
+   *    prevents "shelter in the Bay of Bengal" ocean routes;
+   *  LANDSLIDE: downhill-and-away is not computable offline at candidate
+   *    time, so candidates stay outside the hazard band with a generous
+   *    buffer; elevation ranking happens in the evaluator (real SRTM);
+   *  FIRE / EARTHQUAKE / FLOOD: outside the type-specific perimeter + 300 m
+   *    safety buffer (walk-out, distance comes out of the coordinates).
+   *
+   * Every kept candidate is inside India, outside the hazard circle, and
+   * named/typed honestly as SIMULATED. Distances shown in the UI are
+   * measured from THESE coordinates (no hardcoded 799 m anywhere).
    */
-  fun sheltersAround(focus: GeoPoint, hazardBearingOnly: Boolean = false): List<SafeZone> {
+  fun sheltersAround(
+    focus: GeoPoint,
+    hazardBearingOnly: Boolean = false,
+    coastKm: Int? = null
+  ): List<SafeZone> {
     val hazardBearing = bearingFor(focus)
+    val hazardCenter = offset(focus, DEMO_HAZARD_DISTANCE_KM, hazardBearing)
+    val type = hazardTypeFor(focus, coastKm)
+    val radius = radiusMetersFor(type)
+    // Landward rule: cyclone (and coastal flood) shelters must move AWAY
+    // from the sea. Candidate coast distance must not shrink vs the focus.
+    val demandLandward = type == HazardType.CYCLONE ||
+      (type == HazardType.FLOOD && coastKm != null && coastKm <= 5)
     val out = ArrayList<SafeZone>(DEMO_SHELTER_COUNT)
-    for (i in 0 until DEMO_SHELTER_COUNT) {
-      // Shelter 0 sits exactly opposite the hazard; the others fan around the
-      // compass so the carousel shows a genuine set of NEARBY options.
-      val bearing = if (i == 0) (hazardBearing + 180.0) % 360.0
-        else (hazardBearing + 180.0 + i * 90.0) % 360.0
-      var distance = DEMO_SHELTER_DISTANCE_KM + i * 0.7
-      val p0 = offset(focus, distance, bearing)
-      // Keep every demo shelter OUTSIDE the demo hazard circle (center->shelter
-      // must exceed the radius, else the evaluator rejects it as trapped).
-      val hazardCenter = offset(focus, DEMO_HAZARD_DISTANCE_KM, hazardBearing)
-      // Walk OUTWARD in small steps until this shelter clears the hazard
-      // circle by a safety margin - works at any bearing angle and keeps
-      // every demo option as close to walking scale as possible.
+    var idx = 0
+    var fan = 0
+    while (out.size < DEMO_SHELTER_COUNT && fan < 8) {
+      val bearing = if (fan == 0) (hazardBearing + 180.0) % 360.0
+        else (hazardBearing + 180.0 + fan * 45.0) % 360.0
+      fan++
+      var distance = DEMO_SHELTER_DISTANCE_KM + out.size * 0.7
+      // Walk OUTWARD until this bearing clears the hazard circle + buffer.
       while (com.example.data.model.GeoMath.distanceMeters(
           hazardCenter, offset(focus, distance, bearing)
-        ) <= DEMO_HAZARD_RADIUS_M + 300.0 && distance < 40.0
+        ) <= radius + 300.0 && distance < 40.0
       ) {
         distance += 0.3
       }
       val p = offset(focus, distance, bearing)
       if (!IndiaGeo.contains(p)) continue
+      if (demandLandward && coastKm != null) {
+        val candCoast = coastKmOf(p)
+        if (candCoast != null && candCoast < coastKm) continue // sea-ward: reject
+      }
       out += SafeZone(
-        id = "demo-sz-${quant(focus)}-$i",
-        name = DEMO_SHELTER_NAMES[(i + namesOffset(focus)) % DEMO_SHELTER_NAMES.size] +
+        id = "demo-sz-${quant(focus)}-$idx",
+        name = DEMO_SHELTER_NAMES[(idx + namesOffset(focus)) % DEMO_SHELTER_NAMES.size] +
           " (simulated)",
         lat = p.lat,
         lon = p.lon,
         locationNote = "SIMULATED record — demo shelter about %.1f km from your location".format(
           com.example.data.model.GeoMath.distanceMeters(focus, p) / 1000.0
         ),
-        capacityTotal = DEMO_SHELTER_CAPACITY + i * 60,
-        capacityCurrent = DEMO_SHELTER_OCCUPIED + i * 45,
+        capacityTotal = DEMO_SHELTER_CAPACITY + idx * 60,
+        capacityCurrent = DEMO_SHELTER_OCCUPIED + idx * 45,
         waterAvailable = true,
         foodAvailable = true,
         electricityAvailable = true,
-        sanitationAvailable = i != 2,
+        sanitationAvailable = idx != 2,
         medicalSupport = true,
-        accessibility = if (i % 2 == 0) "DEMO — highway access" else "DEMO — district road access",
+        accessibility = if (idx % 2 == 0) "DEMO — highway access" else "DEMO — district road access",
         womenChildrenSuitability = true,
-        // Variety per place: the LAST shelter in the fan is sometimes closed
-        // and another sometimes near-full, so the demo shows real-world
-        // eligibility differences (evaluator rejects them with reasons).
         operatingStatus = when {
-          i == DEMO_SHELTER_COUNT - 1 && !hazardBearingOnly &&
+          idx == DEMO_SHELTER_COUNT - 1 && !hazardBearingOnly &&
             namesOffset(focus) % 2 == 0 -> "CLOSED"
           else -> "OPEN"
         },
@@ -172,20 +215,30 @@ object DemoNetworkAroundUser {
         elevationNote = "DEMO placeholder",
         provenance = demoProvenance
       )
+      idx++
     }
     return out
   }
 
   /** The pair for a focus point; null when the point is outside India. */
-  fun around(focus: GeoPoint): Pair<HazardZone, SafeZone>? {
+  fun around(focus: GeoPoint, coastKm: Int? = null): Pair<HazardZone, SafeZone>? {
     if (!IndiaGeo.contains(focus)) return null
-    return hazardNear(focus) to shelterNear(focus)
+    return hazardNear(focus, coastKm) to shelterNear(focus, coastKm)
   }
 
   private val DEMO_SHELTER_NAMES = listOf(
     "DEMO Community Hall", "DEMO School Shelter",
-    "DEMO Relief Camp", "DEMO Stadium Shelter"
+    "DEMO Relief Camp", "DEMO Stadium Shelter",
+    "DEMO Warehouse Shelter"
   )
+
+  /**
+   * Optional coast-grid hookup for the landward rule: the VM injects the
+   * bundled Natural Earth distance field. Kept as a settable provider so the
+   * pure data layer stays free of Android/asset concerns (plain-JVM tests
+   * leave it null -> landward checks no-op, geometry checks still run).
+   */
+  var coastKmOf: (GeoPoint) -> Int? = { _ -> null }
 
   // ---------------------------------------------------------------- internals
 
@@ -205,7 +258,6 @@ object DemoNetworkAroundUser {
     return GeoPoint(from.lat + latDelta, from.lon + lonDelta)
   }
 
-  /** Coordinate bucket inside ids so a moved focus gets fresh ids. */
   /**
    * Focus quantised to ~2.2 km buckets (0.02 deg) for IDS + bearing.
    * CRITICAL: this seeds demo-hz-/demo-sz- ids. A finer grid let 1 Hz GPS
@@ -220,3 +272,4 @@ object DemoNetworkAroundUser {
   private fun quant(point: GeoPoint): String =
     "${(point.lat * 50).toLong()}_${(point.lon * 50).toLong()}"
 }
+

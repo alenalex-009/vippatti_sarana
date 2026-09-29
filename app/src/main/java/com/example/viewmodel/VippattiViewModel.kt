@@ -308,6 +308,11 @@ class VippattiViewModel(
    * when nothing is being routed to.
    */
   private var demoAnchor: GeoPoint? = null
+/** Whole-km coast distance via the EXISTING bundled coast-grid seam
+   * (MainActivity loads the Natural Earth asset); null = cannot answer.
+   * Drives the geographic demo-type rules + the cyclone landward rule. */
+  private fun coastKmAt(p: GeoPoint): Int? =
+    try { coastGridProvider()?.distanceKm(p) } catch (_: Exception) { null }
 
   /** Location the current/last route was computed from — guards GPS re-routing. */
   private var lastRouteOrigin: GeoPoint? = null
@@ -668,13 +673,24 @@ class VippattiViewModel(
     // labelled SIMULATED with demo-namespaced ids either way.
     val focused = !state.isUserLocationFallback
 
-    // Anchor: freeze the demo scenario while a route/guidance targets it.
+    // Anchor: freeze the demo scenario while a route/guidance targets it —
+    // but ONLY against micro GPS jitter (sub-quant coordinate noise must not
+    // orphan a drawn corridor). A DELIBERATE location switch (search-select,
+    // or a genuinely new GPS place) has moved the focus far beyond the quant
+    // step: the old scenario must die with it, never be regenerated at the
+    // old anchor under the new location (stale-destination bug #10).
     val routingDemo = state.activeRoute != null || state.isNavigatingLive ||
       (state.selectedSafeZone?.id?.startsWith("demo-") == true)
-    val demoFocus = if (routingDemo) demoAnchor ?: location else location
+    val anchorIsStillLocal = demoAnchor?.let {
+      com.example.data.model.GeoMath.distanceMeters(it, location) <= 300.0
+    } == true
+    val demoFocus = if (routingDemo && anchorIsStillLocal) demoAnchor ?: location else location
     demoAnchor = demoFocus
+    DemoNetworkAroundUser.coastKmOf = { p -> coastKmAt(p) }
+    val demoCoastKm = coastKmAt(demoFocus)
     val demoSet = if (state.isMockDataVisible && focused)
-      DemoNetworkAroundUser.around(demoFocus) to DemoNetworkAroundUser.sheltersAround(demoFocus)
+      DemoNetworkAroundUser.around(demoFocus, demoCoastKm) to
+        DemoNetworkAroundUser.sheltersAround(demoFocus, coastKm = demoCoastKm)
     else null
 
     val demoAround = demoSet?.first
@@ -688,11 +704,16 @@ class VippattiViewModel(
     // the app is actually using. The full India set stays available in the
     // Authority Console reference data.
     val fallbackDemo = if (state.isMockDataVisible && !focused)
-      DemoNetworkAroundUser.around(location) to DemoNetworkAroundUser.sheltersAround(location)
+      DemoNetworkAroundUser.around(location, coastKmAt(location)) to
+        DemoNetworkAroundUser.sheltersAround(location, coastKm = coastKmAt(location))
     else null
     val mockZones: List<com.example.data.model.HazardZone> = if (state.isMockDataVisible) {
       if (focused) listOfNotNull(demoAround?.first)
-      else listOfNotNull(fallbackDemo?.first?.first)
+      // REGIONAL OVERVIEW (spec 3A): the 14-zone simulated India disaster
+      // field shows DIFFERENT demo disaster TYPES across DIFFERENT areas —
+      // the 'Sentinel can represent hazards across geography' story for
+      // judges. The fallback centre's own local hazard is included too.
+      else (PilotRegionData.hazardZones + listOfNotNull(fallbackDemo?.first?.first))
     } else emptyList()
 
     val hazards = (liveZones + reportZones + mockZones).distinctBy { it.id }
@@ -857,9 +878,35 @@ class VippattiViewModel(
     if (_uiState.value.isViewingChosenPlace) return
     val state = _uiState.value
     if (state.isUserLocationFallback || state.userLocation.lat != latitude || state.userLocation.lon != longitude) {
+      val oldPoint = state.userLocation
+      val newPoint = GeoPoint(latitude, longitude)
+      // A fix that moved to a genuinely different place (or the FIRST
+      // real fix replacing the fallback centre) is a new scenario and
+      // must drop the old route/destination (spec part 4). 1 Hz
+      // micro-jitter inside the anchor window must NOT clear anything
+      // or mid-guidance re-fixes would orphan the corridor (old bug).
+      val movedFar = state.isUserLocationFallback ||
+        com.example.data.model.GeoMath.distanceMeters(oldPoint, newPoint) > 300.0
+      if (movedFar && (state.activeRoute != null || state.selectedSafeZone != null)) {
+        routingJob?.cancel()
+        lastRouteOrigin = null
+        demoAnchor = null
+        _uiState.update {
+          it.copy(
+            selectedSafeZone = null,
+            selectedEvaluation = null,
+            activeRoute = null,
+            alternativeRoutes = emptyList(),
+            routeStatus = RouteStatus.IDLE,
+            routeStatusMessage = null,
+            isNavigatingLive = false,
+            currentNavigationStepIndex = 0
+          )
+        }
+      }
       _uiState.update {
         it.copy(
-          userLocation = GeoPoint(latitude, longitude),
+          userLocation = newPoint,
           isUserLocationFallback = false
         )
       }
@@ -973,6 +1020,29 @@ class VippattiViewModel(
     if (!state.isViewingChosenPlace) {
       savedGpsLocation = state.userLocation
       savedWasFallback = state.isUserLocationFallback
+    }
+    // SCENARIO LIFECYCLE (spec part 4): a deliberate location switch is
+    // a NEW scenario. Drop the old destination, corridor, alternatives,
+    // guidance target, and demo anchor BEFORE anything regenerates, so
+    // no state from Vizag can ever render under Vijayawada.
+    if (state.userLocation.lat != candidate.point.lat ||
+      state.userLocation.lon != candidate.point.lon
+    ) {
+      routingJob?.cancel()
+      lastRouteOrigin = null
+      demoAnchor = null
+      _uiState.update {
+        it.copy(
+          selectedSafeZone = null,
+          selectedEvaluation = null,
+          activeRoute = null,
+          alternativeRoutes = emptyList(),
+          routeStatus = RouteStatus.IDLE,
+          routeStatusMessage = null,
+          isNavigatingLive = false,
+          currentNavigationStepIndex = 0
+        )
+      }
     }
     _uiState.update {
       it.copy(
