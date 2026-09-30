@@ -9,8 +9,7 @@ import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performTouchInput
-import androidx.compose.ui.test.swipeUp
+import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.test.performClick
 import com.example.data.model.CapacityStatus
 import com.example.data.routing.GeoPoint
@@ -189,18 +188,20 @@ class EmergencySurfacesRenderTest {
     }
     composeTestRule.onNodeWithText("Authority Console").assertExists()
     // The dashboard list is now a LazyColumn: rows below the fold are only
-    // composed once scrolled in. Swipe until visible (proven pattern from
-    // ResponsiveLayoutSmokeTest), then assert - the contract (row title +
-    // SIMULATED badge render) is unchanged.
-    fun awaitText(text: String) {
-      var swipes = 0
-      while (composeTestRule.onAllNodesWithText(text).fetchSemanticsNodes().isEmpty() && swipes < 10) {
-        composeTestRule.onRoot().performTouchInput { swipeUp() }
-        swipes++
-      }
-      composeTestRule.onAllNodesWithText(text).onFirst().assertExists()
-    }
-    awaitText("Test settlement")
-    awaitText("SIMULATED demo record")
+    // composed once scrolled in. Scroll the list node directly (no root
+    // swipe storms) and assert the same contract: row title + SIMULATED
+    // badge render.
+    // items(shown) starts after summary/priority/controls/criteria/header
+    // items; index 5 is the first relocation row.
+    composeTestRule
+      .onNodeWithTag("console_dashboard_list")
+      .performScrollToIndex(5)
+    composeTestRule
+      .onNodeWithTag("priority_row_demo-x", useUnmergedTree = true)
+      .assertExists()
+    composeTestRule
+      .onAllNodesWithText("SIMULATED demo record")
+      .onFirst()
+      .assertExists()
   }
 }

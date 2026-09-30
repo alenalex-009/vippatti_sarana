@@ -3,6 +3,7 @@ package com.example.ui.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -48,6 +49,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -704,29 +706,35 @@ private fun ShelterForm(initial: SafeZone, onSave: (SafeZone) -> Unit, onCancel:
 
   FormCard(title = "SHELTER RECORD") {
     FormText("Name *", name) { name = it }
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-      FormText("Latitude *", lat, Modifier.weight(1f)) { lat = it }
-      FormText("Longitude *", lon, Modifier.weight(1f)) { lon = it }
+    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+      FormText("Latitude *", lat, Modifier.weight(1f), numeric = true) { lat = it }
+      FormText("Longitude *", lon, Modifier.weight(1f), numeric = true) { lon = it }
     }
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-      FormText("Capacity", capacity, Modifier.weight(1f)) { capacity = it }
-      FormText("Occupied", occupied, Modifier.weight(1f)) { occupied = it }
+    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+      FormText("Capacity", capacity, Modifier.weight(1f), numeric = true) { capacity = it }
+      FormText("Occupied", occupied, Modifier.weight(1f), numeric = true) { occupied = it }
     }
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-      FormText("Land m² (optional)", land, Modifier.weight(1f)) { land = it }
-      FormText("Water L/day (optional)", waterL, Modifier.weight(1f)) { waterL = it }
-      FormText("Toilets (optional)", toilets, Modifier.weight(0.6f)) { toilets = it }
+    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+      FormText("Land m² (optional)", land, Modifier.weight(1f), numeric = true) { land = it }
+      FormText("Toilets (optional)", toilets, Modifier.weight(1f), numeric = true) { toilets = it }
     }
-    Row(horizontalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.fillMaxWidth()) {
-      FormCheck("Water", water) { water = it }
-      FormCheck("Food", food) { food = it }
-      FormCheck("Power", power) { power = it }
+    FormText("Water L/day (optional)", waterL) { waterL = it }
+    Text("Facilities", fontSize = 13.sp, fontWeight = FontWeight.Medium,
+      color = TacticalOnSurfaceVariant)
+    Row(modifier = Modifier.fillMaxWidth()) {
+      Box(Modifier.weight(1f)) { FormCheck("Water", water) { water = it } }
+      Box(Modifier.weight(1f)) { FormCheck("Food", food) { food = it } }
     }
-    Row(horizontalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.fillMaxWidth()) {
-      FormCheck("Sanitation", sanitation) { sanitation = it }
-      FormCheck("Medical", medical) { medical = it }
+    Row(modifier = Modifier.fillMaxWidth()) {
+      Box(Modifier.weight(1f)) { FormCheck("Power", power) { power = it } }
+      Box(Modifier.weight(1f)) { FormCheck("Sanitation", sanitation) { sanitation = it } }
     }
-    error?.let { Text(it, fontSize = 12.sp, color = EmergencyRedBright, modifier = Modifier.padding(top = 4.dp)) }
+    Row(modifier = Modifier.fillMaxWidth()) {
+      Box(Modifier.weight(1f)) { FormCheck("Medical", medical) { medical = it } }
+      Box(Modifier.weight(1f)) {}
+    }
+    error?.let { Text(it, fontSize = 12.sp, color = EmergencyRedBright,
+      fontWeight = FontWeight.Medium) }
     FormButtons(onSave = {
       val latV = lat.toDoubleOrNull()
       val lonV = lon.toDoubleOrNull()
@@ -844,16 +852,17 @@ private fun HabitationForm(initial: Habitation, onSave: (Habitation) -> Unit, on
 
   FormCard(title = "HABITATION RECORD") {
     FormText("Habitation / village name *", name) { name = it }
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-      FormText("Latitude *", lat, Modifier.weight(1f)) { lat = it }
-      FormText("Longitude *", lon, Modifier.weight(1f)) { lon = it }
+    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+      FormText("Latitude *", lat, Modifier.weight(1f), numeric = true) { lat = it }
+      FormText("Longitude *", lon, Modifier.weight(1f), numeric = true) { lon = it }
     }
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-      FormText("Population", population, Modifier.weight(1f)) { population = it }
-      FormText("Vulnerable %", vulnerable, Modifier.weight(1f)) { vulnerable = it }
-      FormText("EM-DAT events", history, Modifier.weight(0.8f)) { history = it }
+    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+      FormText("Population", population, Modifier.weight(1f), numeric = true) { population = it }
+      FormText("Vulnerable %", vulnerable, Modifier.weight(1f), numeric = true) { vulnerable = it }
     }
-    error?.let { Text(it, fontSize = 12.sp, color = EmergencyRedBright, modifier = Modifier.padding(top = 4.dp)) }
+    FormText("EM-DAT events", history, numeric = true) { history = it }
+    error?.let { Text(it, fontSize = 12.sp, color = EmergencyRedBright,
+      fontWeight = FontWeight.Medium) }
     FormButtons(onSave = {
       val trimmed = name.trim()
       val point = lat.toDoubleOrNull()?.let { l -> lon.toDoubleOrNull()?.let { GeoPoint(l, it) } }
@@ -888,29 +897,42 @@ private fun FormCard(title: String, content: @Composable () -> Unit) {
   Column(
     modifier = Modifier
       .fillMaxWidth()
-      .clip(RoundedCornerShape(10.dp))
+      .clip(RoundedCornerShape(14.dp))
       .background(ObsidianContainerLow)
-      .border(1.dp, TacticalCyan.copy(alpha = 0.35f), RoundedCornerShape(10.dp))
-      .padding(10.dp)
+      .border(1.dp, TacticalCyan.copy(alpha = 0.35f), RoundedCornerShape(14.dp))
+      .padding(16.dp)
   ) {
-    Text(title, fontSize = 10.sp, fontWeight = FontWeight.Black, color = TacticalCyan)
-    Spacer(Modifier.height(8.dp))
+    Text(title, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = TacticalCyan,
+      maxLines = 1)
+    Spacer(Modifier.height(12.dp))
     androidx.compose.foundation.layout.Column(
-      verticalArrangement = Arrangement.spacedBy(6.dp),
+      verticalArrangement = Arrangement.spacedBy(12.dp),
       modifier = Modifier.fillMaxWidth()
     ) { content() }
   }
 }
 
 
+/** One labelled input; numeric=true shows a decimal keyboard. Label sits
+ * clearly above a >=48dp field - nothing overlaps. */
 @Composable
-private fun FormText(label: String, value: String, modifier: Modifier = Modifier, onValueChange: (String) -> Unit) {
+private fun FormText(
+  label: String,
+  value: String,
+  modifier: Modifier = Modifier,
+  numeric: Boolean = false,
+  onValueChange: (String) -> Unit
+) {
   Column(modifier) {
-    Text(label, fontSize = 12.sp, color = TacticalOnSurfaceVariant)
+    Text(label, fontSize = 13.sp, fontWeight = FontWeight.Medium,
+      color = TacticalOnSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+    Spacer(Modifier.height(4.dp))
     TextField(
       value = value,
       onValueChange = onValueChange,
       singleLine = true,
+      keyboardOptions = if (numeric) KeyboardOptions(keyboardType = KeyboardType.Decimal)
+        else KeyboardOptions.Default,
       textStyle = androidx.compose.ui.text.TextStyle(fontSize = 14.sp, color = TacticalOnSurface),
       colors = TextFieldDefaults.colors(
         focusedContainerColor = ObsidianSurface,
@@ -918,38 +940,49 @@ private fun FormText(label: String, value: String, modifier: Modifier = Modifier
         focusedIndicatorColor = TacticalCyan,
         unfocusedIndicatorColor = TacticalOnSurfaceVariant.copy(alpha = 0.3f)
       ),
-      modifier = Modifier.fillMaxWidth()
+      modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
     )
   }
 }
 
 @Composable
 private fun FormCheck(label: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
-  Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { onCheckedChange(!checked) }) {
-    Checkbox(checked = checked, onCheckedChange = onCheckedChange, modifier = Modifier.size(18.dp))
-    Text(label, fontSize = 11.sp, color = TacticalOnSurface)
+  Row(
+    verticalAlignment = Alignment.CenterVertically,
+    horizontalArrangement = Arrangement.spacedBy(4.dp),
+    modifier = Modifier
+      .fillMaxWidth()
+      .heightIn(min = 44.dp)
+      .clip(RoundedCornerShape(8.dp))
+      .clickable { onCheckedChange(!checked) }
+  ) {
+    Checkbox(checked = checked, onCheckedChange = onCheckedChange)
+    Text(label, fontSize = 13.sp, color = TacticalOnSurface, maxLines = 1)
   }
 }
 
 @Composable
 private fun FormButtons(onSave: () -> Unit, onCancel: () -> Unit) {
-  Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 4.dp)) {
+  Row(horizontalArrangement = Arrangement.spacedBy(12.dp),
+    modifier = Modifier.fillMaxWidth().padding(top = 4.dp)) {
     Box(
       modifier = Modifier
+        .weight(1f)
         .clip(RoundedCornerShape(8.dp))
         .background(NeonEmerald.copy(alpha = 0.9f))
         .clickable(onClick = onSave)
-        .heightIn(min = 44.dp)
-        .padding(horizontal = 18.dp, vertical = 4.dp)
-    ) { Text("Save Record", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = Color.Black) }
+        .heightIn(min = 48.dp),
+      contentAlignment = Alignment.Center
+    ) { Text("Save Record", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = Color.Black) }
     Box(
       modifier = Modifier
+        .weight(1f)
         .clip(RoundedCornerShape(8.dp))
         .background(TacticalOnSurfaceVariant.copy(alpha = 0.25f))
         .clickable(onClick = onCancel)
-        .heightIn(min = 44.dp)
-        .padding(horizontal = 18.dp, vertical = 4.dp)
-    ) { Text("Cancel", fontSize = 13.sp, fontWeight = FontWeight.Medium, color = TacticalOnSurface) }
+        .heightIn(min = 48.dp),
+      contentAlignment = Alignment.Center
+    ) { Text("Cancel", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = TacticalOnSurface) }
   }
 }
 

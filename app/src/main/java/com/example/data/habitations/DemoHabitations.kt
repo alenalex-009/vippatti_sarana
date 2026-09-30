@@ -4,6 +4,9 @@ import com.example.data.disaster.PilotRegionData
 import com.example.data.model.DataClassification
 import com.example.data.model.GeoMath
 import com.example.data.routing.GeoPoint
+import com.example.data.suitability.SuitabilityBand
+import com.example.data.suitability.SuitabilityStatus
+import com.example.data.suitability.TerrainVerdict
 
 /**
  * LABELLED SIMULATED habitation set used by the prioritization dashboard so
@@ -17,21 +20,64 @@ object DemoHabitations {
 
   val SIMULATED_SOURCE = "Demonstration set derived from the simulated pilot zone network (SIMULATED)"
 
+  /**
+   * Demo terrain verdict for the OUTSIDE-hazard settlements. SIMULATED
+   * through and through: the verdict source string says so, and it exists
+   * so the ranking engine's terrain branch (SHORT/MEDIUM/LOW) has realistic
+   * geometry to demonstrate — not to fake an assessment.
+   */
+  private fun demoVerdict(band: SuitabilityBand): TerrainVerdict = TerrainVerdict(
+    status = SuitabilityStatus.ASSESSED,
+    band = band,
+    score = when (band) {
+      SuitabilityBand.RED_ZONE -> 25
+      SuitabilityBand.HIGH_RISK -> 45
+      SuitabilityBand.CAUTION -> 60
+      SuitabilityBand.SAFE -> 85
+    },
+    slopePercent = null,
+    rainfallMm24h = null,
+    rainfallUsed = false,
+    hardRuleHit = null,
+    reasons = listOf("Demonstration terrain band (SIMULATED) — run a live terrain scan for a real assessment."),
+    source = SIMULATED_SOURCE,
+    disclaimer = "Demonstration value — not a live terrain assessment."
+  )
+
   fun build(): List<Habitation> {
-    // One settlement per simulated danger zone, sitting just inside its
-    // hazard radius so the tier logic has realistic geometry to rank.
+    // One settlement per simulated danger zone. The first ones sit just
+    // INSIDE the hazard radius (the engine ranks them IMMEDIATE); the rest
+    // sit well OUTSIDE it with varied labelled demo terrain bands, so the
+    // full planning horizon - SHORT-TERM / MEDIUM-TERM / LOW - is visible
+    // to the operator without touching any ranking logic.
     val settlements = PilotRegionData.hazardZones.mapIndexed { index, zone ->
+      val insideHazard = index < 6
+      val outsidePattern = index % 4
+      val verdict = when {
+        insideHazard -> null
+        outsidePattern == 0 -> demoVerdict(SuitabilityBand.RED_ZONE)
+        outsidePattern == 1 -> demoVerdict(SuitabilityBand.HIGH_RISK)
+        outsidePattern == 2 -> demoVerdict(SuitabilityBand.SAFE)
+        else -> null // unassessed -> MEDIUM-TERM horizon
+      }
       Habitation(
         id = "demo-hab-$index",
         name = "${zone.name} settlement",
-        point = GeoMath.offsetPoint(zone.center, 45.0, zone.radiusMeters * 0.4),
+        point = if (insideHazard) {
+          GeoMath.offsetPoint(zone.center, 45.0, zone.radiusMeters * 0.4)
+        } else {
+          GeoMath.offsetPoint(zone.center, 225.0, zone.radiusMeters * 3.0)
+        },
         population = PopulationInput(
           value = 120 + index * 90, // deterministic demo sizes
           classification = DataClassification.SIMULATED,
           source = SIMULATED_SOURCE
         ),
         vulnerableShare = 0.25f,
-        historicalEventCount = if (index % 3 == 0) 6 else 1
+        terrainVerdict = verdict,
+        // Keep history below the escalation threshold for the outside set so
+        // the tier shown is the terrain branch's own verdict.
+        historicalEventCount = if (insideHazard && index % 3 == 0) 6 else 1
       )
     }
     return settlements
