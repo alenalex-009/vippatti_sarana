@@ -167,7 +167,7 @@ See [`ARCHITECTURE.md`](ARCHITECTURE.md) for the detailed data-flow map and [`PR
 └── gradle/libs.versions.toml        # version catalog
 ```
 
-> `backend/` (FastAPI + PostgreSQL auth prototype) is tracked in the repo but is **not used by the shipped app** — production auth goes directly to Supabase. It remains as a self-hosted alternative; see `backend/README.md`.
+> A `backend/` folder (FastAPI + PostgreSQL auth prototype) may exist on developer workstations. It is **not tracked and not part of the product** — the shipped app authenticates directly against Supabase.
 
 ---
 
