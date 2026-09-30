@@ -5,8 +5,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.swipeUp
 import androidx.compose.ui.test.performClick
 import com.example.data.model.CapacityStatus
 import com.example.data.routing.GeoPoint
@@ -184,10 +188,19 @@ class EmergencySurfacesRenderTest {
       }
     }
     composeTestRule.onNodeWithText("Authority Console").assertExists()
-    assert(
-      composeTestRule.onAllNodesWithText("Test settlement")
-        .fetchSemanticsNodes().isNotEmpty()
-    )
-    composeTestRule.onNodeWithText("SIMULATED demo record").assertExists()
+    // The dashboard list is now a LazyColumn: rows below the fold are only
+    // composed once scrolled in. Swipe until visible (proven pattern from
+    // ResponsiveLayoutSmokeTest), then assert - the contract (row title +
+    // SIMULATED badge render) is unchanged.
+    fun awaitText(text: String) {
+      var swipes = 0
+      while (composeTestRule.onAllNodesWithText(text).fetchSemanticsNodes().isEmpty() && swipes < 10) {
+        composeTestRule.onRoot().performTouchInput { swipeUp() }
+        swipes++
+      }
+      composeTestRule.onAllNodesWithText(text).onFirst().assertExists()
+    }
+    awaitText("Test settlement")
+    awaitText("SIMULATED demo record")
   }
 }
