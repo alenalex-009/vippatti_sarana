@@ -149,9 +149,8 @@ fun DispatchesScreen(
       Row(
         modifier = Modifier
           .fillMaxWidth()
-          .background(ObsidianSurface)
-          .border(1.dp, TacticalOutlineVariant.copy(alpha = 0.3f))
-          .padding(horizontal = 16.dp, vertical = 12.dp),
+          .padding(horizontal = 16.dp)
+          .padding(top = 4.dp, bottom = 10.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
       ) {
@@ -162,34 +161,24 @@ fun DispatchesScreen(
           // button stays fully on screen at any width.
           modifier = Modifier.weight(1f)
         ) {
-          Box(
-            modifier = Modifier
-              .size(38.dp)
-              .clip(RoundedCornerShape(8.dp))
-              .background(ObsidianContainerHigh),
-            contentAlignment = Alignment.Center
-          ) {
-            Icon(
-              imageVector = Icons.Outlined.Shield,
-              contentDescription = "Intelligence Shield",
-              tint = NeonEmerald,
-              modifier = Modifier.size(22.dp)
-            )
-          }
+          // Plain editorial title. The shield + "EMERGENCY OPS" chrome made
+          // a news reader page look like an official alert console.
           Column {
             Text(
-              text = "Disaster & Weather Intelligence",
-              fontSize = 15.sp,
-              fontWeight = FontWeight.Bold,
+              text = "News",
+              fontSize = 22.sp,
+              fontWeight = FontWeight.SemiBold,
               color = TacticalOnSurface,
-              lineHeight = 18.sp
+              lineHeight = 26.sp
             )
             Text(
-              text = "VIPPATTI SARANA • EMERGENCY OPS",
-              fontSize = 11.sp,
-              fontWeight = FontWeight.Medium,
+              text = "Latest updates and public news reports",
+              fontSize = 13.sp,
+              fontWeight = FontWeight.Normal,
               color = TacticalOnSurfaceVariant,
-              letterSpacing = 0.8.sp
+              lineHeight = 17.sp,
+              maxLines = 1,
+              overflow = TextOverflow.Ellipsis
             )
           }
         }
@@ -197,8 +186,8 @@ fun DispatchesScreen(
         IconButton(
           onClick = onSync,
           modifier = Modifier
-            .size(38.dp)
-            .clip(RoundedCornerShape(8.dp))
+            .size(48.dp)
+            .clip(RoundedCornerShape(10.dp))
             .background(ObsidianContainer)
             .testTag("refresh_feed_button")
         ) {
@@ -219,7 +208,7 @@ fun DispatchesScreen(
       Box(
         modifier = Modifier
           .fillMaxWidth()
-          .padding(horizontal = 14.dp, vertical = 8.dp)
+          .padding(horizontal = 16.dp, vertical = 6.dp)
       ) {
         Row(
           modifier = Modifier
@@ -256,8 +245,8 @@ fun DispatchesScreen(
             Column {
               Text(
                 text = uiState.newsConnectionStateLabel,
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Bold,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.SemiBold,
                 // Status comes from the news record itself (live / cached / error),
                 // never from sniffing the label text.
                 color = newsStatusColor,
@@ -269,16 +258,14 @@ fun DispatchesScreen(
                 color = TacticalOnSurfaceVariant,
                 maxLines = 1
               )
+              // One quiet provenance line — distinguishes news reports from
+              // government alerts without shouting it as a badge.
               Text(
                 text = uiState.newsScopeNote,
-                fontSize = 10.sp,
+                fontSize = 11.sp,
                 color = TacticalOnSurfaceVariant,
-                maxLines = 2
-              )
-              Text(
-                text = "News articles — not official alerts",
-                fontSize = 10.sp,
-                color = TacticalOnSurfaceVariant
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
               )
             }
           }
@@ -310,7 +297,7 @@ fun DispatchesScreen(
       Box(
         modifier = Modifier
           .fillMaxWidth()
-          .padding(horizontal = 14.dp, vertical = 4.dp)
+          .padding(horizontal = 16.dp, vertical = 4.dp)
       ) {
         Row(
           modifier = Modifier
@@ -385,57 +372,6 @@ fun DispatchesScreen(
       }
     }
 
-    // 4. Horizontal Filter Chips — only chips with matching articles show,
-    // so every visible chip is productive (no dead "Weather Radar" buttons).
-    item {
-      val categories = NewsPresentation.filterChipLabels(uiState.newsArticles)
-      val selectedCategory = if (uiState.selectedNewsCategory in categories) {
-        uiState.selectedNewsCategory
-      } else {
-        "All"
-      }
-      LazyRow(
-        modifier = Modifier
-          .fillMaxWidth()
-          .padding(vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 14.dp)
-      ) {
-        items(categories) { cat ->
-          val isSelected = selectedCategory == cat
-          Row(
-            modifier = Modifier
-              .clip(RoundedCornerShape(8.dp))
-              .background(if (isSelected) NeonEmerald else ObsidianContainer)
-              .border(
-                1.dp,
-                if (isSelected) NeonEmerald else TacticalOutlineVariant.copy(alpha = 0.3f),
-                RoundedCornerShape(8.dp)
-              )
-              .clickable { onSelectCategory(cat) }
-              .padding(horizontal = 14.dp, vertical = 7.dp)
-              .testTag("filter_chip_${cat.replace(" ", "_").lowercase()}"),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
-          ) {
-            if (cat == "Severe Alerts") {
-              Box(
-                modifier = Modifier
-                  .size(6.dp)
-                  .background(EmergencyRed, CircleShape)
-              )
-            }
-            Text(
-              text = cat,
-              fontSize = 12.sp,
-              fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-              color = if (isSelected) OnNeonEmerald else TacticalOnSurface
-            )
-          }
-        }
-      }
-    }
-
     // 5. Severe-Alert Hero Card — the top REAL GNews article (never fabricated)
     item {
       val hero = uiState.newsHero?.takeIf { article ->
@@ -453,14 +389,14 @@ fun DispatchesScreen(
         Box(
           modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 14.dp, vertical = 6.dp)
+            .padding(horizontal = 16.dp, vertical = 6.dp)
         ) {
           Column(
             modifier = Modifier
               .fillMaxWidth()
               .clip(RoundedCornerShape(16.dp))
               .background(ObsidianContainerLow)
-              .border(2.dp, EmergencyRed.copy(alpha = 0.5f), RoundedCornerShape(16.dp))
+              .border(1.dp, TacticalOutlineVariant.copy(alpha = 0.35f), RoundedCornerShape(16.dp))
           ) {
             // Banner Image with Overlays
             // Width-proportional hero height (≈0.53 of card width — the original
@@ -469,7 +405,7 @@ fun DispatchesScreen(
             Box(
               modifier = Modifier
                 .fillMaxWidth()
-                .aspectRatio(1f / 0.53f)
+                .aspectRatio(1f / 0.45f)
                 .background(ObsidianContainerHighest)
             ) {
               if (hero.imageUrl != null) {
@@ -490,92 +426,34 @@ fun DispatchesScreen(
                   )
                 }
               }
-
-              // Bottom gradient scrim
-              Box(
-                modifier = Modifier
-                  .fillMaxSize()
-                  .background(
-                    Brush.verticalGradient(
-                      colors = listOf(
-                        Color.Transparent,
-                        ObsidianContainerLow.copy(alpha = 0.5f),
-                        ObsidianContainerLow
-                      )
-                    )
-                  )
-              )
-
-              // Honest source badge — a news article is NOT an official alert.
-              Row(
-                modifier = Modifier
-                  .align(Alignment.TopStart)
-                  .padding(12.dp)
-                  .clip(CircleShape)
-                  .background(EmergencyRedContainer.copy(alpha = 0.9f))
-                  .border(1.dp, EmergencyRed.copy(alpha = 0.4f), CircleShape)
-                  .padding(horizontal = 10.dp, vertical = 4.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
-              ) {
-                Icon(
-                  imageVector = Icons.Default.Warning,
-                  contentDescription = null,
-                  tint = EmergencyRedBright,
-                  modifier = Modifier.size(14.dp)
-                )
-                Text(
-                  text = NewsPresentation.HERO_BADGE,
-                  fontSize = 10.sp,
-                  fontWeight = FontWeight.Bold,
-                  color = OnEmergencyRedContainer,
-                  letterSpacing = 0.6.sp
-                )
-              }
-
-              // Real publication age
-              Box(
-                modifier = Modifier
-                  .align(Alignment.TopEnd)
-                  .padding(12.dp)
-                  .clip(CircleShape)
-                  .background(ObsidianContainerLowest.copy(alpha = 0.8f))
-                  .padding(horizontal = 8.dp, vertical = 3.dp)
-              ) {
-                Text(
-                  text = NewsPresentation.relativeAge(hero.publishedAtMillis, now),
-                  fontSize = 10.sp,
-                  fontWeight = FontWeight.Medium,
-                  color = TacticalOnSurfaceVariant
-                )
-              }
             }
 
-            // Article Text Content
+            // Article body — editorial hierarchy:
+            //   [Source]                [time]
+            //   Headline (20sp/26)
+            //   Summary (14sp/21, clamped)
             Column(
               modifier = Modifier.padding(16.dp),
-              verticalArrangement = Arrangement.spacedBy(10.dp)
+              verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
               Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
               ) {
-                Box(
-                  modifier = Modifier
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(EmergencyRed)
-                    .padding(horizontal = 6.dp, vertical = 2.dp)
-                ) {
-                  Text(
-                    text = hero.category.displayTag.uppercase(),
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                  )
-                }
                 Text(
-                  // Ring label from the place resolved at runtime - never a constant.
-                text = "${hero.scope.ringLabel(uiState.resolvedPlace)} • ${hero.sourceName}",
+                  // Real publisher, shown normally — never as an alert badge.
+                  text = hero.sourceName,
+                  fontSize = 14.sp,
+                  fontWeight = FontWeight.Medium,
+                  color = TacticalOnSurface,
+                  maxLines = 1,
+                  overflow = TextOverflow.Ellipsis,
+                  modifier = Modifier.weight(1f)
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                  text = NewsPresentation.relativeAge(hero.publishedAtMillis, now),
                   fontSize = 12.sp,
                   color = TacticalOnSurfaceVariant
                 )
@@ -583,117 +461,62 @@ fun DispatchesScreen(
 
               Text(
                 text = hero.title,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.SemiBold,
                 color = TacticalOnSurface,
-                lineHeight = 22.sp
+                lineHeight = 26.sp,
+                maxLines = 4,
+                overflow = TextOverflow.Ellipsis
               )
 
               Text(
-                text = NewsPresentation.articleSummary(hero),
-                fontSize = 13.sp,
+                text = NewsPresentation.articleSummary(hero, maxChars = 220),
+                fontSize = 14.sp,
                 color = TacticalOnSurfaceVariant,
-                lineHeight = 18.sp
+                lineHeight = 21.sp,
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis
               )
 
-              // Action row — real publisher attribution (no fake verification badge)
+              // Footer: real metadata left, quiet text CTA right.
+              // No "Evacuation Routes" action on news cards: routing belongs
+              // on the Map, where a real selected safe zone exists — an
+              // article has no verified evacuation route attached to it.
               Row(
                 modifier = Modifier
                   .fillMaxWidth()
-                  .padding(top = 4.dp)
-                  .border(
-                    width = 1.dp,
-                    color = TacticalOutlineVariant.copy(alpha = 0.3f),
-                    shape = RoundedCornerShape(0.dp)
-                  )
-                  .padding(top = 10.dp),
+                  .padding(top = 4.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
               ) {
-                Row(
-                  verticalAlignment = Alignment.CenterVertically,
-                  horizontalArrangement = Arrangement.spacedBy(4.dp),
-                  // Flex so long publisher names ellipsize instead of pushing
-                  // the evacuation button off screen.
-                  modifier = Modifier.weight(1f)
-                ) {
-                  Icon(
-                    imageVector = Icons.Default.Campaign,
-                    contentDescription = null,
-                    tint = NeonEmerald,
-                    modifier = Modifier.size(16.dp)
-                  )
-                  Text(
-                    text = "Reported by ${hero.sourceName}",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = NeonEmerald,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                  )
-                }
-
-                // USER RULE (news redesign): never show a route button on
-                // generic articles - only hazard/road coverage has a meaningful
-                // affected-area + safe-zone workflow to open.
-                if (hero.category == NewsCategory.SEVERE_ALERTS ||
-                  hero.category == NewsCategory.ROAD_IMPACT
-                ) {
-                Button(
-                  onClick = onNavigateToEvacRoute,
-                  colors = ButtonDefaults.buttonColors(
-                    containerColor = NeonEmeraldContainer,
-                    contentColor = OnNeonEmeraldContainer
-                  ),
-                  shape = RoundedCornerShape(8.dp),
-                  contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 6.dp),
-                  modifier = Modifier
-                    .height(34.dp)
-                    .testTag("evacuation_routes_hero_button")
-                ) {
-                  Text(
-                    text = "Evacuation Routes",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold
-                  )
-                  Spacer(modifier = Modifier.width(4.dp))
-                  Icon(
-                    imageVector = Icons.Default.NearMe,
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp)
-                  )
-                }
-                }
-              }
-
-              // Open the real publisher story in the browser
-              Button(
-                onClick = {
-                  context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(hero.url)))
-                },
-                colors = ButtonDefaults.buttonColors(
-                  containerColor = ObsidianBright,
-                  contentColor = NeonEmerald
-                ),
-                shape = RoundedCornerShape(8.dp),
-                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 6.dp),
-                modifier = Modifier
-                  .fillMaxWidth()
-                  .height(34.dp)
-                  .testTag("hero_read_full_story_button")
-              ) {
-                Icon(
-                  imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                  contentDescription = null,
-                  modifier = Modifier.size(16.dp)
-                )
-                Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                  text = "Read Full Story at ${hero.sourceName}",
+                  // Ring label from the place resolved at runtime - never a constant.
+                  text = hero.scope.ringLabel(uiState.resolvedPlace),
                   fontSize = 12.sp,
-                  fontWeight = FontWeight.Bold,
-                  maxLines = 1
+                  color = TacticalOnSurfaceVariant,
+                  maxLines = 1,
+                  overflow = TextOverflow.Ellipsis,
+                  modifier = Modifier.weight(1f)
                 )
+                Spacer(Modifier.width(8.dp))
+                Row(
+                  modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .clickable {
+                      context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(hero.url)))
+                    }
+                    .padding(horizontal = 8.dp, vertical = 12.dp)
+                    .testTag("hero_read_full_story_button"),
+                  verticalAlignment = Alignment.CenterVertically,
+                  horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                  Text(
+                    text = "Read Full Story →",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = TacticalCyan
+                  )
+                }
               }
             }
           }
@@ -703,14 +526,14 @@ fun DispatchesScreen(
         Box(
           modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 14.dp, vertical = 6.dp)
+            .padding(horizontal = 16.dp, vertical = 6.dp)
         ) {
           Column(
             modifier = Modifier
               .fillMaxWidth()
               .clip(RoundedCornerShape(16.dp))
               .background(ObsidianContainerLow)
-              .border(2.dp, TacticalOutlineVariant.copy(alpha = 0.5f), RoundedCornerShape(16.dp))
+              .border(1.dp, TacticalOutlineVariant.copy(alpha = 0.4f), RoundedCornerShape(16.dp))
               .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -783,9 +606,9 @@ fun DispatchesScreen(
               )
           )
           Text(
-            text = "FEED DISPATCHES",
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Bold,
+            text = "LATEST",
+            fontSize = 14.sp,
+            fontWeight = FontWeight.SemiBold,
             color = TacticalOnSurface,
             letterSpacing = 0.6.sp
           )
@@ -847,7 +670,7 @@ fun DispatchesScreen(
         Box(
           modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 14.dp, vertical = 12.dp)
+            .padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
           Column(
             modifier = Modifier
@@ -966,11 +789,12 @@ private fun DataAndSourcesRow(uiState: VippattiUiState) {
         Text(uiState.newsScopeNote, fontSize = 10.sp,
           color = TacticalOnSurfaceVariant, modifier = Modifier.padding(top = 4.dp))
       }
+      // Quiet, still honest: news = reports, not government alerts.
       Text(
-        text = "News articles · not official alerts",
+        text = "News sources publish reports, not government alerts. Official IMD alerts appear on the Map.",
         fontSize = 10.sp,
-        fontWeight = FontWeight.Bold,
-        color = WarningAmber,
+        fontWeight = FontWeight.Normal,
+        color = TacticalOnSurfaceVariant,
         modifier = Modifier.padding(top = 2.dp)
       )
     }

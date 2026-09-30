@@ -10,8 +10,9 @@ import java.util.Locale
 /**
  * Pure mapping from real [NewsArticle]s to the existing dispatch UI model —
  * no Android dependencies, fully unit-testable. Every label produced here is
- * honest: real source names, real timestamps, and an explicit
- * "NOT AN OFFICIAL ALERT" hero badge.
+ * honest: real source names, real timestamps. Provenance reads quietly
+ * ("News sources publish reports, not government alerts" in the Data &
+ * sources strip) instead of a shouty badge on every story.
  */
 object NewsPresentation {
 
@@ -39,7 +40,10 @@ object NewsPresentation {
         // BRIEF cards (user: "too much info in the tab") - a one-glance
         // summary line; the full story stays one tap away ("Read Full Story").
         description = truncate(article.description.ifBlank { article.content }, 95),
-        location = "${article.scope.ringLabel(place)} • GNews",
+        // Location metadata = the REAL resolved scope only. The channel
+        // (GNews) is provenance, shown once in Data & sources, not stamped
+        // on every card as a warning.
+        location = article.scope.ringLabel(place),
         actionLabel = "Read Full Story",
         iconType = when (article.category) {
           NewsCategory.SEVERE_ALERTS, NewsCategory.ROAD_IMPACT -> DispatchIconType.FLOOD
@@ -123,9 +127,6 @@ object NewsPresentation {
     listOf("All") + CHIP_LABELS.drop(1).filter { label ->
       articles.any { matchesCategory(it.category, label) }
     }
-
-  /** Honest hero badge — a news article is never an official alert. */
-  const val HERO_BADGE = "GNEWS • NOT AN OFFICIAL ALERT"
 
   fun articleSummary(article: NewsArticle, maxChars: Int = 260): String =
     truncate(article.description.ifBlank { article.content }, maxChars)

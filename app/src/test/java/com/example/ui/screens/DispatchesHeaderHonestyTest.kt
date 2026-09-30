@@ -91,7 +91,7 @@ class DispatchesHeaderHonestyTest {
     renderDispatches(VippattiUiState())
     scrollToFeedHeader()
 
-    composeTestRule.onNodeWithText("FEED DISPATCHES").assertExists()
+    composeTestRule.onNodeWithText("LATEST").assertExists()
     composeTestRule.onNodeWithText("Not synced", substring = true).assertExists()
     composeTestRule.onAllNodesWithText("LIVE VIA GNEWS", substring = true).assertCountEquals(0)
     composeTestRule.onAllNodesWithText("LIVE FEED DISPATCHES", substring = true).assertCountEquals(0)
