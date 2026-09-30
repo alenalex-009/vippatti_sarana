@@ -159,9 +159,9 @@ fun AuthorityConsoleScreen(
       modifier = Modifier
         .fillMaxWidth()
         .horizontalScroll(rememberScrollState())
-        .padding(horizontal = 16.dp)
+        .padding(horizontal = 12.dp)
         .padding(top = 4.dp, bottom = 8.dp),
-      horizontalArrangement = Arrangement.spacedBy(8.dp)
+      horizontalArrangement = Arrangement.spacedBy(6.dp)
     ) {
       listOf("PRIORITIZATION", "SHELTERS (${uiState.fieldShelters.size})", "HABITATIONS (${uiState.fieldHabitations.size})")
         .forEachIndexed { index, label ->
@@ -177,9 +177,12 @@ fun AuthorityConsoleScreen(
                 RoundedCornerShape(8.dp)
               )
               .clickable { tab = index }
-              .padding(horizontal = 14.dp, vertical = 10.dp)
+              .padding(horizontal = 9.dp, vertical = 10.dp)
           ) {
-            Text(label, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, maxLines = 1,
+            // 12sp + tight padding so all three complete labels fit the
+            // 360dp phone without the third tab edge-clipping; the row
+            // stays scrollable as the fallback on narrower devices.
+            Text(label, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, maxLines = 1,
               color = if (selected) TacticalCyan else TacticalOnSurface)
           }
         }
