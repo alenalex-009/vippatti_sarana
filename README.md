@@ -237,7 +237,7 @@ adb shell am start -n com.aistudio.vippattisarana.gaqgel/com.example.MainActivit
 
 The suite covers: provider parsers & provenance, routing geometry/cache, safe-zone evaluation & capacity, prioritization engine tiers/weights, news pipeline/classifier, localization key parity across all 6 languages, theme contrast floors, map-stability guards, auth token storage/OAuth parsing, and Compose UI contracts (render smoke tests, responsive 360dp/tablet layouts, dialog reachability). Roborazzi screenshot tests exist under `app/src/test`. CI (`.github/workflows/android-ci.yml`) runs compile + the full suite + `assembleDebug` on every push/PR against the placeholder config, so **no secrets are ever needed for CI**.
 
-Current status: **639 tests / 0 failures** on `main`.
+Current status: **639 tests / 0 failures** on `main` (`6a2d6dd`, Android Lint clean, core-library desugaring enabled).
 
 ---
 
@@ -283,7 +283,7 @@ Not implemented (by design/scope): transport-layer certificate pinning, biometri
 
 ## Current Status
 
-Verified implementation checklist (as of `main` = `0852876`, CI green, 639 tests / 0 failures):
+Verified implementation checklist (as of `main` = `6a2d6dd`, CI green, 639 tests / 0 failures):
 
 - [x] Onboarding tour · Login (Supabase email/password + Google OAuth) · session persistence
 - [x] Home risk check · radar map with hazards/safe zones/routes/filters/place search
@@ -296,7 +296,7 @@ Verified implementation checklist (as of `main` = `0852876`, CI green, 639 tests
 - [x] Localization ×6 with parity tests · light/dark themes with contrast-floor tests
 - [x] Map stability: tile-cache tuning, NaN-zoom self-healing overlay, India-only viewport
 - [x] CI: compile + unit tests + debug APK artifacts on every push/PR
-- [x] In progress on `feature/real-auth`: News editorial redesign + Authority Console layout rebuild + demo tier spread (pushed, full suite green)
+- [x] News editorial redesign + Authority Console layout rebuild + demo tier spread (merged to `main` via PR #15)
 - [ ] Not done: instrumented device test suite beyond the scaffold · Play Store release pipeline (unsigned release config exists) · FCM/push alerts (none implemented)
 
 ## Future Scope
