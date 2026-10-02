@@ -160,7 +160,7 @@ class RouteSafetyCardLayoutTest {
     }
 
     // Collapsed essentials: the decision information must always be visible.
-    composeTestRule.onNodeWithText("ROUTE TO").assertExists()
+    composeTestRule.onNodeWithText("Route to").assertExists()
     composeTestRule.onNodeWithText("Munnar Higher Ground Relief Camp").assertExists()
     composeTestRule.onNodeWithTag("osrm_validation_badge").assertExists()
     composeTestRule.onNodeWithText("25/100").assertExists()
@@ -176,7 +176,11 @@ class RouteSafetyCardLayoutTest {
     composeTestRule.onNodeWithTag("route_status_message").assertExists()
     composeTestRule.onNodeWithText("Retry road route").assertExists()
     composeTestRule.onNodeWithText("Use unverified estimate").assertExists()
-    composeTestRule.onNodeWithText("Alternatives (0)").assertExists()
+    // P1 route UX: the zero-count clickable "Alternatives (0)" is gone.
+    // A fresh destination with no check yet offers "Find alternatives";
+    // a clickable zero can never render again.
+    composeTestRule.onNodeWithText("Find alternatives").assertExists()
+    composeTestRule.onAllNodesWithText("Alternatives (0)", substring = true).assertCountEquals(0)
 
     val expandedHeightPx = composeTestRule.onNodeWithTag("route_intelligence_panel")
       .fetchSemanticsNode().size.height

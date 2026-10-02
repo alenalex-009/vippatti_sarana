@@ -1643,8 +1643,10 @@ class VippattiViewModel(
         activeRoute = sameCorridorOnScreen,
         alternativeRoutes = emptyList(),
         isCalculatingRoute = true,
+        isCalculatingAlternatives = false,
+        alternativesChecked = false,
         routeStatus = RouteStatus.REQUESTING,
-        routeStatusMessage = "Requesting a road route to ${zone.name}…",
+        routeStatusMessage = "Finding a road route to ${zone.name}…",
         currentNavigationStepIndex = if (sameCorridorOnScreen != null)
           it.currentNavigationStepIndex else 0
       )
@@ -1814,8 +1816,10 @@ class VippattiViewModel(
     _uiState.update {
       it.copy(
         isCalculatingRoute = true,
+        isCalculatingAlternatives = true,
+        alternativesChecked = false,
         routeStatus = RouteStatus.REQUESTING,
-        routeStatusMessage = "Checking for other verified roads to ${target.name}..."
+        routeStatusMessage = "Checking for other verified roads to ${target.name}…"
       )
     }
     routingJob = viewModelScope.launch {
@@ -1843,6 +1847,8 @@ class VippattiViewModel(
         _uiState.update {
           it.copy(
             isCalculatingRoute = false,
+            isCalculatingAlternatives = false,
+            alternativesChecked = true,
             alternativeRoutes = existing?.let { r -> listOf(r) } ?: emptyList(),
             routeStatus = if (existing != null) it.routeStatus else RouteStatus.NETWORK_ERROR,
             routeStatusMessage = if (existing != null) {
@@ -1859,6 +1865,8 @@ class VippattiViewModel(
           activeRoute = roadAlternatives.first(),
           alternativeRoutes = roadAlternatives,
           isCalculatingRoute = false,
+          isCalculatingAlternatives = false,
+          alternativesChecked = true,
           routeStatus = RouteStatus.READY,
           routeStatusMessage = if (roadAlternatives.size > 1) {
             "${roadAlternatives.size} verified road corridors to ${target.name} — safest first. $ROUTE_LIMITATIONS_NOTE"

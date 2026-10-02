@@ -276,7 +276,7 @@ internal fun DisasterStatusLayerRow(
           .testTag("mock_data_toggle_chip")
       ) {
         Text(
-          text = if (uiState.isMockDataVisible) "Demo: ON" else "Demo: OFF",
+          text = if (uiState.isMockDataVisible) "SIMULATION ON" else "SIMULATION OFF",
           fontSize = 10.sp,
           fontWeight = FontWeight.Bold,
           color = if (uiState.isMockDataVisible) TacticalCyan else TacticalOnSurfaceVariant
@@ -451,7 +451,7 @@ internal fun DisasterTypeLegend(
           .testTag("mock_data_toggle_chip")
       ) {
         Text(
-          text = if (isMockVisible) "Demo: ON" else "Demo: OFF",
+          text = if (isMockVisible) "SIMULATION ON" else "SIMULATION OFF",
           fontSize = 10.sp,
           fontWeight = FontWeight.Bold,
           color = if (isMockVisible) TacticalCyan else TacticalOnSurfaceVariant

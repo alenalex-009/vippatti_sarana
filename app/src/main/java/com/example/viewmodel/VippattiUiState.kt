@@ -394,6 +394,12 @@ data class VippattiUiState(
   val selectedEvaluation: SafeZoneEvaluation? = null,
   val activeRoute: RouteResult? = null,
   val alternativeRoutes: List<RouteResult> = emptyList(),
+  /** True while an ALTERNATIVES request (not the primary route) is in flight. */
+  val isCalculatingAlternatives: Boolean = false,
+  /** True once an alternatives check completed for the CURRENT destination:
+   * the UI then says "No alternative route available" instead of offering a
+   * clickable zero-count (P1 route UX fix). */
+  val alternativesChecked: Boolean = false,
   val isCalculatingRoute: Boolean = false,
   /** Explicit routing lifecycle — drives the "no straight line" rule. */
   val routeStatus: RouteStatus = RouteStatus.IDLE,

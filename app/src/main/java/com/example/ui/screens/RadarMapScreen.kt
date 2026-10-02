@@ -42,6 +42,7 @@ import androidx.compose.material.icons.filled.NearMe
 import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material.icons.filled.Opacity
 import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.Science
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Sensors
 import androidx.compose.material.icons.filled.Thermostat
@@ -432,6 +433,53 @@ fun RadarMapScreen(
     }
 
     // ============ END floating top overlay ============
+
+    // P0 #4: SIMULATION STATE IS A GLOBAL FLAG, NOT A CHIP. While demo data
+    // is on, a persistent high-contrast banner sits directly above the
+    // bottom sheet (z-order: map content -> banner -> sheet -> nav bar), so
+    // simulated hazard/shelter pins can never be mistaken for live data.
+    // One line, ~10s legibility, tappable to switch the mode off; it does
+    // not overlap the map controls (they end above the sheet already).
+    AnimatedVisibility(visible = uiState.isMockDataVisible) {
+      Row(
+        modifier = Modifier
+          .align(Alignment.BottomCenter)
+          // Clear the map FAB row (My Location/Zoom sit at sheetHeight+8 and
+          // are ~48dp tall) so banner and controls never overlap.
+          .padding(bottom = animatedSheetHeight + 68.dp, start = 16.dp, end = 16.dp)
+          .fillMaxWidth()
+          .clip(RoundedCornerShape(10.dp))
+          .background(WarningAmber)
+          .border(1.dp, ObsidianContainerLowest.copy(alpha = 0.6f), RoundedCornerShape(10.dp))
+          .clickable { onToggleMockData() }
+          .padding(horizontal = 12.dp, vertical = 8.dp)
+          .testTag("demo_mode_banner"),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+      ) {
+        Icon(
+          imageVector = Icons.Default.Science,
+          contentDescription = null,
+          tint = ObsidianContainerLowest,
+          modifier = Modifier.size(16.dp)
+        )
+        Text(
+          text = "SIMULATION MODE ON — demo hazards & shelters, not live alerts",
+          fontSize = 12.sp,
+          fontWeight = FontWeight.Bold,
+          color = ObsidianContainerLowest,
+          maxLines = 1,
+          overflow = TextOverflow.Ellipsis,
+          modifier = Modifier.weight(1f)
+        )
+        Text(
+          text = "OFF",
+          fontSize = 12.sp,
+          fontWeight = FontWeight.Black,
+          color = ObsidianContainerLowest
+        )
+      }
+    }
 
     // 4. COLLAPSIBLE BOTTOM SHEET — tap handle or flick to collapse/expand;
     //    the map underneath stays fully interactive. The drag gesture lives

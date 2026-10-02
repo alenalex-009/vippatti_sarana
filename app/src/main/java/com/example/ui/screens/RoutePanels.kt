@@ -3,6 +3,8 @@ package com.example.ui.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -118,18 +120,19 @@ internal fun RouteIntelligencePanel(
     ) {
       Column(modifier = Modifier.weight(1f)) {
         Text(
-          text = "ROUTE TO",
+          text = "Route to",
           fontSize = 11.sp,
-          fontWeight = FontWeight.Black,
+          fontWeight = FontWeight.Medium,
           color = TacticalOnSurfaceVariant,
-          letterSpacing = 0.8.sp
+          letterSpacing = 0.3.sp
         )
         Text(
           text = uiState.selectedSafeZone?.name ?: "No safe zone selected",
-          fontSize = 12.sp,
-          fontWeight = FontWeight.Bold,
+          fontSize = 14.sp,
+          fontWeight = FontWeight.SemiBold,
           color = TacticalOnSurface,
-          maxLines = 1,
+          lineHeight = 18.sp,
+          maxLines = 2,
           overflow = TextOverflow.Ellipsis
         )
       }
@@ -159,17 +162,18 @@ internal fun RouteIntelligencePanel(
       ) {
         Text(
           text = when (uiState.routeStatus) {
-            RouteStatus.IDLE -> "NO ROUTE"
-            RouteStatus.REQUESTING -> "REQUESTING…"
-            RouteStatus.RECEIVED -> "ROUTE RECEIVED"
-            RouteStatus.VALIDATING_HAZARDS -> "CHECKING HAZARDS…"
-            RouteStatus.READY -> "REAL ROADS VERIFIED"
-            RouteStatus.NO_ROUTE -> "NO ROUTE FOUND"
-            RouteStatus.NETWORK_ERROR -> "ROUTER UNREACHABLE"
-            RouteStatus.FALLBACK_UNVERIFIED -> "UNVERIFIED ESTIMATE"
+            RouteStatus.IDLE -> "No route"
+            RouteStatus.REQUESTING -> if (uiState.isCalculatingAlternatives)
+              "Checking alternatives…" else "Finding route…"
+            RouteStatus.RECEIVED -> "Checking hazard overlap…"
+            RouteStatus.VALIDATING_HAZARDS -> "Checking hazard overlap…"
+            RouteStatus.READY -> "Real roads verified"
+            RouteStatus.NO_ROUTE -> "No route found"
+            RouteStatus.NETWORK_ERROR -> "Router unreachable"
+            RouteStatus.FALLBACK_UNVERIFIED -> "Unverified estimate"
           },
-          fontSize = 10.sp,
-          fontWeight = FontWeight.Bold,
+          fontSize = 11.sp,
+          fontWeight = FontWeight.SemiBold,
           color = when (uiState.routeStatus) {
             RouteStatus.READY -> NeonEmerald
             RouteStatus.FALLBACK_UNVERIFIED -> WarningAmber
@@ -250,10 +254,13 @@ internal fun RouteIntelligencePanel(
       // B11 honesty: an offline corridor's time comes from ASSUMED average
       // speeds (mode.estimateSpeedMps), not measured road data. It must never
       // read as a live ETA: label switches and the value carries a "~".
+      // P1 ETA honesty: offline corridors use ASSUMED average speeds; even
+      // live OSRM durations are MODELLED road speeds, never live traffic.
+      // No time may read as a guarantee: "~" always + EST. label.
       RouteMetric(
-        label = if (route != null && !route.isLiveOsrm) "TIME (EST.)" else "ETA",
+        label = if (route != null && !route.isLiveOsrm) "TIME (EST.)" else "ETA (EST.)",
         value = route?.let {
-          (if (it.isLiveOsrm) "" else "~") + OsrmRoutingService.formatDuration(it.durationSeconds)
+          "~" + OsrmRoutingService.formatDuration(it.durationSeconds)
         } ?: "--",
         accent = if (route != null && !route.isLiveOsrm) WarningAmber else NeonEmerald
       )
@@ -282,12 +289,12 @@ internal fun RouteIntelligencePanel(
         ) {
           Text(
             text = if (uiState.routeStatus == RouteStatus.FALLBACK_UNVERIFIED) {
-              "Route safety: NOT CHECKED"
+              "Route safety: not checked"
             } else {
               "Route safety: ${route.routeSafetyStatus.label}"
             },
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Bold,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.SemiBold,
             color = when (route.routeSafetyStatus) {
               RouteSafetyStatus.SAFE -> NeonEmerald
               RouteSafetyStatus.CAUTION -> WarningAmber
@@ -404,8 +411,11 @@ internal fun RouteIntelligencePanel(
 
     // Controls: travel mode toggle + alternatives + best-zone.
     if (showDetails) {
+      // P1 layout fix: this controls row crushed on narrow phones
+      // (the broken "Best" button). Horizontally scrollable now - every
+      // control keeps its natural single-line size.
       Row(
-      modifier = Modifier.fillMaxWidth(),
+      modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
       horizontalArrangement = Arrangement.spacedBy(8.dp),
       verticalAlignment = Alignment.CenterVertically
     ) {
@@ -451,22 +461,52 @@ internal fun RouteIntelligencePanel(
         }
       }
 
-      Button(
-        onClick = onLoadAlternativeRoutes,
-        colors = ButtonDefaults.buttonColors(
-          containerColor = ObsidianContainerHigh,
-          contentColor = TacticalCyan
-        ),
-        shape = RoundedCornerShape(8.dp),
-        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
-        modifier = Modifier.height(34.dp).testTag("alternative_routes_button")
-      ) {
-        Icon(Icons.Default.AltRoute, contentDescription = null, modifier = Modifier.size(14.dp))
-        Spacer(modifier = Modifier.width(4.dp))
-        Text("Alternatives (${uiState.alternativeRoutes.size})", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+      // P1 route UX: a clickable "Alternatives (0)" must never render -
+      // loading says so, an empty completed check states it honestly, and
+      // the count only appears when it is real.
+      val extraAlts = uiState.alternativeRoutes.count { r ->
+        route == null || r.routeId != route.routeId
       }
-
-      Spacer(modifier = Modifier.weight(1f))
+      when {
+        uiState.isCalculatingAlternatives -> Box(
+          modifier = Modifier
+            .heightIn(min = 44.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .background(ObsidianContainerHigh)
+            .padding(horizontal = 12.dp, vertical = 4.dp),
+          contentAlignment = Alignment.Center
+        ) {
+          Text("Checking alternatives…", fontSize = 12.sp,
+            fontWeight = FontWeight.Medium, color = TacticalOnSurfaceVariant)
+        }
+        uiState.alternativesChecked && extraAlts == 0 -> Box(
+          modifier = Modifier
+            .heightIn(min = 44.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .background(ObsidianContainer)
+            .padding(horizontal = 12.dp, vertical = 4.dp)
+            .testTag("no_alternative_message"),
+          contentAlignment = Alignment.Center
+        ) {
+          Text("No alternative route available", fontSize = 12.sp,
+            fontWeight = FontWeight.Medium, color = TacticalOnSurfaceVariant)
+        }
+        else -> Button(
+          onClick = onLoadAlternativeRoutes,
+          colors = ButtonDefaults.buttonColors(
+            containerColor = ObsidianContainerHigh,
+            contentColor = TacticalCyan
+          ),
+          shape = RoundedCornerShape(8.dp),
+          contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
+          modifier = Modifier.heightIn(min = 44.dp).testTag("alternative_routes_button")
+        ) {
+          Icon(Icons.Default.AltRoute, contentDescription = null, modifier = Modifier.size(14.dp))
+          Spacer(modifier = Modifier.width(4.dp))
+          Text(if (extraAlts > 0) "Alternatives (${extraAlts + 1})" else "Find alternatives",
+            fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+        }
+      }
 
       Button(
         onClick = onSelectBestSafeZone,
@@ -480,7 +520,7 @@ internal fun RouteIntelligencePanel(
       ) {
         Icon(Icons.Default.NearMe, contentDescription = null, modifier = Modifier.size(14.dp))
         Spacer(modifier = Modifier.width(4.dp))
-        Text("Best Zone", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+        Text("Safest nearby", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
       }
     }
     } // end of showDetails (controls + alternatives)
