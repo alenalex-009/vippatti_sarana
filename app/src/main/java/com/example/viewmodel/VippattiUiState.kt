@@ -330,6 +330,16 @@ data class VippattiUiState(
    */
   val scopedShelters: List<com.example.data.model.SafeZone> = emptyList(),
   /**
+   * THE set the map + carousel render (P0 fix #2): of the scoped shelters,
+   * only ones a REAL evaluation currently accepts (feasible) - plus the
+   * selected destination, which must stay on screen even if the situation
+   * changed under it, so its corridor and marker can never disagree.
+   * Shelters inside an active hazard, CLOSED or full stay in
+   * [scopedShelters] for detail sheets but no longer render as actionable
+   * green pins ("irrelevant green zones" + "routes to nowhere" reports).
+   */
+  val visibleSafeZones: List<com.example.data.model.SafeZone> = emptyList(),
+  /**
    * Legend chip tap filters the map to ONE hazard type (12-2);
    * null = show all. Re-tapping the selected chip clears it.
    */

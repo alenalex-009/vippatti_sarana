@@ -82,17 +82,16 @@ internal fun SafeZoneCarousel(
   val evalById = uiState.evaluatedShelters.associateBy { it.zone.id }
   val origin = uiState.userLocation
   val carouselZones: List<SafeZone> = run {
-    // ONE source of truth: the LOCATION-SCOPED shelter set that the map
-    // markers and the evaluator use. Registry records are REAL (always
-    // allowed); demo shelters exist only while demo data is on. A card
-    // here is always the exact object routing goes to (799m vs 14.8km bug).
-    val source = uiState.scopedShelters
+    // ONE source of truth: the same feasible-or-selected set the MAP pins
+    // render (P0 fix #2). A card here is always an actionable destination
+    // and the exact object routing goes to (799m vs 14.8km bug).
+    val source = uiState.visibleSafeZones
     source.sortedBy {
       evalById[it.id]?.distanceMeters
         ?: com.example.data.model.GeoMath.distanceMeters(origin, it.point)
     }.take(MAX_CAROUSEL_ZONES)
   }
-  val hiddenCount = uiState.scopedShelters.size -
+  val hiddenCount = uiState.visibleSafeZones.size -
     carouselZones.size
   val selectedIndex = carouselZones.indexOfFirst { it.id == selectedId }
   LaunchedEffect(selectedId) {
@@ -139,7 +138,11 @@ internal fun SafeZoneCarousel(
           "NEAREST SAFE: ${nearest.zone.name} • " +
             "${OsrmRoutingService.formatDistance(nearest.distanceMeters)} away"
         } else if (carouselZones.isEmpty()) {
-          "NO SHELTERS NEAR THIS PLACE — search a different area"
+          // Honest empty state: nothing invented, nothing pins.
+          if (uiState.isMockDataVisible)
+            "NO VERIFIED SAFE ZONE AVAILABLE — demo candidates may be shown"
+          else
+            "NO VERIFIED SAFE ZONE AVAILABLE — search a different area"
         } else {
           "NO FEASIBLE SHELTER — all in danger / full"
         },

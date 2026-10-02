@@ -830,6 +830,22 @@ class VippattiViewModel(
       // route correctly re-opens the guidance instead of deferring to a dead
       // destination.
       val hasActiveDestination = selectedStillVisible && it.selectedSafeZone != null
+      // GREEN PINS ONLY WHERE GOING IS VALID (P0 fix #2): feasibility comes
+      // from the evaluator run above, so a rejected shelter (inside a new
+      // hazard circle after a scenario change, CLOSED, full) stops pinning
+      // as an actionable destination. A selected destination stays rendered
+      // even if just rejected - its corridor is on the map and the user
+      // must see WHERE it goes; the detail sheet states the rejection.
+      val selectedPost = if (selectedStillVisible) it.selectedSafeZone else null
+      val visibleZones = evaluated
+        .filter { e -> e.isFeasible || e.zone.id == selectedPost?.id }
+        .map { e -> e.zone }
+        .let { list ->
+          // terrain haven pseudo-zone is a selected destination that is not
+          // part of the evaluated shelter network: it must stay on the map.
+          selectedPost?.takeIf { sel -> list.none { it.id == sel.id } }
+            ?.let { list + it } ?: list
+        }
       val guidance = com.example.data.shelters.EmergencyGuidance.forSituation(
         riskLevel = risk.level,
         evaluations = evaluated,
@@ -840,6 +856,7 @@ class VippattiViewModel(
         hazardZones = hazards,
         evaluatedShelters = evaluated,
         scopedShelters = scopedCandidates,
+        visibleSafeZones = visibleZones,
         rankedShelters = ranked,
         recommendedAction = action,
         relocationPlan = plan,
@@ -1652,6 +1669,22 @@ class VippattiViewModel(
         }
         return@launch
       }
+      // DESTINATION INTEGRITY (P0 fix #2): a response that does not target
+      // the exact selected shelter id is discarded, never drawn. Demo names
+      // repeat across locations, so only the id binds route -> destination;
+      // this is the last line against a route silently substituting another
+      // zone (the 799m-vs-14.8km class of bugs).
+      if (live.destinationId.isNotBlank() && live.destinationId != zone.id) {
+        _uiState.update {
+          it.copy(
+            activeRoute = null,
+            isCalculatingRoute = false,
+            routeStatus = RouteStatus.NO_ROUTE,
+            routeStatusMessage = "Routing response targeted a different shelter than selected - discarded. Nothing is drawn."
+          )
+        }
+        return@launch
+      }
       if (live.pathPoints.isEmpty()) {
         _uiState.update {
           it.copy(
@@ -1761,7 +1794,7 @@ class VippattiViewModel(
       val best = _uiState.value.rankedShelters.firstOrNull()
       if (best == null) {
         _uiState.update {
-          it.copy(snackbarMessage = "No safe zone to route to — switch the simulated demo data on to see the India shelter network, then pick a green shelter")
+          it.copy(snackbarMessage = "No verified safe zone available — switch the simulated demo data on to see demo candidates, or search a different area")
         }
         return
       }
@@ -1897,7 +1930,7 @@ class VippattiViewModel(
       val best = _uiState.value.rankedShelters.firstOrNull()
       if (best == null) {
         _uiState.update {
-          it.copy(snackbarMessage = "No safe zone to route to — switch the simulated demo data on to see the India shelter network, then pick a green shelter")
+          it.copy(snackbarMessage = "No verified safe zone available — switch the simulated demo data on to see demo candidates, or search a different area")
         }
         return
       }

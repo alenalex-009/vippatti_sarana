@@ -272,10 +272,11 @@ fun RadarMapScreen(
     // and no live event markers reach the engine — only base tiles + GPS dot.
     OsmDroidRadarMapView(
       hazardZones = uiState.hazardZones,
-      // LOCATION-SCOPED SHELTERS ONLY (user rule 4/5): the map renders the
-      // exact set scoped to the current focus - never the all-India demo list.
-      safeZones = if (uiState.isMockDataVisible) uiState.scopedShelters
-        else uiState.fieldShelters,
+      // LOCATION-SCOPED + FEASIBLE ONLY (user rule 4/5 + P0 fix #2): the map
+      // renders exactly the shelters the evaluator currently accepts (plus a
+      // selected destination) - never the all-India list, never a rejected
+      // shelter posing as an actionable green pin.
+      safeZones = uiState.visibleSafeZones,
       selectedSafeZone = uiState.selectedSafeZone,
       activeRoute = uiState.activeRoute,
       travelMode = uiState.travelMode,
