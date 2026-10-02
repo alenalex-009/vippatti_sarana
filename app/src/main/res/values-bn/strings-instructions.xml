@@ -137,6 +137,8 @@
     <string name="report_send">রিপোর্ট পাঠান</string>
     <string name="report_dictate">আমার পরিস্থিতি বলুন (কণ্ঠস্বরে)</string>
     <string name="report_quick_tags">দ্রুত ট্যাগ</string>
+    <string name="report_camera_photo">ক্যামেরায় ছবি তুলুন</string>
+    <string name="report_camera_saved">ছবি তোলা হয়েছে</string>
     <string name="report_attach_photo">ছবির প্রমাণ সংযুক্ত করুন</string>
     <string name="report_photo_saved">ছবির রেফারেন্স রিপোর্টের সঙ্গে স্থানীয়ভাবে সংরক্ষিত</string>
     <string name="report_reporting_as">রিপোর্ট করছেন</string>

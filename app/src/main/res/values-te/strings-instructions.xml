@@ -137,6 +137,8 @@
     <string name="report_subtitle">వoice | ఫారం | ఫోటో — స్థానిక నివేదికగా సేవ్ అవుతుంది</string>
     <string name="report_dictate">నా పరిస్థితిని చెప్పండి (వాయిస్)</string>
     <string name="report_quick_tags">త్వరిత ట్యాగ్‌లు</string>
+    <string name="report_camera_photo">కెమెరాతో ఫోటో తీయండి</string>
+    <string name="report_camera_saved">ఫోటో తీయబడింది</string>
     <string name="report_attach_photo">ఫోటో ఆధారం జోడించండి</string>
     <string name="report_photo_saved">ఫోటో సూచన నివేదికతో సహా స్థానికంగా సేవ్ అయ్యింది</string>
     <string name="report_reporting_as">నివేదిక చేస్తున్నవారు</string>

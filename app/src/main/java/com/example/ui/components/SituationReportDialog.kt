@@ -30,6 +30,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.PhotoLibrary
+import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -53,6 +54,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -120,6 +122,41 @@ fun SituationReportDialog(
     ActivityResultContracts.PickVisualMedia()
   ) { uri ->
     photoUri = uri?.toString()
+  }
+
+  // LIVE CAMERA capture beside the gallery picker (user ask: "we will take
+  // pic from gallery so there should be a feature to take picture live too").
+  // CameraX-less intent flow: the shot lands in the app cache through a
+  // FileProvider URI, so no storage permission and no gallery pollution.
+  val context = androidx.compose.ui.platform.LocalContext.current
+  var pendingCaptureUri by remember { mutableStateOf<android.net.Uri?>(null) }
+  fun newCaptureUri(): android.net.Uri {
+    val dir = java.io.File(context.cacheDir, "camera_captures").apply { mkdirs() }
+    val file = java.io.File(dir, "evidence_" + System.currentTimeMillis() + ".jpg")
+    return androidx.core.content.FileProvider.getUriForFile(
+      context, context.packageName + ".fileprovider", file
+    )
+  }
+  val cameraCapture = rememberLauncherForActivityResult(
+    ActivityResultContracts.TakePicture()
+  ) { saved ->
+    val uri = pendingCaptureUri
+    pendingCaptureUri = null
+    if (saved && uri != null) {
+      photoUri = uri.toString()
+    } else if (uri != null) {
+      // Cancelled/failed shot: leave no orphan file behind.
+      runCatching { cameraCaptureCacheFile(context, uri)?.delete() }
+    }
+  }
+  val cameraPermission = rememberLauncherForActivityResult(
+    ActivityResultContracts.RequestPermission()
+  ) { granted ->
+    if (granted) {
+      val uri = newCaptureUri()
+      pendingCaptureUri = uri
+      cameraCapture.launch(uri)
+    }
   }
 
   Dialog(onDismissRequest = onDismiss) {
@@ -225,24 +262,56 @@ fun SituationReportDialog(
             .testTag("situation_description_input")
         )
 
-        // --- Photo evidence ---------------------------------------------------
+        // --- Photo evidence: gallery attach AND live camera, side by side ----
         if (photoUri == null) {
-          OutlinedButton(
-            onClick = {
-              photoPicker.launch(
-                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-              )
-            },
-            shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = WarningAmber),
-            modifier = Modifier
-              .fillMaxWidth()
-              .height(44.dp)
-              .testTag("situation_photo_button")
+          Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
           ) {
-            Icon(Icons.Default.PhotoLibrary, contentDescription = null, tint = WarningAmber, modifier = Modifier.size(18.dp))
-            Spacer(modifier = Modifier.width(6.dp))
-            Text(stringResource(R.string.report_attach_photo), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            OutlinedButton(
+              onClick = {
+                photoPicker.launch(
+                  PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                )
+              },
+              shape = RoundedCornerShape(12.dp),
+              colors = ButtonDefaults.outlinedButtonColors(contentColor = WarningAmber),
+              modifier = Modifier
+                .weight(1f)
+                .height(44.dp)
+                .testTag("situation_photo_button")
+            ) {
+              Icon(Icons.Default.PhotoLibrary, contentDescription = null, tint = WarningAmber, modifier = Modifier.size(18.dp))
+              Spacer(modifier = Modifier.width(6.dp))
+              Text(stringResource(R.string.report_attach_photo), fontSize = 12.sp, fontWeight = FontWeight.Bold,
+                maxLines = 2, overflow = TextOverflow.Ellipsis)
+            }
+            OutlinedButton(
+              onClick = {
+                val granted = androidx.core.content.ContextCompat.checkSelfPermission(
+                  context, android.Manifest.permission.CAMERA
+                ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+                if (granted) {
+                  val uri = newCaptureUri()
+                  pendingCaptureUri = uri
+                  cameraCapture.launch(uri)
+                } else {
+                  // Honest permission request; denied = nothing attached.
+                  cameraPermission.launch(android.Manifest.permission.CAMERA)
+                }
+              },
+              shape = RoundedCornerShape(12.dp),
+              colors = ButtonDefaults.outlinedButtonColors(contentColor = TacticalCyan),
+              modifier = Modifier
+                .weight(1f)
+                .height(44.dp)
+                .testTag("situation_camera_button")
+            ) {
+              Icon(Icons.Default.PhotoCamera, contentDescription = null, tint = TacticalCyan, modifier = Modifier.size(18.dp))
+              Spacer(modifier = Modifier.width(6.dp))
+              Text(stringResource(R.string.report_camera_photo), fontSize = 12.sp, fontWeight = FontWeight.Bold,
+                maxLines = 2, overflow = TextOverflow.Ellipsis)
+            }
           }
         } else {
           Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -275,7 +344,15 @@ fun SituationReportDialog(
                 Icon(Icons.Default.Close, contentDescription = "Remove photo", tint = TacticalOnSurface, modifier = Modifier.size(16.dp))
               }
             }
-            Text(stringResource(R.string.report_photo_saved), fontSize = 12.sp, color = NeonEmerald)
+            Text(
+              text = stringResource(
+                if (photoUri?.startsWith("content://") == true &&
+                    photoUri!!.contains("camera_captures"))
+                  R.string.report_camera_saved
+                else R.string.report_photo_saved
+              ),
+              fontSize = 12.sp, color = NeonEmerald
+            )
           }
         }
 
@@ -341,3 +418,11 @@ private fun QuickTagChip(label: String, onAppend: (String) -> Unit) {
   }
 }
 
+/** Resolve the cache file a camera-capture content URI points at (cleanup on cancel). */
+internal fun cameraCaptureCacheFile(
+  context: android.content.Context, uri: android.net.Uri
+): java.io.File? {
+  val name = uri.lastPathSegment?.substringAfterLast('/') ?: return null
+  if (!name.startsWith("evidence_")) return null
+  return java.io.File(java.io.File(context.cacheDir, "camera_captures"), name)
+}

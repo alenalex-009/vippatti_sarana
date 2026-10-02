@@ -102,6 +102,8 @@
     <string name="report_subtitle">Voice | Form | Photo - saved as a local report</string>
     <string name="report_dictate">DICTATE MY SITUATION (VOICE)</string>
     <string name="report_quick_tags">QUICK TAGS</string>
+    <string name="report_camera_photo">TAKE PHOTO WITH CAMERA</string>
+    <string name="report_camera_saved">Photo captured</string>
     <string name="report_attach_photo">ATTACH PHOTO EVIDENCE</string>
     <string name="report_photo_saved">Photo reference saved locally with the report</string>
     <string name="report_reporting_as">Reporting as</string>

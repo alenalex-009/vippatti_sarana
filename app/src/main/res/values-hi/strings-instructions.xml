@@ -137,6 +137,8 @@
     <string name="report_subtitle">आवाज़, फ़ॉर्म या फ़ोटो — स्थानीय रिपोर्ट के रूप में सहेजा जाता है</string>
     <string name="report_dictate">अपनी स्थिति बताएँ (आवाज़ से)</string>
     <string name="report_quick_tags">त्वरित टैग</string>
+    <string name="report_camera_photo">कैमरे से फ़ोटो लें</string>
+    <string name="report_camera_saved">फ़ोटो कैप्चर हुई</string>
     <string name="report_attach_photo">फ़ोटो प्रमाण जोड़ें</string>
     <string name="report_photo_saved">फ़ोटो का संदर्भ रिपोर्ट के साथ स्थानीय रूप से सहेजा गया</string>
     <string name="report_reporting_as">रिपोर्ट करने वाले</string>
