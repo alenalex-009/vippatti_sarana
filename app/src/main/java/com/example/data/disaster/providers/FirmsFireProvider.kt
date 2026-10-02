@@ -146,6 +146,11 @@ object FirmsCsvParser {
       val observedAt = parseAcquisitionMillis(acqDate, acqTime)
       val confidenceRaw = if (confIdx >= 0 && confIdx < cells.size) cells[confIdx] else ""
 
+      // VOLUME/QUALITY POLICY (user report: "too many fire dots"): FIRMS
+      // ships an explicit per-detection confidence flag - NASA recommends
+      // discarding "low"-confidence detections for alerting use. Dropping
+      // them is the provider's own quality rule, not invented filtering.
+      if (mapConfidence(confidenceRaw) == EventConfidence.LOW) continue
       val id = "firms-${acqDate}T${acqTime}-${lat}-${lon}"
       out += DisasterEvent(
         id = id,

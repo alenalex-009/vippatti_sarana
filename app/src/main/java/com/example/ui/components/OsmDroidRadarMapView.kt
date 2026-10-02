@@ -70,6 +70,7 @@ import com.example.data.disaster.FireIntensityScale
 import com.example.data.disaster.MarkerGeneralizer
 import com.example.data.model.HazardSeverity
 import com.example.data.model.HazardZone
+import com.example.data.model.GeoMath
 import com.example.data.model.SafeZone
 import com.example.data.routing.GeoPoint
 import com.example.data.routing.RouteResult
@@ -380,7 +381,7 @@ fun OsmDroidRadarMapView(
       Row(
         modifier = Modifier
           .align(Alignment.TopCenter)
-          .padding(top = topOverlayPadding + 8.dp, start = 10.dp, end = 10.dp)
+          .padding(top = topOverlayPadding + 8.dp, start = 10.dp, end = 72.dp)
           .clip(RoundedCornerShape(10.dp))
           .background(ObsidianContainer.copy(alpha = 0.96f))
           .border(1.dp, EmergencyRed.copy(alpha = 0.7f), RoundedCornerShape(10.dp))
@@ -433,7 +434,7 @@ fun OsmDroidRadarMapView(
       Row(
         modifier = Modifier
           .align(Alignment.TopCenter)
-          .padding(top = topOverlayPadding + 8.dp, start = 10.dp, end = 10.dp)
+          .padding(top = topOverlayPadding + 8.dp, start = 10.dp, end = 72.dp)
           .clip(RoundedCornerShape(10.dp))
           .background(ObsidianContainer.copy(alpha = 0.96f))
           .border(1.dp, TacticalOutlineVariant.copy(alpha = 0.7f), RoundedCornerShape(10.dp))
@@ -1462,17 +1463,27 @@ private fun safeForBoundingBoxFit(mv: MapView): Boolean =
       safeForBoundingBoxFit(mv)
     ) {
       lastFittedRouteId = route.routeId
-      // Fit to the corridor, but INSIDE the India limit: a raw bbox of a long
-      // NE->SW route used to zoom out past the single-world frame and show
-      // the map repeated side by side (issue 13). increaseByScale adds margin
-      // without crossing into repetition because repetition is now off.
+      // USER FIX: tapping a route must show WHERE IT GOES, not zoom the whole
+      // world back out. Short corridors (<=4 km corner-to-corner) glide to the
+      // DESTINATION keeping the current zoom; only genuinely long routes fit,
+      // so they still cannot read as "stops halfway" (issue 13).
       val box = org.osmdroid.util.BoundingBox(
         points.maxOf { it.latitude }, points.minOf { it.longitude },
         points.minOf { it.latitude }, points.maxOf { it.longitude }
-      ).increaseByScale(1.25f)
-      val fitMargin = (64 + routeFitTopInsetPx + routeFitBottomInsetPx / 2)
-        .coerceAtMost(boundingBoxFitMarginCap(mv))
-      mv.zoomToBoundingBox(box, true, fitMargin, 17.0, 600L)
+      )
+      val diagM = GeoMath.distanceMeters(
+        GeoPoint(points.maxOf { it.latitude }, points.minOf { it.longitude }),
+        GeoPoint(points.minOf { it.latitude }, points.maxOf { it.longitude })
+      )
+      if (diagM <= 4_000.0) {
+        val dest = points.last()
+        mv.controller.animateTo(OsmGeoPoint(dest.latitude, dest.longitude))
+      } else {
+        val scaled = box.increaseByScale(1.25f)
+        val fitMargin = (64 + routeFitTopInsetPx + routeFitBottomInsetPx / 2)
+          .coerceAtMost(boundingBoxFitMarginCap(mv))
+        mv.zoomToBoundingBox(scaled, true, fitMargin, 17.0, 600L)
+      }
     } else if (route.routeId != lastFittedRouteId && points.size >= 2) {
       // NOT laid out yet (cold-start route before first draw): fitting now is
       // the exact osmdroid #2028 poison that freezes the app. Defer ONE fit
@@ -1486,10 +1497,19 @@ private fun safeForBoundingBoxFit(mv: MapView): Boolean =
             val box = org.osmdroid.util.BoundingBox(
               pts.maxOf { it.latitude }, pts.minOf { it.longitude },
               pts.minOf { it.latitude }, pts.maxOf { it.longitude }
-            ).increaseByScale(1.25f)
-            val fitMargin = (64 + routeFitTopInsetPx + routeFitBottomInsetPx / 2)
-              .coerceAtMost(boundingBoxFitMarginCap(mv2))
-            mv2.zoomToBoundingBox(box, true, fitMargin, 17.0, 600L)
+            )
+            if (GeoMath.distanceMeters(
+                GeoPoint(pts.maxOf { it.latitude }, pts.minOf { it.longitude }),
+                GeoPoint(pts.minOf { it.latitude }, pts.maxOf { it.longitude })
+              ) <= 4_000.0) {
+              val dest = pts.last()
+              mv2.controller.animateTo(OsmGeoPoint(dest.latitude, dest.longitude))
+            } else {
+              val scaled = box.increaseByScale(1.25f)
+              val fitMargin = (64 + routeFitTopInsetPx + routeFitBottomInsetPx / 2)
+                .coerceAtMost(boundingBoxFitMarginCap(mv2))
+              mv2.zoomToBoundingBox(scaled, true, fitMargin, 17.0, 600L)
+            }
           }
         }
       }

@@ -137,9 +137,10 @@
     <string name="report_send">அறிக்கை அனுப்பவும்</string>
     <string name="report_dictate">எனது நிலவரியைக் கூறவும் (வாரியம்)</string>
     <string name="report_quick_tags">விரைவு குறிகள்</string>
-    <string name="report_camera_photo">கேமராவில் புகைப்படம் எடு</string>
+    <string name="report_photo_optional">படத்தை சேர்க்கவும் (விருப்பம்)</string>
+    <string name="report_camera_photo">படம் எடு</string>
     <string name="report_camera_saved">புகைப்படம் எடுக்கப்பட்டது</string>
-    <string name="report_attach_photo">புகைபடச் சான்று இணைக்கவும்</string>
+    <string name="report_attach_photo">கேலரியிலிருந்து தேர்ந்தெடு</string>
     <string name="report_photo_saved">புகைபடக் குறிப்பு அறிக்கையுடன் உள்ளூராகச் சேமிக்கப்பட்டது</string>
     <string name="report_reporting_as">அறிக்கை செய்பவர்</string>
     <string name="edit_profile_dependents_detail">பொறுப்பாளர்கள் விவரம் (எ.கா. 1 முதியோர், 1 குழந்தை (4 வயது), வாழ்க்கைத் துணை)</string>

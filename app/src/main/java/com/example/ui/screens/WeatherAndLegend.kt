@@ -58,6 +58,7 @@ import com.example.ui.theme.TacticalCyan
 import com.example.ui.theme.TacticalOnSurface
 import com.example.ui.theme.TacticalOnSurfaceVariant
 import com.example.ui.theme.TacticalOutlineVariant
+import com.example.ui.theme.ObsidianContainerLowest
 import com.example.ui.theme.WarningAmber
 import com.example.viewmodel.VippattiUiState
 
@@ -263,23 +264,21 @@ internal fun DisasterStatusLayerRow(
       Box(
         modifier = Modifier
           .clip(RoundedCornerShape(999.dp))
-          .background(
-            if (uiState.isMockDataVisible) TacticalCyan.copy(alpha = 0.2f) else ObsidianContainer
-          )
+          .background(if (uiState.isMockDataVisible) WarningAmber else ObsidianContainerHigh)
           .border(
-            1.dp,
-            if (uiState.isMockDataVisible) TacticalCyan else TacticalOutlineVariant.copy(alpha = 0.4f),
+            1.5.dp,
+            if (uiState.isMockDataVisible) ObsidianContainerLowest else TacticalCyan,
             RoundedCornerShape(999.dp)
           )
           .clickable { onToggleMockData() }
-          .padding(horizontal = 10.dp, vertical = 5.dp)
+          .padding(horizontal = 12.dp, vertical = 7.dp)
           .testTag("mock_data_toggle_chip")
       ) {
         Text(
-          text = if (uiState.isMockDataVisible) "SIMULATION ON" else "SIMULATION OFF",
-          fontSize = 10.sp,
-          fontWeight = FontWeight.Bold,
-          color = if (uiState.isMockDataVisible) TacticalCyan else TacticalOnSurfaceVariant
+          text = if (uiState.isMockDataVisible) "DEMO: ON" else "DEMO: OFF",
+          fontSize = 11.sp,
+          fontWeight = FontWeight.Black,
+          color = if (uiState.isMockDataVisible) ObsidianContainerLowest else TacticalOnSurface
         )
       }
     }
@@ -434,28 +433,39 @@ internal fun DisasterTypeLegend(
     // Rule 5: the demo scenario switch lives on this chip row (compact,
     // clearly separate from data layers).
     item {
+      // User contrast fix: NO alpha wash. ON = solid amber, dark text.
+      // OFF = solid dark container, bright text, strong outline. Either
+      // state is legible against tiles at any zoom/brightness.
       Box(
         modifier = Modifier
           .clip(RoundedCornerShape(999.dp))
-          .background(
-            if (isMockVisible) TacticalCyan.copy(alpha = 0.25f) else ObsidianContainer
-          )
+          .background(if (isMockVisible) WarningAmber else ObsidianContainerHigh)
           .border(
-            1.dp,
-            if (isMockVisible) TacticalCyan
-            else TacticalOutlineVariant.copy(alpha = 0.4f),
+            1.5.dp,
+            if (isMockVisible) ObsidianContainerLowest else TacticalCyan,
             RoundedCornerShape(999.dp)
           )
           .clickable { onToggleMockData() }
-          .padding(horizontal = 10.dp, vertical = 7.dp)
+          .padding(horizontal = 12.dp, vertical = 8.dp)
           .testTag("mock_data_toggle_chip")
       ) {
-        Text(
-          text = if (isMockVisible) "SIMULATION ON" else "SIMULATION OFF",
-          fontSize = 10.sp,
-          fontWeight = FontWeight.Bold,
-          color = if (isMockVisible) TacticalCyan else TacticalOnSurfaceVariant
-        )
+        Row(
+          verticalAlignment = Alignment.CenterVertically,
+          horizontalArrangement = Arrangement.spacedBy(5.dp)
+        ) {
+          Box(
+            modifier = Modifier
+              .size(8.dp)
+              .clip(CircleShape)
+              .background(if (isMockVisible) ObsidianContainerLowest else TacticalCyan)
+          )
+          Text(
+            text = if (isMockVisible) "DEMO: ON" else "DEMO: OFF",
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Black,
+            color = if (isMockVisible) ObsidianContainerLowest else TacticalOnSurface
+          )
+        }
       }
     }
   }

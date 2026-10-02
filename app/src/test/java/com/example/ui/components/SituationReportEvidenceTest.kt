@@ -4,6 +4,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performScrollTo
 import com.example.ui.theme.VippattiTheme
 import org.junit.Rule
 import org.junit.Test
@@ -38,12 +39,17 @@ class SituationReportEvidenceTest {
         )
       }
     }
-    composeTestRule.onNodeWithTag("situation_photo_button").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("situation_camera_button").assertIsDisplayed()
-    // English labels (the app's default locale in tests).
-    composeTestRule.onNodeWithText("ATTACH PHOTO EVIDENCE", substring = true)
-      .assertIsDisplayed()
-    composeTestRule.onNodeWithText("TAKE PHOTO WITH CAMERA", substring = true)
-      .assertIsDisplayed()
+    // The dialog content is taller than the test viewport; scroll to each
+    // affordance first (what a user does), then assert it renders visibly.
+    composeTestRule.onNodeWithTag("situation_photo_button")
+      .performScrollTo().assertIsDisplayed()
+    composeTestRule.onNodeWithTag("situation_camera_button")
+      .performScrollTo().assertIsDisplayed()
+    // English labels (the app's default locale in tests). Spec section 27
+    // renamed the cramped all-caps labels to clear action verbs.
+    composeTestRule.onNodeWithText("Choose from Gallery", substring = true)
+      .performScrollTo().assertIsDisplayed()
+    composeTestRule.onNodeWithText("Take Photo", substring = true)
+      .performScrollTo().assertIsDisplayed()
   }
 }

@@ -52,6 +52,10 @@ object DemoNetworkAroundUser {
   /** Candidate fan size; validation may trim the set (2-5 rule). */
   const val DEMO_SHELTER_COUNT = 5
   const val DEMO_SHELTER_CAPACITY = 240
+  /** Type-filter secondary hazard ring: distance of the demo hazard from you. */
+  const val DEMO_SECONDARY_DISTANCE_KM = 2.2
+  /** Shelters paired to each regional demo hazard. */
+  const val DEMO_PAIRED_SHELTERS_PER_HAZARD = 2
   const val DEMO_SHELTER_OCCUPIED = 30
 
   val demoProvenance: DataProvenance
@@ -232,6 +236,111 @@ object DemoNetworkAroundUser {
     val shelter = shelterNear(focus, coastKm) ?: return null
     return hazardNear(focus, coastKm) to shelter
   }
+
+  /**
+   * SECONDARY, TYPE-EXPLICIT demo hazard at a fixed bearing/distance from the
+   * focus (USER FIX: with demo ON and a type filter tapped, the map must show
+   * a hazard of THAT TYPE near the user - so "hazard strikes where I am, find
+   * the way out" is demoable for every disaster, not just the one the place
+   * hash produced). Deterministic: same focus + same type = same records.
+   */
+  fun secondaryHazard(focus: GeoPoint, type: com.example.data.model.HazardType): HazardZone {
+    val bearing = (bearingFor(focus) * 3 + type.ordinal * 47.0) % 360.0
+    val center = offset(focus, DEMO_SECONDARY_DISTANCE_KM, bearing)
+    return HazardZone(
+      id = "demo-hz2-${quant(focus)}-${type.name.lowercase()}",
+      name = "DEMO ${type.label} Zone (simulated)",
+      type = type,
+      severity = com.example.data.model.HazardSeverity.HIGH,
+      center = center,
+      radiusMeters = radiusMetersFor(type),
+      riskLevel = "SIMULATED — demonstration only",
+      trend = com.example.data.model.HazardTrend.STABLE,
+      sourceStatus = "DEMO DATA — generated around your location for the ${type.label} filter, NOT real",
+      lastUpdatedMillis = 0L,
+      provenance = demoProvenance
+    )
+  }
+
+  /**
+   * Shelter cluster serving a GIVEN hazard (used by the type-filter scenario
+   * and the regional overview pairing). Fans opposite/around the hazard,
+   * walks each bearing until the candidate clears hazard.radius + 300 m from
+   * the hazard CENTER, keeps India + landward rules, and stops at
+   * [maxDistanceKm] from the hazard. Near/far spread is physical: candidates
+   * start at 0.8 km steps out to the cap, so both a close fallback and a
+   * farther bigger site exist (user: "near AND a bit far").
+   */
+  fun sheltersAroundHazard(
+    anchor: GeoPoint,
+    hazardRadiusMeters: Double,
+    hazardBearingFromAnchor: Double,
+    count: Int = 3,
+    maxDistanceKm: Double = 9.0,
+    coastKmAnchor: Int? = null,
+    demandLandward: Boolean = false,
+    idSalt: String = ""
+  ): List<SafeZone> {
+    val out = ArrayList<SafeZone>(count)
+    var idx = 0
+    var ring = 0
+    while (out.size < count && ring < 10) {
+      val bearing = (hazardBearingFromAnchor + 180.0 + ring * 60.0) % 360.0
+      ring++
+      var distance = DEMO_SHELTER_DISTANCE_KM + out.size * 1.4
+      while (com.example.data.model.GeoMath.distanceMeters(
+          anchor, offset(anchor, distance, bearing)
+        ) <= hazardRadiusMeters + 300.0 && distance < maxDistanceKm
+      ) {
+        distance += 0.3
+      }
+      if (distance > maxDistanceKm) continue
+      val p = offset(anchor, distance, bearing)
+      if (!IndiaGeo.contains(p)) continue
+      if (demandLandward && coastKmAnchor != null) {
+        val candCoast = coastKmOf(p)
+        if (candCoast != null && candCoast < coastKmAnchor) continue
+      }
+      out += SafeZone(
+        id = "demo-sz${idSalt}-${quant(anchor)}-$idx",
+        name = DEMO_SHELTER_NAMES[(idx + namesOffset(anchor)) % DEMO_SHELTER_NAMES.size] +
+          " (simulated)",
+        lat = p.lat, lon = p.lon,
+        locationNote = "SIMULATED record — demo shelter about %.1f km from this hazard".format(
+          com.example.data.model.GeoMath.distanceMeters(anchor, p) / 1000.0
+        ),
+        capacityTotal = DEMO_SHELTER_CAPACITY + idx * 90,
+        capacityCurrent = DEMO_SHELTER_OCCUPIED + idx * 40,
+        waterAvailable = true, foodAvailable = true,
+        electricityAvailable = true, sanitationAvailable = idx != 1,
+        medicalSupport = true,
+        accessibility = if (idx % 2 == 0) "DEMO — highway access" else "DEMO — district road access",
+        womenChildrenSuitability = true,
+        operatingStatus = "OPEN",
+        verificationStatus = "SIMULATED — not a verified shelter",
+        elevationNote = "DEMO placeholder",
+        provenance = demoProvenance
+      )
+      idx++
+    }
+    return out
+  }
+
+  /**
+   * The regional hazard's PAIRED shelters (USER FIX: no unpaired green pins).
+   * Each of the 14 simulated India hazards gets 2 shelters nearby-but-outside
+   * its own circle - so the overview never shows "safe zone in the middle of
+   * nowhere" and selecting any hazard routes to a shelter belonging to it.
+   */
+  fun pairedSheltersFor(hazard: HazardZone): List<SafeZone> =
+    sheltersAroundHazard(
+      anchor = hazard.center,
+      hazardRadiusMeters = hazard.radiusMeters,
+      hazardBearingFromAnchor = bearingFor(hazard.center),
+      count = DEMO_PAIRED_SHELTERS_PER_HAZARD,
+      maxDistanceKm = 7.0,
+      idSalt = "-p"
+    )
 
   private val DEMO_SHELTER_NAMES = listOf(
     "DEMO Community Hall", "DEMO School Shelter",

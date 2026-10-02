@@ -62,6 +62,7 @@ import com.example.ui.theme.ObsidianContainerHigh
 import com.example.ui.theme.ObsidianContainerLow
 import com.example.ui.theme.OnEmergencyRedContainer
 import com.example.ui.theme.OnNeonEmerald
+import com.example.ui.theme.ObsidianContainerLowest
 import com.example.ui.theme.TacticalCyan
 import com.example.ui.theme.TacticalOnSurface
 import com.example.ui.theme.TacticalOnSurfaceVariant
@@ -530,12 +531,26 @@ internal fun RouteIntelligencePanel(
     // doesn't work" report). Alternatives render as grey ghost lines on the
     // map; the active corridor stays green.
     if (showDetails && uiState.alternativeRoutes.size > 1) {
+      // SHORTEST / SAFEST badges: the alternatives are OSRM road corridors
+      // already safety-scored against the hazard picture; label each option
+      // by what it optimises so the user chooses distance vs safety.
+      val alts = uiState.alternativeRoutes
+      val minDistance = alts.minOf { it.distanceMeters }
+      val maxSafety = alts.maxOf { it.routeSafetyScore }
       LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-        items(uiState.alternativeRoutes.size) { idx ->
-          val alt = uiState.alternativeRoutes[idx]
+        items(alts.size) { idx ->
+          val alt = alts[idx]
           // Logical identity, not object identity: state copies create
           // equal-but-distinct RouteResult instances.
           val isPrimary = route != null && alt.routeId == route.routeId
+          val shortest = alt.distanceMeters <= minDistance + 1.0
+          val safest = alt.routeSafetyScore >= maxSafety
+          val optimiser = when {
+            shortest && safest -> "SHORTEST + SAFEST"
+            shortest -> "SHORTEST"
+            safest -> "SAFEST"
+            else -> null
+          }
           Box(
             modifier = Modifier
               .clip(RoundedCornerShape(8.dp))
@@ -549,13 +564,29 @@ internal fun RouteIntelligencePanel(
               .padding(horizontal = 8.dp, vertical = 6.dp)
               .testTag("alternative_chip_$idx")
           ) {
-            Text(
-              text = (if (isPrimary) "" else "USE: ") + "${alt.summary} • ${OsrmRoutingService.formatDistance(alt.distanceMeters)} • Safety ${alt.routeSafetyScore}",
-              fontSize = 11.sp,
-              color = if (isPrimary) NeonEmerald else TacticalOnSurface,
-              fontWeight = if (isPrimary) FontWeight.Bold else FontWeight.Normal,
-              maxLines = 1
-            )
+            Row(
+              verticalAlignment = Alignment.CenterVertically,
+              horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+              optimiser?.let { label ->
+                Box(
+                  modifier = Modifier
+                    .clip(RoundedCornerShape(5.dp))
+                    .background(if (label.startsWith("SAFEST")) WarningAmber else TacticalCyan)
+                    .padding(horizontal = 5.dp, vertical = 1.dp)
+                ) {
+                  Text(label, fontSize = 9.sp, fontWeight = FontWeight.Black,
+                    color = ObsidianContainerLowest, maxLines = 1)
+                }
+              }
+              Text(
+                text = (if (isPrimary) "" else "USE: ") + "${alt.summary} • ${OsrmRoutingService.formatDistance(alt.distanceMeters)} • Safety ${alt.routeSafetyScore}",
+                fontSize = 11.sp,
+                color = if (isPrimary) NeonEmerald else TacticalOnSurface,
+                fontWeight = if (isPrimary) FontWeight.Bold else FontWeight.Normal,
+                maxLines = 1
+              )
+            }
           }
         }
       }

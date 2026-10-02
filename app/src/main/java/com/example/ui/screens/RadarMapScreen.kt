@@ -417,6 +417,29 @@ fun RadarMapScreen(
         isMockVisible = uiState.isMockDataVisible
       )
 
+      // §21 missing-real-data honesty: filtering to a disaster type that no
+      // connected live source currently reports says so instead of showing a
+      // silently empty map (which reads as a bug). Only when demo is OFF -
+      // with demo ON the scenario generator always provides that type near
+      // the focus.
+      val filterType = uiState.hazardTypeFilter
+      if (filterType != null && !uiState.isMockDataVisible &&
+        uiState.hazardZones.none { it.type == filterType }
+      ) {
+        Text(
+          text = "No live ${filterType.label.lowercase()} alerts from the connected " +
+            "official sources right now. This is a data status, not an empty map: " +
+            "alerts appear the moment a source publishes one.",
+          fontSize = 11.sp,
+          color = WarningAmber,
+          lineHeight = 14.sp,
+          modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 2.dp)
+            .testTag("type_filter_empty_notice")
+        )
+      }
+
       // 4. Terrain self-check stays ONE quiet chip (already on Home too); the
       //    haven workflow lives in the sheet result row below it.
       TerrainSelfAssessmentChip(
@@ -438,49 +461,9 @@ fun RadarMapScreen(
 
     // ============ END floating top overlay ============
 
-    // P0 #4: SIMULATION STATE IS A GLOBAL FLAG, NOT A CHIP. While demo data
-    // is on, a persistent high-contrast banner sits directly above the
-    // bottom sheet (z-order: map content -> banner -> sheet -> nav bar), so
-    // simulated hazard/shelter pins can never be mistaken for live data.
-    // One line, ~10s legibility, tappable to switch the mode off; it does
-    // not overlap the map controls (they end above the sheet already).
-    AnimatedVisibility(visible = uiState.isMockDataVisible) {
-      // Compact GLOBAL-STATE chip (user redesign: no big warning bar).
-      // Solid, legible, sits just above the sheet beside nothing else -
-      // the whole control toggles the mode; "ON ->" says what the tap does.
-      Row(
-        modifier = Modifier
-          .align(Alignment.BottomStart)
-          // Clear the map FAB column on the right; this pill hugs the left.
-          .padding(bottom = animatedSheetHeight + 68.dp, start = 12.dp)
-          .clip(RoundedCornerShape(999.dp))
-          .background(WarningAmber)
-          .clickable { onToggleMockData() }
-          .padding(horizontal = 12.dp, vertical = 8.dp)
-          .testTag("demo_mode_banner"),
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
-        verticalAlignment = Alignment.CenterVertically
-      ) {
-        Icon(
-          imageVector = Icons.Default.Science,
-          contentDescription = null,
-          tint = ObsidianContainerLowest,
-          modifier = Modifier.size(14.dp)
-        )
-        Text(
-          text = "SIMULATION \u00b7 ON",
-          fontSize = 11.sp,
-          fontWeight = FontWeight.Black,
-          color = ObsidianContainerLowest
-        )
-        Text(
-          text = "tap to turn off",
-          fontSize = 10.sp,
-          fontWeight = FontWeight.Medium,
-          color = ObsidianContainerLowest.copy(alpha = 0.85f)
-        )
-      }
-    }
+    // P0 #4 (revised by user): NO yellow banner on the map. The single
+    // SIMULATION toggle + state label lives on the legend chip row with
+    // solid high-contrast styling (WeatherAndLegend.DisasterTypeLegend).
 
     // 4. COLLAPSIBLE BOTTOM SHEET — tap handle or flick to collapse/expand;
     //    the map underneath stays fully interactive. The drag gesture lives

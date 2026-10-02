@@ -29,6 +29,21 @@ class FirmsCsvLiveSchemaTest {
   """.trimIndent()
 
   @Test
+  fun `low-confidence detections are dropped - NASA alerting guidance, volume fix`() {
+    // The user reported "too many fire dots": the honest lever is the
+    // provider's OWN confidence flag. LOW detections must never appear.
+    val body = """
+    $liveHeader
+    20.76082,85.2962,328.08,0.49,0.48,2026-09-19,716,N,VIIRS,l,2.0NRT,294.18,5.76,D
+    20.78631,85.26122,328.63,0.49,0.49,2026-09-19,716,N,VIIRS,n,2.0NRT,294.54,6.08,D
+    22.32001,82.5649,327.47,0.34,0.56,2026-09-19,716,N,VIIRS,h,2.0NRT,292.39,3.52,D
+    """.trimIndent()
+    val events = FirmsCsvParser.parse(body)
+    assertEquals("only the l-flagged row is dropped", 2, events.size)
+    assertTrue(events.none { it.confidence == EventConfidence.LOW })
+  }
+
+  @Test
   fun `the live column set parses into real fire detections`() {
     val events = FirmsCsvParser.parse(liveBody)
     // The Rome row is outside the India bounding box and must be dropped.

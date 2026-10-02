@@ -137,9 +137,10 @@
     <string name="report_send">রিপোর্ট পাঠান</string>
     <string name="report_dictate">আমার পরিস্থিতি বলুন (কণ্ঠস্বরে)</string>
     <string name="report_quick_tags">দ্রুত ট্যাগ</string>
-    <string name="report_camera_photo">ক্যামেরায় ছবি তুলুন</string>
+    <string name="report_photo_optional">ছবি যোগ করুন (ঐচ্ছিক)</string>
+    <string name="report_camera_photo">ছবি তুলুন</string>
     <string name="report_camera_saved">ছবি তোলা হয়েছে</string>
-    <string name="report_attach_photo">ছবির প্রমাণ সংযুক্ত করুন</string>
+    <string name="report_attach_photo">গ্যালারি থেকে বেছে নিন</string>
     <string name="report_photo_saved">ছবির রেফারেন্স রিপোর্টের সঙ্গে স্থানীয়ভাবে সংরক্ষিত</string>
     <string name="report_reporting_as">রিপোর্ট করছেন</string>
     <string name="edit_profile_dependents_detail">সদস্যদের বিবরণ (যেমন 1 বয়োজ্যেষ্ঠ, 1 শিশু (4 বছর), স্বামী/স্ত্রী)</string>

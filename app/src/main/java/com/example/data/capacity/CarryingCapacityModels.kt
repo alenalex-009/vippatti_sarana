@@ -170,6 +170,13 @@ enum class FeasibilityStatus(val label: String) {
  * is the raw arithmetic outcome ([FeasibilityStatus.SIMULATED] still carries a
  * real verdict).
  */
+/** Capacity-estimate confidence (research doc §F.5, approved). */
+enum class CapacityConfidence(val label: String) {
+  HIGH("High"),
+  MEDIUM("Medium"),
+  LOW("Low")
+}
+
 data class CapacityAssessment(
   val siteId: String,
   val siteName: String,
@@ -185,7 +192,17 @@ data class CapacityAssessment(
   val explanation: String,
   val assumptions: List<String>,
   val assessedAtMillis: Long,
-  val provenance: DataProvenance
+  val provenance: DataProvenance,
+  /**
+   * Transparency label for HOW MUCH of the bottleneck was actually measured
+   * (approved research doc §F.5): HIGH = every capacity-relevant line the
+   * model supports has data + record is verified; MEDIUM = at least one line
+   * not assessed; LOW = most lines not assessed or simulated record.
+   * Never a hidden pseudo-score - the un-assessed lines are listed beside it.
+   */
+  val confidence: CapacityConfidence = CapacityConfidence.LOW,
+  /** Planning regime that produced the floor-area line, for the methodology. */
+  val regime: CarryingCapacityEngine.Regime? = null
 ) {
   /** Raw arithmetic outcome; null when no verdict could be computed. */
   val meetsRequirement: Boolean?

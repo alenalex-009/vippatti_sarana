@@ -137,9 +137,10 @@
     <string name="report_send">अहवाल पाठवा</string>
     <string name="report_dictate">माझी परिस्थिती सांगा (आवाजेने)</string>
     <string name="report_quick_tags">झटपट टॅग</string>
-    <string name="report_camera_photo">कॅमेऱ्याने फोटो घ्या</string>
+    <string name="report_photo_optional">फोटो जोडा (ऐच्छिक)</string>
+    <string name="report_camera_photo">फोटो घ्या</string>
     <string name="report_camera_saved">फोटो काढला</string>
-    <string name="report_attach_photo">फोटो पुरावा जोडा</string>
+    <string name="report_attach_photo">गॅलरीमधून निवडा</string>
     <string name="report_photo_saved">फोटो संदर्भ अहवालासोबत स्थानिक पद्धतीने जतन केला आहे</string>
     <string name="report_reporting_as">अहवाल करणारा</string>
     <string name="edit_profile_dependents_detail">अवलंबितांचा तपशील (उदा. 1 ज्येष्ठ, 1 मुलगा (4 वर्षे), जोडीदार)</string>

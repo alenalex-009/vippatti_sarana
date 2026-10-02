@@ -27,8 +27,29 @@ import kotlin.math.floor
  */
 object CarryingCapacityEngine {
 
-  /** Configured planning area per person for camp-style accommodation. */
+  /**
+   * Which planning regime produced a floor-area figure (research doc §F.1,
+   * approved 2026-10-02). CAMP_STYLE applies the international humanitarian
+   * band (Sphere 2018: 3.5 m2/person minimum, 4.5 m2 cold climate - the app's
+   * configured value). CYCLONE_SHELTER applies the Government-of-India
+   * cyclone-shelter guidance (Handbook on Cyclone Shelters, NIDM-hosted:
+   * ~3 sq ft/person on the floor, terrace counted as additional space -
+   * multi-storey stacking is legitimate ONLY in that regime).
+   */
+  enum class Regime { CAMP_STYLE, CYCLONE_SHELTER }
+
+  /** Camp-style configured m2 per person (within the cited Sphere band). */
   const val LAND_SQUARE_METERS_PER_PERSON = 4.5
+
+  /** GoI cyclone-shelter floor area per person: 3 sq ft = 0.2787 m2. */
+  const val CYCLONE_FLOOR_SQ_METERS_PER_PERSON = 0.2787
+
+  /**
+   * GoI guidance counts floor AND terrace as accommodation; the app models
+   * that as x2 usable levels - and SAYS SO in the basis string, never as a
+   * silently doubled area.
+   */
+  const val CYCLONE_USABLE_LEVELS = 2
 
   /** Configured planning drinking-water allowance per person per day. */
   const val WATER_LITRES_PER_PERSON_PER_DAY = 15.0
@@ -75,7 +96,11 @@ object CarryingCapacityEngine {
       DataClassification.HISTORICAL -> ResourceDataState.ESTIMATED
     }
 
-  private fun constrained(resource: CapacityResource, zone: SafeZone): ResourceCapacity {
+  private fun constrained(
+    resource: CapacityResource,
+    zone: SafeZone,
+    regime: Regime
+  ): ResourceCapacity {
     val state = recordState(zone)
     val source = resourceSource(zone)
     return when (resource) {
@@ -121,11 +146,27 @@ object CarryingCapacityEngine {
             source = source,
             recordedAbsence = true
           )
+          regime == Regime.CYCLONE_SHELTER -> {
+            // GoI cyclone-shelter guidance: ~3 sq ft/person usable floor area,
+            // terrace counted as an equivalent additional level. The regime is
+            // NAMED in the basis; never applied outside cyclone scenarios.
+            val usable = area * CYCLONE_USABLE_LEVELS
+            ResourceCapacity(
+              resource = resource,
+              peopleSupported = floor(usable / CYCLONE_FLOOR_SQ_METERS_PER_PERSON).toInt(),
+              state = state,
+              basis = "${formatDouble(area)} m2 x $CYCLONE_USABLE_LEVELS usable levels (floor + terrace) / " +
+                "$CYCLONE_FLOOR_SQ_METERS_PER_PERSON m2 (3 sq ft) per person - " +
+                "GoI cyclone-shelter guidance, applied ONLY under cyclone",
+              source = source
+            )
+          }
           else -> ResourceCapacity(
             resource = resource,
             peopleSupported = floor(area / LAND_SQUARE_METERS_PER_PERSON).toInt(),
             state = state,
-            basis = "${formatDouble(area)} m² / $LAND_SQUARE_METERS_PER_PERSON m² per person",
+            basis = "${formatDouble(area)} m² / $LAND_SQUARE_METERS_PER_PERSON m² per person " +
+              "(camp-style planning; cited Sphere 2018 minimum 3.5 m2/person)",
             source = source
           )
         }
@@ -259,9 +300,11 @@ object CarryingCapacityEngine {
   fun assess(
     site: SafeZone,
     demand: RelocationDemand,
-    nowMillis: Long
+    nowMillis: Long,
+    /** Planning regime for the floor-area line (research doc §F.1). */
+    regime: Regime = Regime.CAMP_STYLE
   ): CapacityAssessment {
-    val resources = CapacityResource.entries.map { constrained(it, site) }
+    val resources = CapacityResource.entries.map { constrained(it, site, regime) }
     val contributing = resources.filter { it.isAvailable }
     val assumptions = buildList {
       add("Space planning: $LAND_SQUARE_METERS_PER_PERSON m² per person (configured app figure).")
@@ -292,7 +335,9 @@ object CarryingCapacityEngine {
         explanation = NO_DEMAND_NOTE + " " + demand.basis,
         assumptions = assumptions,
         assessedAtMillis = nowMillis,
-        provenance = provenance
+        provenance = provenance,
+        confidence = confidenceFor(contributing, allSimulated = demand.state == ResourceDataState.SIMULATED || contributing.isEmpty(), verified = site.provenance.isVerified),
+        regime = regime
       )
     }
 
@@ -312,7 +357,9 @@ object CarryingCapacityEngine {
           "(${demand.state.label}; ${demand.source}).",
         assumptions = assumptions,
         assessedAtMillis = nowMillis,
-        provenance = provenance
+        provenance = provenance,
+        confidence = confidenceFor(contributing, allSimulated = demand.state == ResourceDataState.SIMULATED || contributing.isEmpty(), verified = site.provenance.isVerified),
+        regime = regime
       )
     }
 
@@ -365,7 +412,13 @@ object CarryingCapacityEngine {
       explanation = explanation,
       assumptions = assumptions,
       assessedAtMillis = nowMillis,
-      provenance = provenance
+      provenance = provenance,
+      confidence = confidenceFor(
+        contributing,
+        allSimulated = allSimulated || demandSimulated,
+        verified = site.provenance.isVerified
+      ),
+      regime = regime
     )
   }
 
@@ -385,4 +438,39 @@ object CarryingCapacityEngine {
 
   private fun formatDouble(value: Double): String =
     String.format(java.util.Locale.US, "%.1f", value)
+
+  /**
+   * Confidence from measurement coverage (approved research doc section F.5).
+   * Denominator = the five lines that can actually cap occupancy (spaces,
+   * land, water, sanitation). POWER and ACCESS are reported but never
+   * cap by design, so they must not trap every site below HIGH forever.
+   *  - HIGH   = all four cap lines carry values AND the record is verified;
+   *  - MEDIUM = one of the four is not assessed, or the record is unverified;
+   *  - LOW    = two or more cap lines missing, or the verdict rests on
+   *    simulated data.
+   * The missing lines themselves remain listed on the assessment - the label
+   * never hides them.
+   */
+  fun confidenceFor(
+    contributing: List<ResourceCapacity>,
+    allSimulated: Boolean,
+    verified: Boolean
+  ): CapacityConfidence {
+    val capping = setOf(
+      CapacityResource.SHELTER_SPACES,
+      CapacityResource.LAND_AREA,
+      CapacityResource.WATER,
+      CapacityResource.SANITATION
+    )
+    // The four lines the model can quantify with a number. FOOD/POWER/ACCESS
+    // are reported but have no numeric field on a record, so counting them in
+    // the denominator would make HIGH unreachable.
+    val assessed = contributing.count { it.resource in capping }
+    return when {
+      contributing.isEmpty() || allSimulated || assessed <= 2 -> CapacityConfidence.LOW
+      assessed < 4 || !verified -> CapacityConfidence.MEDIUM
+      else -> CapacityConfidence.HIGH
+    }
+  }
+
 }

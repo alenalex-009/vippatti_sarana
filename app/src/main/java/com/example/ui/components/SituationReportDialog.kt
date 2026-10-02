@@ -263,7 +263,14 @@ fun SituationReportDialog(
         )
 
         // --- Photo evidence: gallery attach AND live camera, side by side ----
+        // Spec section 27: clear heading above the two actions; buttons keep
+        // 44dp height and generous spacing.
         if (photoUri == null) {
+          Text(
+            stringResource(R.string.report_photo_optional),
+            fontSize = 12.sp, fontWeight = FontWeight.Bold,
+            color = TacticalOnSurfaceVariant)
+
           Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)

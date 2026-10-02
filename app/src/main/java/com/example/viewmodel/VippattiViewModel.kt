@@ -703,12 +703,40 @@ class VippattiViewModel(
     // honestly SIMULATED, but always the walking-scale scenario near the point
     // the app is actually using. The full India set stays available in the
     // Authority Console reference data.
+    // USER FIX (type filter): with demo ON and a hazard chip selected, the
+    // scenario must show THAT disaster near the user plus shelters serving IT
+    // - the "hazard occurs where I stand, find the safe way out" demo works
+    // for every type, not just the place-hashed primary.
+    val filterType = state.hazardTypeFilter
+    val secondaryHazard = if (state.isMockDataVisible && focused && filterType != null)
+      DemoNetworkAroundUser.secondaryHazard(location, filterType) else null
+    val secondaryShelters = secondaryHazard?.let { hz ->
+      DemoNetworkAroundUser.sheltersAroundHazard(
+        anchor = hz.center,
+        hazardRadiusMeters = hz.radiusMeters,
+        hazardBearingFromAnchor = 0.0,
+        count = 3,
+        maxDistanceKm = 9.0,
+        coastKmAnchor = coastKmAt(location),
+        demandLandward = hz.type == com.example.data.model.HazardType.CYCLONE ||
+          (hz.type == com.example.data.model.HazardType.FLOOD &&
+            (coastKmAt(location) ?: 99) <= 5),
+        idSalt = "-f" + hz.type.name.lowercase()
+      )
+    }.orEmpty()
     val fallbackDemo = if (state.isMockDataVisible && !focused)
       DemoNetworkAroundUser.around(location, coastKmAt(location)) to
         DemoNetworkAroundUser.sheltersAround(location, coastKm = coastKmAt(location))
     else null
+    // REGIONAL OVERVIEW (unfocused): shelters are PAIRED to each demo hazard
+    // (USER FIX: no loose green pins in the middle of the view - every shelter
+    // belongs to a hazard circle and sits outside it).
+    val pairedRegional = if (state.isMockDataVisible && !focused)
+      (PilotRegionData.hazardZones + listOfNotNull(fallbackDemo?.first?.first))
+        .flatMap { DemoNetworkAroundUser.pairedSheltersFor(it) }
+    else emptyList()
     val mockZones: List<com.example.data.model.HazardZone> = if (state.isMockDataVisible) {
-      if (focused) listOfNotNull(demoAround?.first)
+      if (focused) listOfNotNull(demoAround?.first) + listOfNotNull(secondaryHazard)
       // REGIONAL OVERVIEW (spec 3A): the 14-zone simulated India disaster
       // field shows DIFFERENT demo disaster TYPES across DIFFERENT areas —
       // the 'Sentinel can represent hazards across geography' story for
@@ -722,7 +750,8 @@ class VippattiViewModel(
     // PLUS any REAL operator-entered field registry records, which stay
     // in scope in every mode — they are field data, not demo data.
     val demoZones = if (state.isMockDataVisible) {
-      if (focused) demoShelters else fallbackDemo?.second ?: emptyList()
+      if (focused) demoShelters + secondaryShelters
+      else pairedRegional + (fallbackDemo?.second ?: emptyList())
     } else {
       emptyList()
     }
@@ -809,8 +838,16 @@ class VippattiViewModel(
     )
     // Assess EVERY evaluated candidate (not only the ranked ones) so the detail
     // sheet can be honest about rejected sites too.
+    // Planning regime for the floor-area line (approved research doc F.1):
+    // the GoI cyclone-shelter figures apply ONLY while a CYCLONE hazard is
+    // actually in the current picture; every other situation uses the
+    // camp-style band. The chosen regime is stamped on each assessment.
+    val cycloneActive = hazards.any { it.type == com.example.data.model.HazardType.CYCLONE }
+    val capacityRegime = if (cycloneActive)
+      CarryingCapacityEngine.Regime.CYCLONE_SHELTER
+    else CarryingCapacityEngine.Regime.CAMP_STYLE
     val capacityAssessments = evaluated.associate { evaluation ->
-      evaluation.zone.id to CarryingCapacityEngine.assess(evaluation.zone, demand, now)
+      evaluation.zone.id to CarryingCapacityEngine.assess(evaluation.zone, demand, now, capacityRegime)
     }
     val plan = RelocationPlanner.plan(
       risk,
@@ -2199,6 +2236,10 @@ class VippattiViewModel(
     _uiState.update {
       it.copy(hazardTypeFilter = if (it.hazardTypeFilter == type) null else type)
     }
+    // The demo scenario now DEPENDS on the filter (a selected type spawns its
+    // own hazard + paired shelters near the focus), so recompute the picture.
+    // Location is untouched - FILTER != MOVE (regression test) still holds.
+    recomputeIntelligence()
   }
 
   fun setNewsCategory(category: String) {

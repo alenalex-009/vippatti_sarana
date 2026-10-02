@@ -315,6 +315,22 @@ fun SafeZoneDetailDialog(
               "Limiting resource",
               capacityAssessment.limitingResource?.label ?: "Not identified (no data)"
             )
+            InfoLine(
+              "Confidence",
+              capacityAssessment.confidence.label +
+                (if (capacityAssessment.unavailableResources.isNotEmpty())
+                  " - not assessed: ${capacityAssessment.unavailableResources.joinToString(", ") { it.label.lowercase() }}"
+                else " - all quantified resources assessed")
+            )
+            capacityAssessment.regime?.let { regime ->
+              if (regime == com.example.data.capacity.CarryingCapacityEngine.Regime.CYCLONE_SHELTER) {
+                InfoLine(
+                  "Planning regime",
+                  "Cyclone-shelter figures (Govt of India guidance: 3 sq ft/person " +
+                    "floor + terrace counted) - applied only while a cyclone alert is in view"
+                )
+              }
+            }
             InfoLine("Reason", capacityAssessment.explanation)
             InfoLine("Data source", capacityAssessment.sourceLine)
             InfoLine(
