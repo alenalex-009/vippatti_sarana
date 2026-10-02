@@ -341,7 +341,11 @@ fun RadarMapScreen(
         val placeLabel = when {
           uiState.isViewingChosenPlace ->
             (uiState.viewedPlaceLabel ?: "Selected area") + " \u00b7 Selected area"
-          uiState.isUserLocationFallback -> "Location approximate"
+          // Honest fallback label (spec: no GPS fix must never claim GPS;
+          // with demo on, the chip above already explains what is shown).
+          uiState.isUserLocationFallback ->
+            if (uiState.isMockDataVisible) "Location unavailable \u00b7 Demo scenario"
+            else "Location unavailable"
           else -> "Your location \u00b7 GPS"
         }
         Row(
@@ -441,42 +445,39 @@ fun RadarMapScreen(
     // One line, ~10s legibility, tappable to switch the mode off; it does
     // not overlap the map controls (they end above the sheet already).
     AnimatedVisibility(visible = uiState.isMockDataVisible) {
+      // Compact GLOBAL-STATE chip (user redesign: no big warning bar).
+      // Solid, legible, sits just above the sheet beside nothing else -
+      // the whole control toggles the mode; "ON ->" says what the tap does.
       Row(
         modifier = Modifier
-          .align(Alignment.BottomCenter)
-          // Clear the map FAB row (My Location/Zoom sit at sheetHeight+8 and
-          // are ~48dp tall) so banner and controls never overlap.
-          .padding(bottom = animatedSheetHeight + 68.dp, start = 16.dp, end = 16.dp)
-          .fillMaxWidth()
-          .clip(RoundedCornerShape(10.dp))
+          .align(Alignment.BottomStart)
+          // Clear the map FAB column on the right; this pill hugs the left.
+          .padding(bottom = animatedSheetHeight + 68.dp, start = 12.dp)
+          .clip(RoundedCornerShape(999.dp))
           .background(WarningAmber)
-          .border(1.dp, ObsidianContainerLowest.copy(alpha = 0.6f), RoundedCornerShape(10.dp))
           .clickable { onToggleMockData() }
           .padding(horizontal = 12.dp, vertical = 8.dp)
           .testTag("demo_mode_banner"),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalAlignment = Alignment.CenterVertically
       ) {
         Icon(
           imageVector = Icons.Default.Science,
           contentDescription = null,
           tint = ObsidianContainerLowest,
-          modifier = Modifier.size(16.dp)
+          modifier = Modifier.size(14.dp)
         )
         Text(
-          text = "SIMULATION MODE ON — demo hazards & shelters, not live alerts",
-          fontSize = 12.sp,
-          fontWeight = FontWeight.Bold,
-          color = ObsidianContainerLowest,
-          maxLines = 1,
-          overflow = TextOverflow.Ellipsis,
-          modifier = Modifier.weight(1f)
-        )
-        Text(
-          text = "OFF",
-          fontSize = 12.sp,
+          text = "SIMULATION \u00b7 ON",
+          fontSize = 11.sp,
           fontWeight = FontWeight.Black,
           color = ObsidianContainerLowest
+        )
+        Text(
+          text = "tap to turn off",
+          fontSize = 10.sp,
+          fontWeight = FontWeight.Medium,
+          color = ObsidianContainerLowest.copy(alpha = 0.85f)
         )
       }
     }

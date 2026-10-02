@@ -1187,7 +1187,7 @@ class OsmMapControllerHolder(
     val networkOn = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
     if (!gpsOn && !networkOn) {
       gpsRequestState = GpsRequestState.PROVIDER_DISABLED
-      gpsStatusMessage = "Location services are OFF — enable GPS or network location."
+      gpsStatusMessage = "Location unavailable \u2014 demo mode can still be used."
       return
     }
     gpsRequestState = GpsRequestState.REQUESTING

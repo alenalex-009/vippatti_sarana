@@ -65,7 +65,13 @@ object SafeZoneEvaluator {
      * Fetched elevation per shelter id. Missing entries stay UNKNOWN and
      * score neutrally (no fabricated hill, no penalty).
      */
-    val zoneElevations: Map<String, Double> = emptyMap()
+    val zoneElevations: Map<String, Double> = emptyMap(),
+    /**
+     * Coast distance (km) of a shelter point from the precomputed land grid.
+     * Null everywhere = "no grid loaded" -> cyclone advisories stay NOT
+     * ASSESSED. Never guessed.
+     */
+    val coastKmOf: (GeoPoint) -> Int? = { null }
   )
 
   fun evaluateAll(zones: List<SafeZone>, ctx: RequestContext): List<SafeZoneEvaluation> =
@@ -148,6 +154,18 @@ object SafeZoneEvaluator {
       zone.womenChildrenSuitability -> 65
       else -> 30
     }
+    // ---- Disaster-SPECIFIC suitability (spec section 7) -------------------
+    // Computed from data that actually exists (measured climb, land-grid
+    // coast distance); everything else becomes an explicit NOT ASSESSED
+    // advisory, never a silent assumption.
+    val hazardTypes = ctx.hazards.map { it.type }.toSet()
+    val siteCoastKm = ctx.coastKmOf(zone.point)
+    val suitability = DisasterSuitability.assess(
+      hazardTypes = hazardTypes,
+      coastKm = siteCoastKm,
+      climbMeters = if (altitudeKnown) climb else null
+    )
+
     var score = (
       safetyScore * W_SAFETY +
         capacityScore * W_CAPACITY +
@@ -160,6 +178,7 @@ object SafeZoneEvaluator {
       ).toInt()
     if (ctx.needsMedicalSupport && zone.medicalSupport) score += BONUS_MEDICAL_NEEDED
     if (ctx.hasVulnerableMembers && zone.womenChildrenSuitability) score += BONUS_VULNERABLE
+    score += suitability.scoreDelta
     score = score.coerceIn(0, 100 + BONUS_MEDICAL_NEEDED + BONUS_VULNERABLE)
 
     // -------- User-facing "Why this safe zone?" reasons ----------------------
@@ -198,6 +217,8 @@ object SafeZoneEvaluator {
     if (zone.accessibility.contains("wheelchair", ignoreCase = true)) {
       reasons += SelectionReason("Wheelchair accessible")
     }
+    // Disaster-specific advisories (incl. explicit NOT ASSESSED statements).
+    suitability.advisories.forEach { reasons += SelectionReason(it) }
 
     return SafeZoneEvaluation(
       zone = zone,

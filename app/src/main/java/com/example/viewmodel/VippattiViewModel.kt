@@ -761,7 +761,10 @@ class VippattiViewModel(
       hasVulnerableMembers = state.userProfile.vulnerableCategoryIds.isNotEmpty(),
       needsMedicalSupport = state.userProfile.needsMedicalSupport,
       originElevationMeters = if (altitudesFresh) originElevation else null,
-      zoneElevations = if (altitudesFresh) zoneElevationMap else emptyMap()
+      zoneElevations = if (altitudesFresh) zoneElevationMap else emptyMap(),
+      // Land-grid coast distance (precomputed Natural Earth data) powers the
+      // cyclone inland advisories; null grid -> NOT ASSESSED, never guessed.
+      coastKmOf = { pt -> coastKmAt(pt) }
     )
     if (!altitudesFresh) ensureAltitudesFor(location, scopedCandidates)
 
