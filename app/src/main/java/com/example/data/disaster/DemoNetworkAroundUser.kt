@@ -130,10 +130,12 @@ object DemoNetworkAroundUser {
   }
 
   /**
-   * The demo safe shelter opposite the hazard, disaster-aware.
+   * The demo safe shelter opposite the hazard, disaster-aware. NULL when no
+   * landward candidate survives the India/sea filters (e.g. open-water
+   * coordinates) - previously `.first()` crashed there.
    */
-  fun shelterNear(focus: GeoPoint, coastKm: Int? = null): SafeZone =
-    sheltersAround(focus, hazardBearingOnly = true, coastKm = coastKm).first()
+  fun shelterNear(focus: GeoPoint, coastKm: Int? = null): SafeZone? =
+    sheltersAround(focus, hazardBearingOnly = true, coastKm = coastKm).firstOrNull()
 
   /**
    * The demo shelter NETWORK around the focus, DISASTER-AWARE (spec parts
@@ -220,10 +222,15 @@ object DemoNetworkAroundUser {
     return out
   }
 
-  /** The pair for a focus point; null when the point is outside India. */
+  /**
+   * The pair for a focus point; null when the point is outside India OR no
+   * demo shelter can be placed on land - a scenario without somewhere to go
+   * is not a scenario; the VM then falls back to its honest empty state.
+   */
   fun around(focus: GeoPoint, coastKm: Int? = null): Pair<HazardZone, SafeZone>? {
     if (!IndiaGeo.contains(focus)) return null
-    return hazardNear(focus, coastKm) to shelterNear(focus, coastKm)
+    val shelter = shelterNear(focus, coastKm) ?: return null
+    return hazardNear(focus, coastKm) to shelter
   }
 
   private val DEMO_SHELTER_NAMES = listOf(

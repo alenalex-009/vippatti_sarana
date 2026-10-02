@@ -119,6 +119,11 @@ buildTypes {
 compileOptions {
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11
+    // LINT NewApi (real crash on Android 7.x): the FIRMS/IMD parsers use
+    // java.time and SupabaseGoogleOAuth uses java.util.Base64, both API-26+
+    // at runtime below 26 unless desugared. minSdk is 24, so desugaring is
+    // the only fix that does not raise minSdk.
+    isCoreLibraryDesugaringEnabled = true
 }
 
 buildFeatures {
@@ -179,6 +184,8 @@ missingGoogleServicesStrategy = MissingGoogleServicesStrategy.WARN
 
 // Some unused dependencies are commented out below instead of being removed.
 dependencies {
+coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
+
 implementation(platform(libs.androidx.compose.bom))
 implementation(platform(libs.firebase.bom))
 

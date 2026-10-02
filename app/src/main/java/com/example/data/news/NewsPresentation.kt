@@ -70,12 +70,22 @@ object NewsPresentation {
   fun severityRank(article: NewsArticle): Int {
     val text = (article.title + " " + article.description + " " + article.content)
       .lowercase(Locale.getDefault())
-    return when {
+    val wordRank = when {
       SEVERE_WORDS.any { text.contains(it) } -> 3
       HAZARD_WORDS.any { text.contains(it) } -> 2
       WEATHER_WORDS.any { text.contains(it) } -> 1
       else -> 0
     }
+    // Bug fix: an article the classifier already labelled SEVERE_ALERTS or
+    // ROAD_IMPACT must never rank below the hazard band (2) - previously it
+    // could score 0 from wording alone and disappear from "Hazard+" while
+    // still being an alert-category article. Category is real metadata;
+    // this only enforces its own floor, inventing nothing.
+    val categoryFloor = when (article.category) {
+      NewsCategory.SEVERE_ALERTS, NewsCategory.ROAD_IMPACT -> 2
+      else -> 0
+    }
+    return maxOf(wordRank, categoryFloor)
   }
 
   /** Whether the article survives the severity threshold ('All' = 0). */

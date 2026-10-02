@@ -294,8 +294,13 @@ internal fun ContactsDetailScreen(onBack: () -> Unit) {
   fun dial(number: String) {
     try {
       context.startActivity(Intent(Intent.ACTION_DIAL, Uri.parse("tel:${number.filter { it.isDigit() }}")))
-    } catch (_: Exception) {
-      // No dialer on this device — silently ignored, list stays informative.
+    } catch (e: Exception) {
+      // No dialer on this device — say so instead of silent nothing
+      // (parity with the Profile / SOS dial paths).
+      android.widget.Toast.makeText(
+        context, "No phone dialer available on this device",
+        android.widget.Toast.LENGTH_SHORT
+      ).show()
     }
   }
 

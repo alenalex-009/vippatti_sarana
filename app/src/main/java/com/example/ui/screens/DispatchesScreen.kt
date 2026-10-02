@@ -120,6 +120,18 @@ fun DispatchesScreen(
   modifier: Modifier = Modifier
 ) {
   val context = LocalContext.current
+  // Safe external-link opener: a malformed/unsupported URL or a device
+  // without a browser must never crash the feed (ActivityNotFoundException
+  // was previously unguarded on the hero button).
+  val openArticle: (String) -> Unit = { target ->
+    try {
+      context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(target)))
+    } catch (e: Exception) {
+      android.widget.Toast.makeText(
+        context, "Cannot open article: ${e.message}", android.widget.Toast.LENGTH_SHORT
+      ).show()
+    }
+  }
 
   val syncRotation by animateFloatAsState(
     targetValue = if (uiState.isSyncing) 360f else 0f,
@@ -502,9 +514,7 @@ fun DispatchesScreen(
                 Row(
                   modifier = Modifier
                     .clip(RoundedCornerShape(8.dp))
-                    .clickable {
-                      context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(hero.url)))
-                    }
+                    .clickable { openArticle(hero.url) }
                     .padding(horizontal = 8.dp, vertical = 12.dp)
                     .testTag("hero_read_full_story_button"),
                   verticalAlignment = Alignment.CenterVertically,
@@ -718,13 +728,7 @@ fun DispatchesScreen(
       FeedDispatchCard(
         dispatch = dispatch,
         onActionClick = {
-          dispatch.url?.let { url ->
-            try {
-              context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
-            } catch (e: Exception) {
-              Toast.makeText(context, "Cannot open article: ${e.message}", Toast.LENGTH_SHORT).show()
-            }
-          } ?: onNavigateTab(ScreenTab.INSTRUCTIONS)
+          dispatch.url?.let { openArticle(it) } ?: onNavigateTab(ScreenTab.INSTRUCTIONS)
         }
       )
     }
