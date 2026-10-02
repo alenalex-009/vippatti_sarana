@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -43,6 +44,17 @@ import com.example.ui.theme.TacticalOnSurface
 import com.example.ui.theme.TacticalOnSurfaceVariant
 import com.example.ui.theme.TacticalOutlineVariant
 import com.example.ui.theme.WarningAmber
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.material3.TextButton
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
+import androidx.compose.ui.text.style.TextOverflow
 
 @Composable
 fun SafeZoneDetailDialog(
@@ -78,39 +90,48 @@ fun SafeZoneDetailDialog(
         ) {
           Column {
             Text(
-              text = "SAFE ZONE INTELLIGENCE",
-              fontSize = 12.sp,
-              fontWeight = FontWeight.Black,
+              text = "Safe zone",
+              fontSize = 11.sp,
+              fontWeight = FontWeight.Medium,
               color = NeonEmerald,
-              letterSpacing = 0.8.sp
+              letterSpacing = 0.3.sp
             )
             Text(
               text = zone.name,
-              fontSize = 16.sp,
-              fontWeight = FontWeight.Bold,
-              color = TacticalOnSurface
+              fontSize = 18.sp,
+              fontWeight = FontWeight.SemiBold,
+              color = TacticalOnSurface,
+              lineHeight = 23.sp,
+              maxLines = 2,
+              overflow = TextOverflow.Ellipsis
             )
             Text(
               text = zone.locationNote,
               fontSize = 12.sp,
-              color = TacticalOnSurfaceVariant
+              color = TacticalOnSurfaceVariant,
+              maxLines = 2,
+              overflow = TextOverflow.Ellipsis
             )
+            // PRIMARY RESULT: what the reader came for, one glance.
             Text(
-              "${zone.availableCapacity} of ${zone.capacityTotal} spots free",
-              fontSize = 14.sp,
-              fontWeight = FontWeight.Bold,
+              "${zone.availableCapacity} spaces available" +
+                (if (zone.capacityTotal > 0) " of ${zone.capacityTotal}" else ""),
+              fontSize = 15.sp,
+              fontWeight = FontWeight.SemiBold,
               color = if (zone.availableCapacity > 0) NeonEmerald else EmergencyRedBright
             )
-            Text(
-              text = String.format(
-                java.util.Locale.US,
-                "%.4f N, %.4f E",
-                zone.lat,
-                zone.lon
-              ),
-              fontSize = 11.sp,
-              color = TacticalOnSurfaceVariant
-            )
+            // SIMULATED state belongs at the top, not buried in provenance.
+            if (zone.provenance.classification ==
+                com.example.data.model.DataClassification.SIMULATED
+            ) {
+              Text(
+                text = "SIMULATED - not a verified shelter",
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Medium,
+                color = WarningAmber
+              )
+            }
+            // Coordinates are tertiary: they live under Capacity details.
             // Provenance: simulated shelter records are never labelled live or verified.
             com.example.ui.components.StatusBadge(
               status = if (zone.provenance.classification ==
@@ -168,6 +189,58 @@ fun SafeZoneDetailDialog(
           )
           Text("${capacity.occupancyPercent}% occupied", fontSize = 12.sp, color = TacticalOnSurfaceVariant)
         }
+
+        // 'Why' one-liner from the assessment's own limiting resource.
+        capacityAssessment?.let { ca ->
+          val limiter = ca.limitingResource?.label ?: "Shelter space"
+          Text(
+            text = "Why: ${limiter.lowercase()} is currently the limiting resource.",
+            fontSize = 13.sp,
+            color = TacticalOnSurfaceVariant,
+            lineHeight = 17.sp,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.testTag("capacity_limiter_line")
+          )
+        }
+
+        // TERTIARY COLLAPSE (rule 22): feasibility maths, constraints,
+        // facilities, evaluation reasons and coordinates stay available
+        // for field staff/judges but no longer block the result.
+        var detailsExpanded by remember(zone.id) { mutableStateOf(false) }
+        TextButton(
+          onClick = { detailsExpanded = !detailsExpanded },
+          contentPadding = PaddingValues(horizontal = 4.dp, vertical = 4.dp),
+          modifier = Modifier
+            .heightIn(min = 44.dp)
+            .testTag("safe_zone_details_toggle")
+        ) {
+          Icon(
+            imageVector = if (detailsExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+            contentDescription = null,
+            tint = TacticalOnSurfaceVariant,
+            modifier = Modifier.size(16.dp)
+          )
+          Spacer(modifier = Modifier.width(4.dp))
+          Text(
+            text = if (detailsExpanded) "Hide capacity details" else "Capacity details",
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Medium,
+            color = TacticalOnSurfaceVariant
+          )
+        }
+
+        if (detailsExpanded) {
+          Text(
+            text = String.format(
+              java.util.Locale.US,
+              "%.4f N, %.4f E",
+              zone.lat,
+              zone.lon
+            ),
+            fontSize = 11.sp,
+            color = TacticalOnSurfaceVariant
+          )
 
         // --- Relocation feasibility: demand vs effective carrying capacity ---
         Column(
@@ -332,6 +405,7 @@ fun SafeZoneDetailDialog(
           fontSize = 11.sp,
           color = TacticalCyan
         )
+        } // end if (detailsExpanded)
 
         Button(
           onClick = {

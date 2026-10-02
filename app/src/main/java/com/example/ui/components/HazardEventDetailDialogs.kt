@@ -52,6 +52,11 @@ import com.example.ui.theme.TacticalOnSurface
 import com.example.ui.theme.TacticalOnSurfaceVariant
 import com.example.ui.theme.TacticalOutlineVariant
 import com.example.ui.theme.WarningAmber
+import androidx.compose.material3.TextButton
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 
 @Composable
 fun HazardZoneDetailDialog(
@@ -92,8 +97,21 @@ fun HazardZoneDetailDialog(
               text = zone.name,
               fontSize = 16.sp,
               fontWeight = FontWeight.Bold,
-              color = TacticalOnSurface
+              color = TacticalOnSurface,
+              maxLines = 2,
+              overflow = TextOverflow.Ellipsis
             )
+            if (zone.provenance.classification ==
+                com.example.data.model.DataClassification.SIMULATED
+            ) {
+              // Demo state stated plainly next to the name (P1 hierarchy).
+              Text(
+                text = "SIMULATED - demonstration only",
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Medium,
+                color = WarningAmber
+              )
+            }
             com.example.ui.components.StatusBadge(
               status = com.example.data.model.statusOf(
                 provenance = zone.provenance,
@@ -141,6 +159,31 @@ fun HazardZoneDetailDialog(
           )
         }
 
+        // TERTIARY INFORMATION COLLAPSES (P1 hierarchy + rule 22): the
+        // technical rows and provenance stay available for judges/field
+        // staff but never compete with verdict + key facts.
+        var detailsExpanded by remember(zone.id) { mutableStateOf(false) }
+        TextButton(
+          onClick = { detailsExpanded = !detailsExpanded },
+          contentPadding = PaddingValues(horizontal = 4.dp, vertical = 2.dp),
+          modifier = Modifier.testTag("hazard_details_toggle")
+        ) {
+          Icon(
+            imageVector = if (detailsExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+            contentDescription = null,
+            tint = TacticalOnSurfaceVariant,
+            modifier = Modifier.size(16.dp)
+          )
+          Spacer(modifier = Modifier.width(4.dp))
+          Text(
+            text = if (detailsExpanded) "Hide data & details" else "Data & details",
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Medium,
+            color = TacticalOnSurfaceVariant
+          )
+        }
+
+        if (detailsExpanded) {
         // --- DATA SECTIONS: generous row spacing, 12sp labels / 13sp values ---
         detail.sections.forEach { section ->
           Column(
@@ -229,6 +272,7 @@ fun HazardZoneDetailDialog(
             lineHeight = 14.sp
           )
         }
+        } // end if (detailsExpanded)
       }
     }
   }
