@@ -125,20 +125,12 @@ fun HistoricalIntelligencePanel(
       )
     }
 
-    // The dataset's own attribution is always visible, never behind a tap:
-    // EM-DAT requires credit, and the version matters for interpretation.
+    // EM-DAT credit stays on the surface as ONE quiet line; the technical
+    // detail (access date, table type, URLs) moves behind "About this
+    // dataset" at the bottom of the expanded panel.
     catalog?.info?.let { info ->
       Text(
         text = info.attributionLine,
-        fontSize = 11.sp,
-        color = TacticalOnSurfaceVariant,
-        lineHeight = 12.sp
-      )
-      Text(
-        text = listOfNotNull(
-          info.accessLine.ifBlank { null },
-          info.sourceUrl
-        ).joinToString(" • "),
         fontSize = 11.sp,
         color = TacticalOnSurfaceVariant,
         lineHeight = 12.sp
@@ -201,10 +193,16 @@ fun HistoricalIntelligencePanel(
       )
     }
 
-    // ---- Filters -----------------------------------------------------------
+    // ---- Filters (collapsed by default; header always states the selection)
     val active = uiState.historicalFilters
+    var filtersOpen by remember { mutableStateOf(false) }
     Text(
-      text = "FILTER (${uiState.historicalFilteredEvents.size} of ${catalog.totalCount})",
+      modifier = Modifier
+        .fillMaxWidth()
+        .clickable { filtersOpen = !filtersOpen }
+        .testTag("historical_filters_header"),
+      text = "FILTER (${uiState.historicalFilteredEvents.size} of ${catalog.totalCount})" +
+        if (filtersOpen) "  \u25B4" else "  \u25BE",
       fontSize = 10.sp,
       fontWeight = FontWeight.Black,
       color = TacticalOnSurfaceVariant
@@ -214,7 +212,7 @@ fun HistoricalIntelligencePanel(
       fontSize = 11.sp,
       color = TacticalOnSurfaceVariant
     )
-
+    if (filtersOpen) {
     val types = catalog.typeFacets()
     Row(
       modifier = Modifier
@@ -280,12 +278,29 @@ fun HistoricalIntelligencePanel(
         FilterChip(label = "Clear filters", selected = false, onClick = onClearFilters)
       }
     }
+    }
 
     // ---- Charts FIRST: what people scan before they ever read a row ----
     HistoricalChartsBlock(uiState.historicalFilteredEvents)
 
-    HistoricalImpactSummaryBlock(uiState)
-    HistoricalTrendBlock(uiState)
+    var totalsOpen by remember { mutableStateOf(false) }
+    Text(
+      modifier = Modifier
+        .fillMaxWidth()
+        .clickable { totalsOpen = !totalsOpen }
+        .testTag("historical_totals_toggle"),
+      text = if (totalsOpen)
+        "IMPACT TOTALS & DECADE TREND  \u25B4"
+      else
+        "IMPACT TOTALS & DECADE TREND  \u25BE  reported deaths, affected, homeless, damage + per-decade counts",
+      fontSize = 10.sp,
+      fontWeight = FontWeight.Black,
+      color = TacticalOnSurfaceVariant
+    )
+    if (totalsOpen) {
+      HistoricalImpactSummaryBlock(uiState)
+      HistoricalTrendBlock(uiState)
+    }
 
     // ---- Record list -------------------------------------------------------
     val events = uiState.historicalFilteredEvents
@@ -343,6 +358,73 @@ fun HistoricalIntelligencePanel(
           text = "Showing the 12 most recent of ${events.size} matching records.",
           fontSize = 11.sp,
           color = TacticalOnSurfaceVariant
+        )
+      }
+    }
+
+    // ---- About this dataset (collapsed; the panel's last word) -------------
+    var aboutOpen by remember { mutableStateOf(false) }
+    Column(
+      modifier = Modifier
+        .fillMaxWidth()
+        .clip(RoundedCornerShape(10.dp))
+        .background(ObsidianContainerHigh.copy(alpha = 0.45f))
+        .border(1.dp, TacticalOutlineVariant.copy(alpha = 0.25f), RoundedCornerShape(10.dp))
+        .clickable { aboutOpen = !aboutOpen }
+        .padding(horizontal = 12.dp, vertical = 10.dp)
+        .testTag("about_dataset_section"),
+      verticalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+      Text(
+        text = "About this dataset" + if (aboutOpen) "  \u25B4" else "  \u25BE",
+        fontSize = 11.sp,
+        fontWeight = FontWeight.Bold,
+        color = TacticalOnSurface
+      )
+      Text(
+        text = "Past recorded events from the international EM-DAT archive \u2014 " +
+          "what happened here before. NOT current risk, NOT live hazard data.",
+        fontSize = 11.sp,
+        color = TacticalOnSurfaceVariant,
+        lineHeight = 13.sp
+      )
+      if (aboutOpen) {
+        val info = catalog.info
+        Text(
+          text = "Source: ${info.source}. Dataset version: ${info.version ?: "not stated"} \u2022 " +
+            "${info.parsedRecordCount} records loaded in this build" +
+            (info.declaredRecordCount?.let { " (the export declares $it)" } ?: "") + ".",
+          fontSize = 11.sp,
+          color = TacticalOnSurfaceVariant,
+          lineHeight = 13.sp
+        )
+        Text(
+          text = "This dataset contains records for many countries and event types. " +
+            "Filtering by the loaded country and time range reduces it to the records " +
+            "relevant to the current analysis. Relevance to the current location is " +
+            "determined only by the filters selected above \u2014 presence in this " +
+            "archive is not evidence that a hazard exists here now.",
+          fontSize = 11.sp,
+          color = TacticalOnSurfaceVariant,
+          lineHeight = 13.sp
+        )
+        info.sourceUrl?.let { url ->
+          Text(
+            text = "Original data: $url",
+            fontSize = 11.sp,
+            color = TacticalOnSurfaceVariant,
+            modifier = Modifier.testTag("historical_source_link")
+          )
+        }
+        Text(
+          text = listOfNotNull(
+            info.fileCreated?.takeIf { it.isNotBlank() }?.let { "Accessed: $it" },
+            info.tableType?.takeIf { it.isNotBlank() }?.let { "Table: $it" },
+            info.accessLine.ifBlank { null }
+          ).joinToString(" \u2022 "),
+          fontSize = 11.sp,
+          color = TacticalOnSurfaceVariant,
+          lineHeight = 13.sp
         )
       }
     }

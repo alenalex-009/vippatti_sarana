@@ -9,6 +9,7 @@ import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
@@ -150,13 +151,19 @@ class HistoricalPanelRenderTest {
     // The mandatory wording appears verbatim.
     assertVisible(HistoricalContextService.DISCLAIMER)
     // Filter count reflects the selection.
-    assertVisible("FILTER (2 of 2)")
+    composeTestRule.onNodeWithText("FILTER (2 of 2)", substring = true).performScrollTo()
+      .assertIsDisplayed()
   }
 
   @Test
   fun `a missing impact figure renders as Not available, never as zero`() {
     renderPanel(state(catalog()))
     composeTestRule.onNodeWithText("EXPLORE").performClick()
+    // Impact totals are collapsed by default (dense maths off the first view);
+    // the user opens them - the honesty contract then applies inside.
+    composeTestRule.onNodeWithTag("historical_totals_toggle")
+      .performScrollTo()
+      .performClick()
 
     // The selection reports deaths (a figure) but no homeless or damage at all,
     // so those totals must read "Not available" rather than 0.
