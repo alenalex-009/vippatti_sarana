@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -27,6 +28,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.data.disaster.DispatchTagType
 import com.example.data.disaster.FeedDispatch
 import com.example.ui.theme.EmergencyRed
@@ -69,6 +71,32 @@ internal fun FeedDispatchCard(
         .padding(16.dp),
       verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
+      // [IMAGE] - only the article's OWN image at a controlled 16:9 band
+      // (rounded top). No image -> no band: a text-first compact card, never
+      // a substituted or fabricated disaster photo.
+      dispatch.imageUrl?.let { url ->
+        Box(
+          modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 4.dp)
+            .clip(RoundedCornerShape(10.dp))
+            .background(ObsidianContainer.copy(alpha = 0.6f))
+        ) {
+          androidx.compose.foundation.layout.BoxWithConstraints(
+            modifier = Modifier.fillMaxWidth()
+          ) {
+            AsyncImage(
+              model = url,
+              contentDescription = "Article image from ${dispatch.agency}",
+              contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+              modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(16f / 9f)
+            )
+          }
+        }
+      }
+
       // [Source + time]
       Row(
         modifier = Modifier.fillMaxWidth(),

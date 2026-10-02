@@ -16,8 +16,11 @@ data class FeedDispatch(
   val location: String,
   val actionLabel: String,
   val iconType: DispatchIconType,
-  /** Real publisher URL — "Read Full Story" opens it in the browser. */
-  val url: String? = null
+  /** Real publisher URL - "Read Full Story" opens it in the browser. */
+  val url: String? = null,
+  /** The article's OWN image URL (GNews `image`) - null renders the neutral
+   * fallback; a fake or unrelated photo is never substituted. */
+  val imageUrl: String? = null
 )
 
 enum class DispatchTagType {

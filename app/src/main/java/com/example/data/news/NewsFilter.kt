@@ -52,6 +52,23 @@ object NewsFilter {
     "restoration", "rehabilitation", "assistance", "recover", "response"
   )
 
+  /**
+   * Response/impact words that are decisive ONLY together with a hazard,
+   * agency or event context term - on their own they are generic news ("risk",
+   * "crisis", "response" appear everywhere, per the user rule: do not match
+   * every article containing generic words).
+   */
+  private val CONTEXT_TERMS = listOf(
+    "flood", "cyclone", "rain", "storm", "quake", "earthquake", "landslide",
+    "fire", "tsunami", "drought", "heatwave", "cloudburst", "avalanche",
+    "disaster", "calamity", "relief", "ndrf", "ndma", "sdma", "imd",
+    "evacuation", "dam", "breach", "alert", "rescue"
+  )
+  private val IMPACT_TERMS = listOf(
+    "risk", "crisis", "response", "response team", "impact", "damage",
+    "disruption", "stranded", "cut off", "disaster-related"
+  )
+
   /** True when the article's own text signals disaster relevance. */
   fun isDisasterRelevant(article: NewsArticle): Boolean {
     val title = article.title.lowercase()
@@ -61,7 +78,11 @@ object NewsFilter {
       append(article.content.lowercase())
     }
     if (STRONG_TERMS.any { body.contains(it) || title.contains(it) }) return true
-    return WEAK_TERMS.any { title.contains(it) }
+    if (WEAK_TERMS.any { title.contains(it) }) return true
+    // Impact words alone never qualify; they need hazard/agencies context in
+    // the headline itself (keeps generic business/politics stories out).
+    return IMPACT_TERMS.any { title.contains(it) } &&
+      CONTEXT_TERMS.any { title.contains(it) }
   }
 
   /** Filters a list, keeping disabled/unmatched articles out. */

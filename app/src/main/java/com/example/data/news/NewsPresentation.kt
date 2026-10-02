@@ -51,7 +51,8 @@ object NewsPresentation {
           NewsCategory.WEATHER -> DispatchIconType.RAIN
           NewsCategory.GOVERNMENT, NewsCategory.GENERAL -> DispatchIconType.LOGISTICS
         },
-        url = article.url
+        url = article.url,
+        imageUrl = article.imageUrl
       )
     }
 

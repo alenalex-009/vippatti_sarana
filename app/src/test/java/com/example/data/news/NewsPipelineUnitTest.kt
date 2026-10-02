@@ -163,6 +163,26 @@ class NewsPipelineUnitTest {
   }
 
   @Test
+  fun `generic impact words alone never qualify - context must share the headline`() {
+    // User rule: do not match every article containing generic words like
+    // "risk" or "crisis". They qualify ONLY with hazard context in the title.
+    val generic = NewsArticle(
+      id = "mk", title = "Market volatility raises investor risk",
+      description = "Analysts warned of a wider crisis for the sector.",
+      content = "Business coverage.", url = "https://example.com/mkt",
+      imageUrl = null, publishedAtIso = "", publishedAtMillis = 7L,
+      language = "en", sourceName = "Business Daily", sourceUrl = "https://x.com",
+      scope = NewsScope.INDIA, category = NewsCategory.GENERAL
+    )
+    assertFalse("generic risk/crisis prose is not disaster coverage",
+      NewsFilter.isDisasterRelevant(generic))
+    val qualified = article("mk2",
+      "Cyclone response: coastal districts at high risk", 8L, NewsScope.INDIA)
+    assertTrue("impact word + hazard context in the headline qualifies",
+      NewsFilter.isDisasterRelevant(qualified))
+  }
+
+  @Test
   fun `a weak hazard word in the HEADLINE still keeps the story`() {
     val headline = article("w1", "Evacuation begins after river crosses the embankment", 6L, NewsScope.INDIA)
     assertTrue("headline relevance must still count", NewsFilter.isDisasterRelevant(headline))

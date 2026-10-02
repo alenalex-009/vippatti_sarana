@@ -650,12 +650,6 @@ fun DispatchesScreen(
       }
     }
 
-    // 6b. DATA & SOURCES - collapsed technical detail (11). Providers and
-    // plan limits are not the reader's problem at a glance; one tap away.
-    item {
-      DataAndSourcesRow(uiState = uiState)
-    }
-
     // 7. Feed Cards — REAL GNews articles mapped to dispatch cards
     val activeCategory = if (uiState.selectedNewsCategory in NewsPresentation.filterChipLabels(uiState.newsArticles)) {
       uiState.selectedNewsCategory
@@ -730,76 +724,6 @@ fun DispatchesScreen(
         onActionClick = {
           dispatch.url?.let { openArticle(it) } ?: onNavigateTab(ScreenTab.INSTRUCTIONS)
         }
-      )
-    }
-  }
-}
-
-/** Collapsible "Data & sources" strip: honest provenance, off the main view. */
-@Composable
-private fun DataAndSourcesRow(uiState: VippattiUiState) {
-  var expanded by remember { mutableStateOf(false) }
-  Column(
-    modifier = Modifier
-      .fillMaxWidth()
-      .padding(horizontal = 16.dp, vertical = 4.dp)
-      .clip(RoundedCornerShape(10.dp))
-      .background(ObsidianContainerLow)
-      .border(1.dp, TacticalOutlineVariant.copy(alpha = 0.3f), RoundedCornerShape(10.dp))
-      .clickable { expanded = !expanded }
-      .padding(10.dp)
-      .testTag("data_and_sources_row")
-  ) {
-    Row(
-      modifier = Modifier.fillMaxWidth(),
-      horizontalArrangement = Arrangement.SpaceBetween,
-      verticalAlignment = Alignment.CenterVertically
-    ) {
-      Text(
-        text = "Data & sources",
-        fontSize = 11.sp,
-        fontWeight = FontWeight.Bold,
-        color = TacticalOnSurfaceVariant
-      )
-      Text(
-        text = if (expanded) "HIDE" else "SHOW",
-        fontSize = 10.sp,
-        fontWeight = FontWeight.Bold,
-        color = TacticalCyan
-      )
-    }
-    if (expanded) {
-      Spacer(modifier = Modifier.height(6.dp))
-      if (uiState.providerStatuses.isEmpty()) {
-        Text("No provider fetches this session.", fontSize = 10.sp,
-          color = TacticalOnSurfaceVariant)
-      }
-      uiState.providerStatuses.forEach { (state, status) ->
-        Row(
-          modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
-          horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-          Text(state.source.name.lowercase().replace('_', ' '),
-            fontSize = 10.sp, color = TacticalOnSurface)
-          Text(status.name, fontSize = 10.sp, fontWeight = FontWeight.Bold,
-            color = when (status) {
-              DataStatus.SUCCESS -> NeonEmerald
-              DataStatus.ERROR -> EmergencyRed
-              else -> WarningAmber
-            })
-        }
-      }
-      if (uiState.newsScopeNote.isNotBlank()) {
-        Text(uiState.newsScopeNote, fontSize = 10.sp,
-          color = TacticalOnSurfaceVariant, modifier = Modifier.padding(top = 4.dp))
-      }
-      // Quiet, still honest: news = reports, not government alerts.
-      Text(
-        text = "News sources publish reports, not government alerts. Official IMD alerts appear on the Map.",
-        fontSize = 10.sp,
-        fontWeight = FontWeight.Normal,
-        color = TacticalOnSurfaceVariant,
-        modifier = Modifier.padding(top = 2.dp)
       )
     }
   }
