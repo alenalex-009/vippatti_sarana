@@ -37,6 +37,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.Alignment
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -55,6 +56,7 @@ import androidx.core.content.ContextCompat
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -90,9 +92,12 @@ import com.example.ui.screens.ProfileScreen
 import com.example.ui.screens.RadarMapScreen
 import com.example.ui.screens.SignupScreen
 import com.example.ui.theme.EmergencyRed
+import com.example.ui.theme.TacticalCyan
+import com.example.ui.theme.TacticalOnSurfaceVariant
 import com.example.ui.theme.ObsidianSurface
 import com.example.ui.theme.TacticalOnSurface
 import com.example.ui.theme.VippattiTheme
+import com.example.viewmodel.AuthGate
 import com.example.viewmodel.AuthViewModel
 import com.example.viewmodel.ScreenTab
 import com.example.viewmodel.TORCH_REASON_PERMISSION
@@ -158,13 +163,16 @@ class MainActivity : ComponentActivity() {
         factory = AuthViewModel.factory(authRepository, supabaseUrl, supabaseKey)
       )
 
-      var signedIn by remember { mutableStateOf(false) }
       var showSignup by rememberSaveable { mutableStateOf(false) }
+      // P0 session-flash fix: the root screen branches on the EXPLICIT
+      // auth gate from the (config-change-surviving) AuthViewModel instead
+      // of a local boolean that reset to false on every recreation - that
+      // reset made Login flash during restore on launches AND rotations.
 
       // App-start session restoration: validate the stored token session
       // against the backend; a valid session opens the main app directly.
       LaunchedEffect(Unit) {
-        authViewModel.restoreSession { restored -> signedIn = restored }
+        authViewModel.restoreSession { }
       }
 
       // GOOGLE OAUTH: browser callback intents (session or one-time code)
@@ -174,7 +182,7 @@ class MainActivity : ComponentActivity() {
       LaunchedEffect(callbackUri) {
         val uri = callbackUri ?: return@LaunchedEffect
         _authCallback.value = null
-        authViewModel.handleGoogleCallback(uri) { signedIn = true }
+        authViewModel.handleGoogleCallback(uri) { }
       }
 
       // Cold start straight from a callback: the intent that launched the
@@ -307,7 +315,12 @@ class MainActivity : ComponentActivity() {
             onDismiss = { viewModel.closeHistoricalEventDetail() }
           )
         }
-        if (signedIn) {
+        if (authUiState.gate == AuthGate.RESTORING) {
+          // Session check still running: neutral splash - NOT the login
+          // page. Login may only appear once the app positively knows the
+          // user is signed out.
+          SessionRestoringScreen()
+        } else if (authUiState.gate == AuthGate.SIGNED_IN) {
           // The signed-in account's identity is shown on Profile from the
           // authentication session (restored/refreshed via /me).
           LaunchedEffect(authRepository.currentUserEmail) {
@@ -317,12 +330,12 @@ class MainActivity : ComponentActivity() {
             viewModel = viewModel,
             accountEmail = authRepository.currentUserEmail,
             onSignOut = {
-              // Revoke server-side + clear the encrypted local session.
+              // Revoke server-side + clear the encrypted local session;
+              // the gate flips to SIGNED_OUT from the ViewModel state.
               authViewModel.logout {
                 // Clear the departed account's identity from the UI state so the
                 // next sign-in can never show the previous user's details.
                 viewModel.syncSignedInAccountProfile()
-                signedIn = false
               }
             }
           )
@@ -334,7 +347,7 @@ class MainActivity : ComponentActivity() {
           SignupScreen(
             uiState = authUiState,
             onSignup = { fullName, email, password, confirmPassword ->
-              authViewModel.signup(fullName, email, password, confirmPassword) { signedIn = true }
+              authViewModel.signup(fullName, email, password, confirmPassword) { }
             },
             onBackToLogin = { showSignup = false }
           )
@@ -342,13 +355,51 @@ class MainActivity : ComponentActivity() {
           LoginScreen(
             uiState = authUiState,
             onLogin = { email, password ->
-              authViewModel.login(email, password) { signedIn = true }
+              authViewModel.login(email, password) { }
             },
             onGoToSignup = { showSignup = true },
             onGoogleSignIn = startGoogleSignIn
           )
         }
       }
+    }
+  }
+}
+
+/**
+ * Neutral session-restoring splash. Deliberately quiet and small: it only
+ * exists while the stored session is validated once at cold start, and
+ * never returns after that (restore-once), so rotation keeps the app.
+ */
+@Composable
+private fun SessionRestoringScreen() {
+  Box(
+    modifier = Modifier
+      .fillMaxSize()
+      .background(ObsidianSurface)
+      .testTag("session_restoring_screen"),
+    contentAlignment = Alignment.Center
+  ) {
+    Column(
+      horizontalAlignment = Alignment.CenterHorizontally,
+      verticalArrangement = Arrangement.spacedBy(14.dp)
+    ) {
+      Text(
+        text = stringResource(R.string.app_name),
+        fontSize = 20.sp,
+        fontWeight = FontWeight.SemiBold,
+        color = TacticalOnSurface
+      )
+      CircularProgressIndicator(
+        modifier = Modifier.size(26.dp),
+        strokeWidth = 2.5.dp,
+        color = TacticalCyan
+      )
+      Text(
+        text = stringResource(R.string.auth_restoring_session),
+        fontSize = 13.sp,
+        color = TacticalOnSurfaceVariant
+      )
     }
   }
 }

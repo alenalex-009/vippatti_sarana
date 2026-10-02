@@ -241,4 +241,5 @@
   <!-- Account profile: the citizen's own phone number (registration or editor). -->
   <string name="profile_phone_label">Phone number</string>
   <string name="profile_not_set">Not set</string>
+    <string name="auth_restoring_session">Restoring your session...</string>
 </resources>

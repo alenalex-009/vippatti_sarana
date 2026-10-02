@@ -16,6 +16,14 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
+/**
+ * Explicit authentication gate for the root screen (P0 session-flash fix).
+ * RESTORING must render a neutral splash - NEVER Login - while the stored
+ * session is still being validated. Login appears only once the app has
+ * POSITIVELY determined SIGNED_OUT.
+ */
+enum class AuthGate { RESTORING, SIGNED_OUT, SIGNED_IN }
+
 /** The complete authentication state machine the UI renders. */
 data class AuthUiState(
   /** App-start session check in progress (shows the splash-ish busy state). */
@@ -46,6 +54,14 @@ data class AuthUiState(
   val googleError: String? = null
 ) {
   val isAuthenticated: Boolean get() = user != null
+
+  /** The one state the root screen branches on - see [AuthGate]. */
+  val gate: AuthGate
+    get() = when {
+      user != null -> AuthGate.SIGNED_IN
+      isRestoring -> AuthGate.RESTORING
+      else -> AuthGate.SIGNED_OUT
+    }
 }
 
 /**
@@ -165,9 +181,23 @@ class AuthViewModel(
   /**
    * App-startup session check. [onResult] receives true when the app should
    * open straight into the main experience.
+   *
+   * Restore-once: on configuration change (rotation) the composition calls
+   * this again against the SAME surviving ViewModel; re-validating would
+   * re-enter RESTORING and flash the splash again. After the first request
+   * the current verdict is delivered immediately without a second network
+   * round-trip, so rotation preserves the authenticated state.
    */
+  private var restoreRequested = false
+
   fun restoreSession(onResult: (Boolean) -> Unit) {
+    if (restoreRequested) {
+      onResult(_uiState.value.isAuthenticated)
+      return
+    }
+    restoreRequested = true
     if (!repository.hasStoredSession()) {
+      // Positively determined signed-out (no stored session at all).
       _uiState.update { it.copy(isRestoring = false) }
       onResult(false)
       return

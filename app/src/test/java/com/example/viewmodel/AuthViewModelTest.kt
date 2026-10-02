@@ -39,6 +39,10 @@ class AuthViewModelTest {
     var failNetwork = false
     var loggedOut = false
     var pendingMode = false
+    /** Session-restore knobs: what /me and /refresh answer, and how often. */
+    var meOk = false
+    var meCalls = 0
+    var refreshCalls = 0
 
     override suspend fun register(fullName: String, email: String, password: String): AuthApiResult {
       if (failNetwork) return AuthApiResult.Failure(com.example.data.auth.ApiErrorKind.NETWORK, "offline")
@@ -74,11 +78,21 @@ class AuthViewModelTest {
       }
     }
 
-    override suspend fun me(accessToken: String): AuthApiResult =
-      AuthApiResult.Failure(com.example.data.auth.ApiErrorKind.UNAUTHORIZED, "unused in these tests")
+    override suspend fun me(accessToken: String): AuthApiResult {
+      meCalls++
+      return if (meOk) AuthApiResult.Success(
+        TokenPair(accessToken, "r", 1800),
+        BackendUser(1, "Meera Krishnan", "meera@example.com", "t", "t")
+      ) else AuthApiResult.Failure(com.example.data.auth.ApiErrorKind.UNAUTHORIZED, "no session")
+    }
 
-    override suspend fun refresh(refreshToken: String): AuthApiResult =
-      AuthApiResult.Failure(com.example.data.auth.ApiErrorKind.UNAUTHORIZED, "unused in these tests")
+    override suspend fun refresh(refreshToken: String): AuthApiResult {
+      refreshCalls++
+      return if (meOk) AuthApiResult.Success(
+        TokenPair("a", refreshToken, 1800),
+        BackendUser(1, "Meera Krishnan", "meera@example.com", "t", "t")
+      ) else AuthApiResult.Failure(com.example.data.auth.ApiErrorKind.UNAUTHORIZED, "no session")
+    }
 
     override suspend fun logout(accessToken: String, refreshToken: String?): SimpleApiResult {
       loggedOut = true
@@ -223,5 +237,103 @@ class AuthViewModelTest {
     viewModel.login("meera@example.com", "longenough7") { }
     // UnconfinedTestDispatcher runs eagerly, so after runTest the flag is settled.
     assertFalse(viewModel.uiState.value.isSubmitting)
+  }
+
+  // ------------------------------------------------ P0 auth-gate regression
+  //
+  // Contract (session-flash fix): the root screen renders from AuthGate.
+  //   * A VM starts RESTORING - Login must NEVER be offered while the
+  //     stored-session check is undecided.
+  //   * Only a POSITIVE signed-out determination yields SIGNED_OUT.
+  //   * Rotation re-calls restoreSession against the same surviving VM:
+  //     the verdict is served without a second network round-trip and
+  //     without passing back through RESTORING.
+
+  private fun storeWithSession(): InMemoryTokenStorage =
+    InMemoryTokenStorage().apply {
+      saveSession("access-tok", "refresh-tok", "meera@example.com", "Meera Krishnan")
+    }
+
+  @Test
+  fun `signed-in app launch - stored session restores straight to SIGNED_IN`() = runTest {
+    api.meOk = true
+    val vm = AuthViewModel(AuthRepository(api, storeWithSession()))
+    // Before the check runs, the gate is RESTORING (not SIGNED_OUT)...
+    assertEquals(AuthGate.RESTORING, vm.uiState.value.gate)
+    var opened = false
+    vm.restoreSession { opened = true }
+    assertTrue("callback must open the app", opened)
+    assertEquals(AuthGate.SIGNED_IN, vm.uiState.value.gate)
+    assertFalse(vm.uiState.value.isRestoring)
+  }
+
+  @Test
+  fun `signed-out app launch - no stored session yields SIGNED_OUT, never a restore hang`() = runTest {
+    val vm = AuthViewModel(AuthRepository(api, InMemoryTokenStorage()))
+    var opened = true
+    vm.restoreSession { opened = it }
+    assertFalse("fresh install must not enter the app", opened)
+    assertEquals(AuthGate.SIGNED_OUT, vm.uiState.value.gate)
+    // And no pointless network call was made for a session that does not exist.
+    assertEquals(0, api.meCalls)
+    assertEquals(0, api.refreshCalls)
+  }
+
+  @Test
+  fun `session restoration - revoked stored session falls to SIGNED_OUT honestly`() = runTest {
+    api.meOk = false // both /me and /refresh refuse
+    val vm = AuthViewModel(AuthRepository(api, storeWithSession()))
+    var opened = true
+    vm.restoreSession { opened = it }
+    assertFalse(opened)
+    assertEquals(AuthGate.SIGNED_OUT, vm.uiState.value.gate)
+    assertNull(vm.uiState.value.user)
+  }
+
+  @Test
+  fun `rotation - second restoreSession reuses the verdict with no second network call or flash`() = runTest {
+    api.meOk = true
+    val vm = AuthViewModel(AuthRepository(api, storeWithSession()))
+    vm.restoreSession { }
+    assertEquals(AuthGate.SIGNED_IN, vm.uiState.value.gate)
+    val callsAfterFirst = api.meCalls + api.refreshCalls
+    // Configuration change: the composition calls restoreSession again.
+    var reopened = false
+    vm.restoreSession { reopened = it }
+    assertTrue("rotation must keep the user signed in", reopened)
+    assertEquals("no second round-trip", callsAfterFirst, api.meCalls + api.refreshCalls)
+    // Crucially: still SIGNED_IN - never flipped back through RESTORING.
+    assertEquals(AuthGate.SIGNED_IN, vm.uiState.value.gate)
+    assertFalse(vm.uiState.value.isRestoring)
+  }
+
+  @Test
+  fun `logout - gate falls to SIGNED_OUT so Login is the positive next screen`() = runTest {
+    api.meOk = true
+    val repo = AuthRepository(api, storeWithSession())
+    val vm = AuthViewModel(repo)
+    vm.restoreSession { }
+    assertEquals(AuthGate.SIGNED_IN, vm.uiState.value.gate)
+    vm.logout { }
+    assertEquals(AuthGate.SIGNED_OUT, vm.uiState.value.gate)
+    assertFalse(vm.uiState.value.isRestoring)
+    assertNull(vm.uiState.value.user)
+    // A signed-out user may now legitimately see Login.
+  }
+
+  @Test
+  fun `gate is derived from state - no separate flag can disagree`() {
+    assertEquals(AuthGate.RESTORING, AuthUiState(isRestoring = true).gate)
+    assertEquals(AuthGate.SIGNED_OUT, AuthUiState().gate)
+    assertEquals(
+      AuthGate.SIGNED_IN,
+      AuthUiState(user = BackendUser(1, "M", "m@e.org", "t", "t")).gate
+    )
+    // Even a restoring flag cannot hide a user: SIGNED_IN wins (no logout
+    // race can flash splash over a live session).
+    assertEquals(
+      AuthGate.SIGNED_IN,
+      AuthUiState(isRestoring = true, user = BackendUser(1, "M", "m@e.org", "t", "t")).gate
+    )
   }
 }

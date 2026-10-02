@@ -181,4 +181,5 @@
     <!-- Account profile: the citizen's own phone number (registration or editor). -->
     <string name="profile_phone_label">फोन क्रमांक</string>
     <string name="profile_not_set">सेट केलेले नाही</string>
+    <string name="auth_restoring_session">तुम्हरे सेशन पुनःस्थापिले जात आहे...</string>
 </resources>
