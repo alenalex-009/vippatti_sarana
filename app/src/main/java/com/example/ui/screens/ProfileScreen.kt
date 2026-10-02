@@ -158,7 +158,8 @@ fun ProfileScreen(
     LazyColumn(
       modifier = Modifier
         .fillMaxSize()
-        .padding(horizontal = 16.dp)
+        .padding(horizontal = 16.dp),
+      contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = 24.dp)
     ) {
       item {
         // Compact screen title — the only heading on the page, kept small so
@@ -276,7 +277,6 @@ fun ProfileScreen(
       item {
         AboutCard()
       }
-      item { Spacer(modifier = Modifier.height(20.dp)) }
     }
   }
 }
@@ -363,7 +363,7 @@ private fun SafetyOption(
       imageVector = icon,
       contentDescription = null,
       tint = if (selected) selectedContent else TacticalOnSurfaceVariant,
-      modifier = Modifier.size(17.dp)
+      modifier = Modifier.size(18.dp)
     )
     Spacer(modifier = Modifier.width(6.dp))
     Text(
@@ -389,7 +389,7 @@ internal fun SosCenterCard(
     modifier = Modifier
       .fillMaxWidth()
       .padding(top = 16.dp)
-      .clip(RoundedCornerShape(18.dp))
+      .clip(RoundedCornerShape(16.dp))
       .background(
         Brush.linearGradient(
           colors = listOf(EmergencyRed, Color(0xFFBE123C))
@@ -1659,7 +1659,7 @@ internal fun ProfileHeaderCard(
     modifier = Modifier
       .fillMaxWidth()
       .background(ObsidianSurface)
-      .padding(horizontal = 16.dp, vertical = 12.dp),
+      .padding(horizontal = 16.dp, vertical = 16.dp),
     verticalAlignment = Alignment.CenterVertically,
     horizontalArrangement = Arrangement.spacedBy(12.dp)
   ) {
@@ -1748,24 +1748,30 @@ internal fun ProfileHeaderCard(
       }
       Box(
         modifier = Modifier
-          .size(36.dp)
-          .clip(CircleShape)
-          .background(ObsidianContainer)
-          .border(
-            width = 1.dp,
-            color = TacticalOutlineVariant.copy(alpha = 0.3f),
-            shape = CircleShape
-          )
+          .size(44.dp)
           .clickable(onClick = onOpenEditProfile)
           .testTag("profile_edit_button"),
         contentAlignment = Alignment.Center
       ) {
-        Icon(
-          imageVector = Icons.Default.Edit,
-          contentDescription = stringResource(R.string.profile_edit_content_description),
-          tint = TacticalCyan,
-          modifier = Modifier.size(17.dp)
-        )
+        Box(
+          modifier = Modifier
+            .size(36.dp)
+            .clip(CircleShape)
+            .background(ObsidianContainer)
+            .border(
+              width = 1.dp,
+              color = TacticalOutlineVariant.copy(alpha = 0.3f),
+              shape = CircleShape
+            ),
+          contentAlignment = Alignment.Center
+        ) {
+          Icon(
+            imageVector = Icons.Default.Edit,
+            contentDescription = stringResource(R.string.profile_edit_content_description),
+            tint = TacticalCyan,
+            modifier = Modifier.size(17.dp)
+          )
+        }
       }
     }
   }
