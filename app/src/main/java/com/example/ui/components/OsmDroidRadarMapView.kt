@@ -307,13 +307,18 @@ fun OsmDroidRadarMapView(
   LaunchedEffect(hazardZones) { mapState.deployHazardZones(hazardZones, onHazardZoneTapped) }
   LaunchedEffect(safeZones) { mapState.deploySafeZones(safeZones, onSafeZoneTapped) }
   LaunchedEffect(
-    disasterEvents, enabledLayers,
+    // PHASE 2 coherence: hazardTypeFilter participates so a chip tap
+    // redeploys event pins immediately - no stale dots from the previous
+    // disaster survive the switch. (The setter effect above runs first in
+    // the same recomposition, so the filter value is current here.)
+    disasterEvents, enabledLayers, hazardTypeFilter,
     enabledLayers.contains(DisasterLayer.EARTHQUAKES),
     enabledLayers.contains(DisasterLayer.ACTIVE_FIRES),
     enabledLayers.contains(DisasterLayer.OFFICIAL_ALERTS),
     enabledLayers.contains(DisasterLayer.USER_REPORTS)
   ) {
-    mapState.deployDisasterEvents(disasterEvents, enabledLayers, onDisasterEventTapped)
+    mapState.deployDisasterEvents(disasterEvents, enabledLayers, onDisasterEventTapped,
+      selectedType = hazardTypeFilter)
   }
   // HISTORICAL (EM-DAT) layer: off by default, and only ever receives records
   // that carry the dataset's own coordinates.
@@ -969,7 +974,10 @@ class OsmMapControllerHolder(
   fun deployDisasterEvents(
     events: List<DisasterEvent>,
     enabledLayers: Set<DisasterLayer>,
-    onEventTapped: (DisasterEvent) -> Unit = lastEventTap
+    onEventTapped: (DisasterEvent) -> Unit = lastEventTap,
+    /** Selected disaster chip (null = all). Passed explicitly so a chip tap
+     * cannot race the setter effect. */
+    selectedType: com.example.data.model.HazardType? = hazardTypeFilter
   ) {
     val view = mapView ?: return
     lastDisasterEvents = events
@@ -996,6 +1004,20 @@ class OsmMapControllerHolder(
     }
 
     val renderable0 = events.mapNotNull { event ->
+      // PHASE 2 coherence: with a disaster chip selected, live event pins
+      // follow the SAME selection as the hazard circles - no unrelated
+      // dots surviving a filter change. (CYCLONE alerts map to the cyclone
+      // chip via the normalizer's OTHER fallback pair.)
+      if (selectedType != null) {
+        val mapped =
+          com.example.data.disaster.DisasterEventNormalizer.toHazardType(event.disasterType)
+        val matches = mapped == selectedType ||
+          (selectedType == com.example.data.model.HazardType.CYCLONE &&
+            event.disasterType == com.example.data.disaster.DisasterType.CYCLONE) ||
+          (selectedType == com.example.data.model.HazardType.HEAVY_RAINFALL &&
+            event.disasterType == com.example.data.disaster.DisasterType.WEATHER_ALERT)
+        if (!matches) return@mapNotNull null
+      }
       val layer = when (event.disasterType) {
         DisasterType.EARTHQUAKE -> DisasterLayer.EARTHQUAKES
         DisasterType.WILDFIRE -> DisasterLayer.ACTIVE_FIRES
@@ -1475,15 +1497,15 @@ private fun safeForBoundingBoxFit(mv: MapView): Boolean =
         GeoPoint(points.maxOf { it.latitude }, points.minOf { it.longitude }),
         GeoPoint(points.minOf { it.latitude }, points.maxOf { it.longitude })
       )
-      if (diagM <= 4_000.0) {
-        val dest = points.last()
-        mv.controller.animateTo(OsmGeoPoint(dest.latitude, dest.longitude))
-      } else {
-        val scaled = box.increaseByScale(1.25f)
-        val fitMargin = (64 + routeFitTopInsetPx + routeFitBottomInsetPx / 2)
-          .coerceAtMost(boundingBoxFitMarginCap(mv))
-        mv.zoomToBoundingBox(scaled, true, fitMargin, 17.0, 600L)
-      }
+      // PHASE 8: camera ALWAYS fits the selected route's own bounds - short
+      // or long - with padding and a zoom floor so a tiny route cannot zoom
+      // to street level (disorienting) and the existing cap keeps it inside
+      // the single-world frame. minZoom(13) means short corridors stay close
+      // enough to read; long corridors zoom out only as far as needed.
+      val scaled = box.increaseByScale(1.3f)
+      val fitMargin = (64 + routeFitTopInsetPx + routeFitBottomInsetPx / 2)
+        .coerceAtMost(boundingBoxFitMarginCap(mv))
+      mv.zoomToBoundingBox(scaled, true, fitMargin, 10.0, 600L)
     } else if (route.routeId != lastFittedRouteId && points.size >= 2) {
       // NOT laid out yet (cold-start route before first draw): fitting now is
       // the exact osmdroid #2028 poison that freezes the app. Defer ONE fit
@@ -1498,18 +1520,10 @@ private fun safeForBoundingBoxFit(mv: MapView): Boolean =
               pts.maxOf { it.latitude }, pts.minOf { it.longitude },
               pts.minOf { it.latitude }, pts.maxOf { it.longitude }
             )
-            if (GeoMath.distanceMeters(
-                GeoPoint(pts.maxOf { it.latitude }, pts.minOf { it.longitude }),
-                GeoPoint(pts.minOf { it.latitude }, pts.maxOf { it.longitude })
-              ) <= 4_000.0) {
-              val dest = pts.last()
-              mv2.controller.animateTo(OsmGeoPoint(dest.latitude, dest.longitude))
-            } else {
-              val scaled = box.increaseByScale(1.25f)
-              val fitMargin = (64 + routeFitTopInsetPx + routeFitBottomInsetPx / 2)
-                .coerceAtMost(boundingBoxFitMarginCap(mv2))
-              mv2.zoomToBoundingBox(scaled, true, fitMargin, 17.0, 600L)
-            }
+            val scaled = box.increaseByScale(1.3f)
+            val fitMargin = (64 + routeFitTopInsetPx + routeFitBottomInsetPx / 2)
+              .coerceAtMost(boundingBoxFitMarginCap(mv2))
+            mv2.zoomToBoundingBox(scaled, true, fitMargin, 10.0, 600L)
           }
         }
       }

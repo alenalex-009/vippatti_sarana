@@ -30,7 +30,15 @@ data class SafeZoneEvaluation(
   val score: Int,
   val reasons: List<SelectionReason>,
   val hazardExposureCount: Int,
-  val capacityReport: ShelterCapacityService.CapacityReport
+  val capacityReport: ShelterCapacityService.CapacityReport,
+  /**
+   * USER-RELATIVE evacuation exposure: meters of the straight path from the
+   * USER'S LOCATION to this candidate that lie inside active hazard circles.
+   * 0.0 = clean path (or not computable). A close candidate that forces the
+   * user back THROUGH the hazard scores worse than a farther clean exit -
+   * the evacuation origin is always the user, NEVER the hazard centre.
+   */
+  val evacuationExposureMeters: Double = 0.0
 ) {
   val rankExplanation: String get() = reasons.joinToString(" • ") { it.text }
 }
@@ -83,6 +91,16 @@ object SafeZoneEvaluator {
     val capacity = ShelterCapacityService.report(zone)
     val reasons = mutableListOf<SelectionReason>()
 
+    // USER-RELATIVE ROUTE EXPOSURE (evacuation correction): how much of the
+    // straight path USER -> candidate lies inside active hazard circles.
+    // Hazard CENTRE is geometry only here - the analysis origin is the user.
+    var exposureMeters = 0.0
+    for (hz in ctx.hazards) {
+      val ratio = com.example.data.model.GeoMath.insideCircleRatio(
+        ctx.origin, zone.point, hz.center, hz.radiusMeters)
+      if (ratio > 0.0) exposureMeters += ratio * distance
+    }
+
     // -------- PHASE 1: hard rejections --------------------------------------
     var rejection: RejectionReason? = null
     if (exposures.isNotEmpty()) {
@@ -107,7 +125,8 @@ object SafeZoneEvaluator {
         score = 0,
         reasons = listOf(SelectionReason(rejection.label)),
         hazardExposureCount = exposures.size,
-        capacityReport = capacity
+        capacityReport = capacity,
+        evacuationExposureMeters = 0.0
       )
     }
 
@@ -179,6 +198,13 @@ object SafeZoneEvaluator {
     if (ctx.needsMedicalSupport && zone.medicalSupport) score += BONUS_MEDICAL_NEEDED
     if (ctx.hasVulnerableMembers && zone.womenChildrenSuitability) score += BONUS_VULNERABLE
     score += suitability.scoreDelta
+    // Route-exposure penalty (0-100 scaled by the crossed fraction), so an
+    // edge-exit candidate outranks a closer one that plows through the
+    // disaster area (spec sections 5-7): a geographically close destination
+    // is NOT automatically the best evacuation destination.
+    val exposureFraction =
+      if (distance > 0) (exposureMeters / distance).coerceIn(0.0, 1.0) else 0.0
+    score -= (exposureFraction * 100.0).toInt()
     score = score.coerceIn(0, 100 + BONUS_MEDICAL_NEEDED + BONUS_VULNERABLE)
 
     // -------- User-facing "Why this safe zone?" reasons ----------------------
@@ -193,6 +219,15 @@ object SafeZoneEvaluator {
     reasons += SelectionReason(
       "About ${GeoMath.formatKm(distance)} away (~${estimateTravelMinutes(distance, ctx.walkingSpeedMps)} min walk)"
     )
+    if (exposureMeters > 0) {
+      reasons += SelectionReason(
+        "CAUTION: the direct path from you crosses about ${GeoMath.formatKm(exposureMeters)} of active hazard area"
+      )
+    } else if (ctx.hazards.isNotEmpty()) {
+      reasons += SelectionReason(
+        "Direct path from your location stays outside all hazard areas"
+      )
+    }
     when {
       altitudeKnown && climb >= 2.0 -> reasons += SelectionReason(
         "Terrain %.0f m HIGHER than your location - water drains away from it".format(climb)
@@ -228,7 +263,8 @@ object SafeZoneEvaluator {
       score = score,
       reasons = reasons,
       hazardExposureCount = exposures.size,
-      capacityReport = capacity
+      capacityReport = capacity,
+      evacuationExposureMeters = exposureMeters
     )
   }
 

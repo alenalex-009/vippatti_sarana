@@ -2,10 +2,13 @@ package com.example.ui.components
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.example.data.disaster.NearestViableSafeZone
 import com.example.data.disaster.ZoneDetail
 import com.example.data.disaster.ZoneDetailField
 import com.example.data.disaster.ZoneDetailSection
@@ -25,14 +28,18 @@ import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
 /**
- * Phase 5 information-hierarchy contracts (rule 22: primary visible first,
- * tertiary collapsed but never deleted):
- *  - hazard dialog opens with verdict + key facts VISIBLE and the technical
- *    sections COLLAPSED behind "Data & details"; expanding reveals them,
- *    including the honest "Data unavailable" state.
- *  - safe-zone dialog opens with the capacity RESULT and the SIMULATED state
- *    visible; the feasibility maths sit behind "Capacity details".
- *  - the simulated label appears ONLY for SIMULATED zones (honesty).
+ * Detail-card design contracts (approved reference redesign):
+ *  - hazard sheet opens COMPACT (icon / "{type} hazard" / severity pill / three
+ *    summary cards / nearest-safe-zone / area centre); technical sections and
+ *    provenance live behind the expandable details toggle;
+ *  - the compact view never repeats demo/simulation labels (the global demo
+ *    pill owns that signal); classification appears once, when expanded;
+ *  - missing values render "Data unavailable" / "Not assessed" - never 0 or
+ *    fabricated text;
+ *  - the nearest-safe-zone card navigates to the EXACT record id;
+ *  - safe-zone sheet: capacity gauge + quick status + limiting-factor row +
+ *    route CTA visible in the compact state; key info / resources /
+ *    feasibility / methodology only after "Show full details".
  */
 @RunWith(AndroidJUnit4::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
@@ -59,7 +66,7 @@ class DetailHierarchyTest {
     )
   )
 
-  private fun zoneDetail() = ZoneDetail(
+  private fun zoneDetail(nearest: NearestViableSafeZone? = null) = ZoneDetail(
     sections = listOf(
       ZoneDetailSection(
         heading = "FLOOD HAZARD DATA",
@@ -69,17 +76,17 @@ class DetailHierarchyTest {
         )
       )
     ),
-    nearestSafeZone = null
+    nearestSafeZone = nearest
   )
 
   private fun safeZone() = SafeZone(
-    id = "sz-1", name = "DEMO Community Hall (simulated)",
+    id = "sz-1", name = "Community Hall",
     lat = 27.49, lon = 94.92, locationNote = "SIMULATED record",
     capacityTotal = 500, capacityCurrent = 230,
     waterAvailable = true, foodAvailable = true, electricityAvailable = true,
     sanitationAvailable = false, medicalSupport = true, accessibility = "Road",
     womenChildrenSuitability = true, operatingStatus = "OPEN",
-    verificationStatus = "SIMULATED - not a verified shelter",
+    verificationStatus = "SIMULATED - not a verified shelter", // model field stays SIMULATED
     elevationNote = "",
     provenance = DataProvenance(
       source = "test", classification = DataClassification.SIMULATED
@@ -87,38 +94,77 @@ class DetailHierarchyTest {
   )
 
   @Test
-  fun `hazard dialog opens compact - expand reveals technical data`() {
+  fun `hazard sheet opens compact - expand reveals technical data`() {
     composeTestRule.setContent {
       VippattiTheme {
         HazardZoneDetailDialog(zone = hazardZone(true), detail = zoneDetail(), onDismiss = {})
       }
     }
-    // PRIMARY visible immediately:
-    composeTestRule.onNodeWithTag("hazard_verdict_box").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("hazard_stat_severity").assertIsDisplayed()
-    composeTestRule.onNodeWithText("SIMULATED - demonstration only").assertIsDisplayed()
-    // TERTIARY collapsed: the section fields are not composed at all.
+    // Compact summary cards are visible immediately (real record values):
+    composeTestRule.onNodeWithTag("hazard_stat_radius").assertIsDisplayed()
+    composeTestRule.onNodeWithText("1.8 km").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("hazard_stat_trend").assertIsDisplayed()
+    // The Detected tile has no timestamp in the record -> honest unavailable,
+    // never a fabricated age:
+    composeTestRule.onNodeWithTag("hazard_stat_detected")
+      .assertExists() // tag on card; content read below
+    composeTestRule.onNodeWithText("Data unavailable").assertExists()
+    // TERTIARY collapsed: technical fields and severity row not composed yet:
     composeTestRule.onNodeWithText("Water level").assertDoesNotExist()
-    composeTestRule.onNodeWithText("Data unavailable").assertDoesNotExist()
-    // Expand reveals exactly what was hidden, incl. the honest unavailable:
+    composeTestRule.onNodeWithTag("hazard_stat_severity").assertDoesNotExist()
+    // Expand reveals exactly what was hidden:
     composeTestRule.onNodeWithTag("hazard_details_toggle").performClick()
     composeTestRule.onNodeWithText("Water level").assertExists()
-    composeTestRule.onNodeWithText("Data unavailable").assertExists()
+    composeTestRule.onNodeWithText("Rainfall (24h)").assertExists()
+    composeTestRule.onNodeWithTag("hazard_stat_severity").assertExists()
   }
 
   @Test
-  fun `live hazard dialog carries no simulated label`() {
+  fun `compact hazard view never repeats demo labels`() {
     composeTestRule.setContent {
       VippattiTheme {
-        HazardZoneDetailDialog(zone = hazardZone(false), detail = zoneDetail(), onDismiss = {})
+        HazardZoneDetailDialog(zone = hazardZone(true), detail = zoneDetail(), onDismiss = {})
       }
     }
-    composeTestRule.onNodeWithText("SIMULATED - demonstration only").assertDoesNotExist()
-    composeTestRule.onNodeWithTag("hazard_verdict_box").assertIsDisplayed()
+    // Spec 20: one global demo signal - no DEMO/simulated wording in the
+    // compact hazard card at all.
+    composeTestRule.onNodeWithText("DEMO - demonstration only").assertDoesNotExist()
+    composeTestRule.onNodeWithText("Demo data").assertDoesNotExist()
+    composeTestRule.onNodeWithText("Simulated", substring = true).assertDoesNotExist()
+    // Provenance appears exactly once, only inside expanded details:
+    composeTestRule.onNodeWithTag("hazard_details_toggle").performClick()
+    composeTestRule.onNodeWithText("SOURCE & DETAILS").assertExists()
   }
 
   @Test
-  fun `safe-zone dialog opens with result first - details collapsed`() {
+  fun `nearest safe-zone card navigates to the exact record id`() {
+    var opened: String? = null
+    composeTestRule.setContent {
+      VippattiTheme {
+        HazardZoneDetailDialog(
+          zone = hazardZone(false),
+          detail = zoneDetail(
+            nearest = NearestViableSafeZone(
+              name = "Community Hall",
+              distanceText = "1.4 km",
+              capacityText = "270 spaces free",
+              id = "sz-1"
+            )
+          ),
+          onDismiss = {},
+          onOpenSafeZone = { opened = it }
+        )
+      }
+    }
+    composeTestRule.onNodeWithText("Community Hall").assertExists()
+    composeTestRule.onNodeWithText("1.4 km \u2022 270 spaces free").assertExists()
+    composeTestRule.onNodeWithTag("nearest_safe_zone_card").performClick()
+    // The callback receives THIS record's id - never a stand-in zone.
+    org.junit.Assert.assertEquals("sz-1", opened)
+  }
+
+  @Test
+  fun `safe-zone sheet opens with result-first compact view`() {
     composeTestRule.setContent {
       VippattiTheme {
         SafeZoneDetailDialog(
@@ -129,29 +175,52 @@ class DetailHierarchyTest {
         )
       }
     }
-    // PRIMARY result + state visible without wading through the maths:
-    composeTestRule.onNodeWithText("270 spaces available of 500").assertExists()
-    composeTestRule.onNodeWithText("SIMULATED - not a verified shelter").assertExists()
-    // TERTIARY feasibility block hidden until expanded:
+    // PRIMARY capacity result + one concise provenance pill:
+    composeTestRule.onNodeWithText("270 / 500").assertIsDisplayed()
+    composeTestRule.onNodeWithText("54% available").assertIsDisplayed()
+    composeTestRule.onNodeWithText("Demo data").assertIsDisplayed()
+    // Quick status: distance unknown (no evaluation) => honest unavailable.
+    composeTestRule.onNodeWithTag("safe_zone_stat_distance").assertExists()
+    composeTestRule.onNodeWithText("Open").assertExists()
+    // No assessment => no fabricated limiting factor (tag absent, text honest):
+    composeTestRule.onNodeWithTag("capacity_limiter_line").assertDoesNotExist()
+    composeTestRule.onNodeWithTag("limiting_factor_row").assertIsDisplayed()
+    // TERTIARY hidden until expanded:
+    composeTestRule.onNodeWithText("KEY INFORMATION").assertDoesNotExist()
+    composeTestRule.onNodeWithText("FACILITY RESOURCES").assertDoesNotExist()
     composeTestRule.onNodeWithText("RELOCATION FEASIBILITY").assertDoesNotExist()
     // Expand reveals it (nothing deleted, only collapsed):
     composeTestRule.onNodeWithTag("safe_zone_details_toggle").performClick()
+    composeTestRule.onNodeWithText("KEY INFORMATION").assertExists()
+    composeTestRule.onNodeWithText("FACILITY RESOURCES").assertExists()
     composeTestRule.onNodeWithText("RELOCATION FEASIBILITY").assertExists()
-    // The route action still exists:
+    composeTestRule.onNodeWithText("DATA & METHODOLOGY").assertExists()
+    // Route action still exists (exact destination wiring is a VM contract):
     composeTestRule.onNodeWithTag("safe_zone_route_button").assertExists()
   }
 
   @Test
-  fun `limiting-resource line never invents a reason when unassessed`() {
+  fun `resource flags are never shown as verified quantities`() {
     composeTestRule.setContent {
       VippattiTheme {
         SafeZoneDetailDialog(
           zone = safeZone(), evaluation = null,
-          onDismiss = {}, onSelectAndRoute = {}, capacityAssessment = null
+          onDismiss = {}, onSelectAndRoute = {}
         )
       }
     }
-    // No assessment => no "Why:" line (never fabricate a reason):
-    composeTestRule.onNodeWithTag("capacity_limiter_line").assertDoesNotExist()
+    composeTestRule.onNodeWithTag("safe_zone_details_toggle").performClick()
+    // The test zone flags water ON but carries no litres/day figure => the
+    // row must say the quantity is not provided, not imply verified supply.
+    composeTestRule.onNodeWithText("Water supply").assertExists()
+    composeTestRule.onNodeWithText("Food supply").assertExists()
+    // A flagged resource with no quantity must carry the honest qualifier...
+    composeTestRule.onAllNodesWithText(
+      "Available — quantity not provided", substring = true
+    ).assertCountEquals(5) // water/food/power/medical/women flagged, no figures
+    // ...and a false flag renders "Not available", never 0:
+    composeTestRule.onAllNodesWithText("Not available").assertCountEquals(1)
+    // No row may present a bare unqualified "Available" as verified:
+    composeTestRule.onAllNodesWithText("Available").assertCountEquals(0)
   }
 }

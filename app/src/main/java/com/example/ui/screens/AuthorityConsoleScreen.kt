@@ -501,7 +501,7 @@ private fun PriorityRow(p: HabitationPriority, destination: SafeZone?, hazardZon
         }
       }
       if (p.habitation.population?.classification == DataClassification.SIMULATED) {
-        Text("SIMULATED demo record", fontSize = 12.sp, fontWeight = FontWeight.Medium,
+        Text("Demo record", fontSize = 12.sp, fontWeight = FontWeight.Medium,
           color = WarningAmber)
       }
       if (expanded) {

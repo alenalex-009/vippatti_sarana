@@ -53,6 +53,36 @@ object HazardAnalysisService {
     }.filter { it.isInsideZone }
 
   /**
+   * Where the USER stands relative to one hazard circle (spec: USER POSITION
+   * RELATIVE TO HAZARD). Only classification the circle geometry actually
+   * supports: inside / near the boundary (within 500 m outside) / outside.
+   * There is deliberately NO "deep central" class - a circle gives no basis
+   * for it; claiming one would be an invented classification.
+   */
+  enum class PositionVsHazard(val label: String) {
+    INSIDE("You are INSIDE this hazard area"),
+    NEAR_EDGE("You are near the edge of this hazard area"),
+    OUTSIDE("You are outside this hazard area")
+  }
+
+  fun classifyPosition(
+    point: GeoPoint,
+    hazard: HazardZone,
+    edgeMarginMeters: Double = 500.0
+  ): Pair<PositionVsHazard, Double> {
+    val d = GeoMath.distanceMeters(point, hazard.center)
+    val inside = d <= hazard.radiusMeters
+    val position = when {
+      inside -> PositionVsHazard.INSIDE
+      d <= hazard.radiusMeters + edgeMarginMeters -> PositionVsHazard.NEAR_EDGE
+      else -> PositionVsHazard.OUTSIDE
+    }
+    // Signed distance to the EDGE: negative = how deep inside, positive =
+    // how far outside. Straight from the circle geometry, nothing invented.
+    return position to (d - hazard.radiusMeters)
+  }
+
+  /**
    * Nearest hazard of any type — used for GREEN risk explanations
    * ("no active hazard within X km").
    */

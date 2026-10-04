@@ -38,6 +38,7 @@ enum class DisasterSource(val label: String) {
   USGS("USGS Earthquake Hazards Program"),
   NASA_FIRMS("NASA FIRMS"),
   IMD_CAP("India Meteorological Department (official CAP alert)"),
+  NDMA_CAP("NDMA / SACHET national alerts (official CAP feed)"),
   USER_REPORT("User Report")
 }
 

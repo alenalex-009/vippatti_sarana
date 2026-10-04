@@ -18,6 +18,20 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PriorityHigh
+import androidx.compose.material.icons.filled.Radar
+import androidx.compose.material.icons.filled.TrendingFlat
+import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Grading
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.WaterDrop
+import androidx.compose.material.icons.filled.LocalFireDepartment
+import androidx.compose.material.icons.filled.Emergency
+import androidx.compose.material.icons.filled.Air
+import androidx.compose.material.icons.filled.Landslide
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -62,15 +76,17 @@ import androidx.compose.material.icons.filled.ExpandMore
 fun HazardZoneDetailDialog(
   zone: com.example.data.model.HazardZone,
   detail: com.example.data.disaster.ZoneDetail,
-  onDismiss: () -> Unit
+  onDismiss: () -> Unit,
+  /** Opens the safe-zone sheet for the nearest viable zone (exact record). */
+  onOpenSafeZone: ((String) -> Unit)? = null
 ) {
   Dialog(onDismissRequest = onDismiss) {
     Surface(
-      shape = RoundedCornerShape(20.dp),
+      shape = RoundedCornerShape(24.dp),
       color = ObsidianSurface,
       modifier = Modifier
         .fillMaxWidth()
-        .border(1.dp, TacticalOutlineVariant, RoundedCornerShape(20.dp))
+        .border(1.dp, TacticalOutlineVariant, RoundedCornerShape(24.dp))
     ) {
       Column(
         modifier = Modifier
@@ -78,205 +94,214 @@ fun HazardZoneDetailDialog(
           .fillMaxWidth()
           // Long hazard intelligence scrolls instead of clipping on short screens.
           .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(14.dp)
       ) {
+        val accent = hazardAccent(zone)
+        // ---- HEADER: icon chip / "Flood hazard" / record name / severity pill
         Row(
           modifier = Modifier.fillMaxWidth(),
-          horizontalArrangement = Arrangement.SpaceBetween,
-          verticalAlignment = Alignment.CenterVertically
+          horizontalArrangement = Arrangement.spacedBy(12.dp),
+          verticalAlignment = Alignment.Top
         ) {
-          Column {
+          DetailIconChip(hazardTypeIcon(zone.type), accent,
+            contentDescription = zone.type.label + " hazard")
+          Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
             Text(
-              text = zone.type.label.uppercase() + " HAZARD",
-              fontSize = 10.sp,
+              // Sentence-case per the reference; the record's own type words,
+              // never "DEMO" here - global demo state lives outside the card.
+              text = zone.type.label + " hazard",
+              fontSize = 21.sp,
               fontWeight = FontWeight.Black,
-              color = EmergencyRedBright,
-              letterSpacing = 0.8.sp
+              color = TacticalOnSurface,
+              lineHeight = 25.sp,
+              maxLines = 2,
+              softWrap = true,
+              overflow = TextOverflow.Visible
             )
             Text(
               text = zone.name,
-              fontSize = 16.sp,
-              fontWeight = FontWeight.Bold,
-              color = TacticalOnSurface,
-              maxLines = 2,
-              overflow = TextOverflow.Ellipsis
+              fontSize = 13.sp,
+              color = TacticalOnSurfaceVariant,
+              lineHeight = 17.sp,
+              maxLines = 3,
+              softWrap = true,
+              overflow = TextOverflow.Visible
             )
-            if (zone.provenance.classification ==
-                com.example.data.model.DataClassification.SIMULATED
-            ) {
-              // Demo state stated plainly next to the name (P1 hierarchy).
+            Spacer(Modifier.height(4.dp))
+            StatusPill(
+              icon = Icons.Default.PriorityHigh,
+              label = zone.severity.label,
+              accent = accent,
+              tag = "hazard_severity_pill"
+            )
+            if (detail.userPositionLabel != null) {
+              // USER POSITION RELATIVE TO HAZARD - the first step of the
+              // evacuation chain (INSIDE / NEAR edge / OUTSIDE).
               Text(
-                text = "SIMULATED - demonstration only",
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Medium,
-                color = WarningAmber
+                text = detail.userPositionLabel,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                color = if (detail.userPositionLabel.startsWith("You are INSIDE"))
+                  EmergencyRedBright else TacticalOnSurfaceVariant,
+                modifier = Modifier.testTag("hazard_user_position")
               )
             }
-            com.example.ui.components.StatusBadge(
-              status = com.example.data.model.statusOf(
-                provenance = zone.provenance,
-                eventAtMillis = zone.lastUpdatedMillis.takeIf { it > 0L }
-              ).status
-            )
           }
           IconButton(onClick = onDismiss) {
             Icon(Icons.Default.Close, contentDescription = "Close", tint = TacticalOnSurfaceVariant)
           }
         }
 
-        // --- BOTTOM LINE FIRST: what this means, in one glance ---
-        // (Field report: details read as a wall of equal rows. The verdict +
-        // the way out now come before any data rows.)
-        val nearest = detail.nearestSafeZone
-        VerdictBox(
-          accent = if (zone.provenance.classification ==
-              com.example.data.model.DataClassification.SIMULATED
-          ) WarningAmber else EmergencyRedBright,
-          title = when {
-            zone.provenance.classification ==
-              com.example.data.model.DataClassification.SIMULATED ->
-              "DEMO danger zone — practice mode"
-            zone.severity.label == "Extreme" -> "Very dangerous area — stay away"
-            else -> "Danger area — keep your distance"
-          },
-          body = nearest?.let {
-            "Nearest safe spot: ${it.name} — ${it.distanceText} away (${it.capacityText})."
-          } ?: "No viable safe zone identified yet.",
-          tag = "hazard_verdict_box"
-        )
-
-        // --- KEY FACTS as big readable tiles (not cramped pills) ---
+        // ---- SUMMARY ROW: three compact cards, honest "Data unavailable"
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-          StatTile("SEVERITY", zone.severity.label, EmergencyRedBright, Modifier.weight(1f),
-            tag = "hazard_stat_severity")
-          StatTile("TREND", zone.trend.label, TacticalCyan, Modifier.weight(1f),
-            tag = "hazard_stat_trend")
-          StatTile(
-            "AFFECTED RADIUS",
-            String.format(java.util.Locale.US, "%.1f km", zone.radiusMeters / 1000.0),
-            TacticalOnSurface, Modifier.weight(1f),
+          SummaryCard(
+            label = "Affected radius",
+            value = String.format(java.util.Locale.US, "%.1f km", zone.radiusMeters / 1000.0),
+            icon = Icons.Default.Radar,
+            modifier = Modifier.weight(1f),
             tag = "hazard_stat_radius"
+          )
+          SummaryCard(
+            label = "Trend",
+            value = zone.trend.label,
+            icon = Icons.Default.TrendingFlat,
+            valueAccent = if (zone.trend == com.example.data.model.HazardTrend.WORSENING)
+              WarningAmber else TacticalCyan,
+            modifier = Modifier.weight(1f),
+            tag = "hazard_stat_trend"
+          )
+          val detected = detail.detectedAtMillis?.let { ms ->
+            com.example.data.news.NewsPresentation.relativeAge(ms, System.currentTimeMillis())
+          }
+          SummaryCard(
+            label = "Detected",
+            value = detected ?: "Data unavailable",
+            subValue = detail.detectedAtMillis?.let {
+              java.text.SimpleDateFormat("dd MMM yyyy, HH:mm", java.util.Locale.getDefault())
+                .format(java.util.Date(it))
+            },
+            icon = Icons.Default.Schedule,
+            modifier = Modifier.weight(1f),
+            tag = "hazard_stat_detected",
+            unavailable = detected == null
           )
         }
 
-        // TERTIARY INFORMATION COLLAPSES (P1 hierarchy + rule 22): the
-        // technical rows and provenance stay available for judges/field
-        // staff but never compete with verdict + key facts.
+        // ---- NEAREST SAFE ZONE: tappable, bound to the exact record id.
+        // Only ever the zone the evaluator accepted for THIS hazard context.
+        val nearest = detail.nearestSafeZone
+        if (nearest != null && onOpenSafeZone != null) {
+          NearestSafeZoneCard(
+            name = nearest.name,
+            detailLine = "${nearest.distanceText} \u2022 ${nearest.capacityText}",
+            onClick = { onOpenSafeZone(nearest.id) }
+          )
+        } else if (nearest != null) {
+          NearestSafeZoneCard(
+            name = nearest.name,
+            detailLine = "${nearest.distanceText} \u2022 ${nearest.capacityText}",
+            onClick = onDismiss
+          )
+        } else {
+          // Honest empty state: no viable zone, no navigation promise.
+          Text(
+            text = "No viable safe zone identified yet.",
+            fontSize = 13.sp,
+            color = TacticalOnSurfaceVariant,
+            maxLines = 2,
+            modifier = Modifier.testTag("hazard_verdict_box")
+          )
+        }
+
+        // ---- EXPANDABLE "{type} details": the existing mapped sections,
+        // nothing deleted, only disclosed on demand.
         var detailsExpanded by remember(zone.id) { mutableStateOf(false) }
         TextButton(
           onClick = { detailsExpanded = !detailsExpanded },
-          contentPadding = PaddingValues(horizontal = 4.dp, vertical = 2.dp),
-          modifier = Modifier.testTag("hazard_details_toggle")
+          contentPadding = PaddingValues(horizontal = 4.dp, vertical = 6.dp),
+          modifier = Modifier.heightIn(min = 44.dp).testTag("hazard_details_toggle")
         ) {
           Icon(
             imageVector = if (detailsExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
             contentDescription = null,
             tint = TacticalOnSurfaceVariant,
-            modifier = Modifier.size(16.dp)
+            modifier = Modifier.size(18.dp)
           )
-          Spacer(modifier = Modifier.width(4.dp))
+          Spacer(modifier = Modifier.width(6.dp))
           Text(
-            text = if (detailsExpanded) "Hide data & details" else "Data & details",
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Medium,
-            color = TacticalOnSurfaceVariant
+            text = if (detailsExpanded) "Hide ${zone.type.label.lowercase()} details"
+              else "${zone.type.label} details",
+            fontSize = 14.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = TacticalOnSurface
           )
         }
 
         if (detailsExpanded) {
-        // --- DATA SECTIONS: generous row spacing, 12sp labels / 13sp values ---
-        detail.sections.forEach { section ->
-          Column(
-            modifier = Modifier
-              .fillMaxWidth()
-              .clip(RoundedCornerShape(12.dp))
-              .background(ObsidianContainerHigh)
-              .border(1.dp, TacticalOutlineVariant.copy(alpha = 0.4f), RoundedCornerShape(12.dp))
-              .padding(horizontal = 14.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
-          ) {
-            Text(
-              text = section.heading,
-              fontSize = 12.sp,
-              fontWeight = FontWeight.Black,
-              color = TacticalCyan,
-              letterSpacing = 0.5.sp
-            )
-            section.fields.forEachIndexed { index, field ->
-              if (index > 0) {
-                Box(
-                  Modifier
-                    .fillMaxWidth()
-                    .height(1.dp)
-                    .background(TacticalOutlineVariant.copy(alpha = 0.25f))
-                )
+          detail.sections.forEach { section ->
+            Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
+              SectionHeader(section.heading, Icons.Default.Description, TacticalCyan)
+              Spacer(Modifier.height(4.dp))
+              DetailPanel {
+                section.fields.forEachIndexed { index, field ->
+                  if (index > 0) RowDividerLine()
+                  DetailRow(
+                    label = field.label,
+                    value = field.value ?: "Data unavailable",
+                    unavailable = field.value == null
+                  )
+                }
               }
-              Row(
-                modifier = Modifier
-                  .fillMaxWidth()
-                  .padding(vertical = 2.dp),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                verticalAlignment = Alignment.Top
-              ) {
-                Text(
-                  text = field.label,
-                  fontSize = 12.sp,
-                  color = TacticalOnSurfaceVariant,
-                  lineHeight = 16.sp,
-                  modifier = Modifier.weight(0.42f)
-                )
-                Text(
-                  text = field.value ?: "Data unavailable",
-                  fontSize = 13.sp,
-                  fontWeight = if (field.value != null) FontWeight.SemiBold else FontWeight.Normal,
-                  color = if (field.value != null) TacticalOnSurface else TacticalOnSurfaceVariant,
-                  lineHeight = 17.sp,
-                  modifier = Modifier.weight(0.58f)
-                )
-              }
+            }
+          }
+          // ---- ONE concise provenance block (moved out of the compact view)
+          Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
+            SectionHeader("Source & details", Icons.Default.Info, TacticalCyan)
+            Spacer(Modifier.height(4.dp))
+            DetailPanel {
+              DetailRow("Status", zone.sourceStatus)
+              RowDividerLine()
+              DetailRow(
+                "Data",
+                zone.provenance.classification.label,
+                subNote = "Source: ${zone.provenance.source} \u00b7 ${zone.provenance.status}"
+              )
+              RowDividerLine()
+              DetailRow(
+                "Severity record",
+                zone.severity.label,
+                tag = "hazard_stat_severity"
+              )
             }
           }
         }
 
-        // --- FOOTER: source + geometry demoted to quiet 11sp lines (they are
-        // provenance for the curious, not the headline). Fixed the corrupted
-        // "Source: X ? Status: Y" separators from an earlier text mangling. ---
-        Column(
-          modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 2.dp),
-          verticalArrangement = Arrangement.spacedBy(3.dp)
-        ) {
-          Text(
-            text = zone.sourceStatus,
-            fontSize = 11.sp,
-            color = TacticalOnSurfaceVariant,
-            lineHeight = 14.sp
-          )
-          Text(
-            text = "Data from ${zone.provenance.source} · ${zone.provenance.status} · " +
-              zone.provenance.classification.label,
-            fontSize = 11.sp,
-            color = TacticalCyan.copy(alpha = 0.9f),
-            lineHeight = 14.sp
-          )
-          Text(
-            text = String.format(
-              java.util.Locale.US,
-              "Area centre: %.4f N, %.4f E",
-              zone.center.lat,
-              zone.center.lon
-            ),
-            fontSize = 11.sp,
-            color = TacticalOnSurfaceVariant,
-            lineHeight = 14.sp
-          )
-        }
-        } // end if (detailsExpanded)
+        // ---- FOOTER: Area centre (the only geographic line kept compact).
+        AreaCentreCard(
+          latText = String.format(java.util.Locale.US, "%.4f N", zone.center.lat),
+          lonText = String.format(java.util.Locale.US, "%.4f E", zone.center.lon)
+        )
       }
     }
   }
 }
+
+/** Hazard-type accent matching the map language (fire red, cyclone teal...). */
+private fun hazardAccent(zone: com.example.data.model.HazardZone): Color =
+  Color(com.example.data.disaster.DisasterTypeColors.argbFor(zone.type))
+
+/** Per-type leading icon for the header chip. */
+@androidx.compose.runtime.Composable
+private fun hazardTypeIcon(type: com.example.data.model.HazardType): androidx.compose.ui.graphics.vector.ImageVector =
+  when (type) {
+    com.example.data.model.HazardType.FLOOD -> Icons.Default.WaterDrop
+    com.example.data.model.HazardType.HEAVY_RAINFALL -> Icons.Default.Grading
+    com.example.data.model.HazardType.FIRE -> Icons.Default.LocalFireDepartment
+    com.example.data.model.HazardType.EARTHQUAKE -> Icons.Default.Emergency
+    com.example.data.model.HazardType.CYCLONE -> Icons.Default.Air
+    com.example.data.model.HazardType.LANDSLIDE -> Icons.Default.Landslide
+    else -> Icons.Default.Warning
+  }
 
 /** The one-glance verdict block shared by the map detail dialogs. */
 @Composable
@@ -325,7 +350,7 @@ private fun StatTile(label: String, value: String, accent: Color, modifier: Modi
     Spacer(Modifier.height(2.dp))
     Text(
       value, fontSize = 15.sp, fontWeight = FontWeight.Black, color = accent,
-      maxLines = 1, overflow = TextOverflow.Ellipsis
+      maxLines = 2, softWrap = true, overflow = TextOverflow.Visible
     )
   }
 }
@@ -441,7 +466,7 @@ fun DisasterEventDetailDialog(
             com.example.data.disaster.EventOrigin.OBSERVED -> "Observed (provider measurement)"
             com.example.data.disaster.EventOrigin.REPORTED -> "Reported by a citizen - UNVERIFIED"
             com.example.data.disaster.EventOrigin.DERIVED -> "Derived from provider data"
-            com.example.data.disaster.EventOrigin.SIMULATED -> "Simulated field data"
+            com.example.data.disaster.EventOrigin.SIMULATED -> "Demo field data"
           }
         )
         DetailLine(

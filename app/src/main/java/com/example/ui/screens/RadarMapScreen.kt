@@ -175,7 +175,7 @@ internal fun HavenResultRow(
         Text(
           h.headline,
           fontSize = 11.sp, fontWeight = FontWeight.Bold, color = TacticalCyan,
-          maxLines = 1, overflow = TextOverflow.Ellipsis
+          maxLines = 2, softWrap = true, overflow = TextOverflow.Visible
         )
         Text(
           "DERIVED open terrain \u2014 not a registered shelter \u00b7 tap to route",
@@ -338,16 +338,16 @@ fun RadarMapScreen(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically
       ) {
-        val placeLabel = when {
-          uiState.isViewingChosenPlace ->
-            (uiState.viewedPlaceLabel ?: "Selected area") + " \u00b7 Selected area"
-          // Honest fallback label (spec: no GPS fix must never claim GPS;
-          // with demo on, the chip above already explains what is shown).
-          uiState.isUserLocationFallback ->
-            if (uiState.isMockDataVisible) "Location unavailable \u00b7 Demo scenario"
-            else "Location unavailable"
-          else -> "Your location \u00b7 GPS"
-        }
+        // PHASE 2 (user): the pill no longer narrates location STATE
+        // ("Your location · GPS" / "Location unavailable · Demo scenario").
+        // It is a place SEARCH affordance; when a place was chosen its short
+        // name is shown so the view still makes sense. Location capability
+        // (GPS, admin resolution, demo anchoring) is untouched internally.
+        val placeLabel = if (uiState.isViewingChosenPlace) {
+          (uiState.viewedPlaceLabel ?: "")
+            .split(',').firstOrNull { it.isNotBlank() }?.trim()
+            ?.takeIf { it.isNotBlank() } ?: "Selected area"
+        } else "Search a place"
         Row(
           modifier = Modifier
             .weight(1f)
@@ -370,15 +370,17 @@ fun RadarMapScreen(
             fontSize = 12.sp,
             fontWeight = FontWeight.Bold,
             color = TacticalOnSurface,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
+            // Wrap rather than ellipsis: "Location unavailable · Demo
+            // sc..." is exactly the accidental truncation the user reported.
+            maxLines = 2,
+            softWrap = true,
             modifier = Modifier.weight(1f)
           )
-          Text(
-            text = "Change",
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Black,
-            color = TacticalCyan
+          Icon(
+            imageVector = Icons.Default.Search,
+            contentDescription = "Search a place",
+            tint = TacticalCyan,
+            modifier = Modifier.size(16.dp)
           )
         }
         IconButton(

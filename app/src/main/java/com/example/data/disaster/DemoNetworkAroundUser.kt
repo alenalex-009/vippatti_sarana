@@ -120,12 +120,12 @@ object DemoNetworkAroundUser {
     val type = hazardTypeFor(focus, coastKm)
     return HazardZone(
       id = "demo-hz-${quant(focus)}",
-      name = "DEMO ${type.label} Zone (simulated)",
+      name = "DEMO ${type.label} Zone (demo scenario)",
       type = type,
       severity = HazardSeverity.HIGH,
       center = center,
       radiusMeters = radiusMetersFor(type),
-      riskLevel = "SIMULATED — demonstration only",
+      riskLevel = "DEMO — demonstration only",
       trend = HazardTrend.STABLE,
       sourceStatus = "DEMO DATA — generated around your location, NOT real",
       lastUpdatedMillis = 0L,
@@ -197,10 +197,10 @@ object DemoNetworkAroundUser {
       out += SafeZone(
         id = "demo-sz-${quant(focus)}-$idx",
         name = DEMO_SHELTER_NAMES[(idx + namesOffset(focus)) % DEMO_SHELTER_NAMES.size] +
-          " (simulated)",
+          " (demo)",
         lat = p.lat,
         lon = p.lon,
-        locationNote = "SIMULATED record — demo shelter about %.1f km from your location".format(
+        locationNote = "Demo record — shelter about %.1f km from your location".format(
           com.example.data.model.GeoMath.distanceMeters(focus, p) / 1000.0
         ),
         capacityTotal = DEMO_SHELTER_CAPACITY + idx * 60,
@@ -244,17 +244,50 @@ object DemoNetworkAroundUser {
    * the way out" is demoable for every disaster, not just the one the place
    * hash produced). Deterministic: same focus + same type = same records.
    */
+  /**
+   * TRUE when a DEMO scenario of [type] is geographically plausible at this
+   * point, using the real inputs the app has (Natural Earth coast distance;
+   * deterministic hill belts). Returns false for obviously impossible demo
+   * pairings (inland cyclone), so the scenario engine can substitute rather than mislead (spec phase 10). Still 100% demonstration logic.
+   */
+  fun plausibleAt(
+    point: GeoPoint,
+    type: com.example.data.model.HazardType,
+    coastKm: Int? = null
+  ): Boolean = when (type) {
+    com.example.data.model.HazardType.CYCLONE -> coastKm != null && coastKm <= 60
+    com.example.data.model.HazardType.LANDSLIDE ->
+      // hill belts only: Himalayan fringe + Western Ghats + NE hill range
+      ((point.lat * 100).toLong() * 17L + (point.lon * 100).toLong()) % 11L < 5 ||
+        (point.lat > 23.0 && point.lon > 88.0) || point.lat > 30.0
+    com.example.data.model.HazardType.FLOOD ->
+      // flood needs water context: coastal/low-lying OR the flood-prone belts
+      (coastKm != null && coastKm <= 30) ||
+        (point.lat in 21.0..28.0 && point.lon in 86.0..93.0) ||  // Bengal-Bihar belt
+        (point.lat in 25.0..29.5 && point.lon in 75.0..81.0) ||  // Punjab-Himalayan rivers
+        ((point.lat * 10_000).toLong() % 7L) < 4L               // deterministic spread elsewhere
+    else -> true  // earthquake/fire/heavy-rain demonstrate broadly
+  }
+
+  /** Plausibility-checked type choice: asked type when plausible, else the
+   * natural scenario for this place (still deterministic). */
+  fun demoTypeFor(point: GeoPoint, asked: com.example.data.model.HazardType?, coastKm: Int?):
+    com.example.data.model.HazardType {
+    if (asked == null) return hazardTypeFor(point, coastKm)
+    return if (plausibleAt(point, asked, coastKm)) asked else hazardTypeFor(point, coastKm)
+  }
+
   fun secondaryHazard(focus: GeoPoint, type: com.example.data.model.HazardType): HazardZone {
     val bearing = (bearingFor(focus) * 3 + type.ordinal * 47.0) % 360.0
     val center = offset(focus, DEMO_SECONDARY_DISTANCE_KM, bearing)
     return HazardZone(
       id = "demo-hz2-${quant(focus)}-${type.name.lowercase()}",
-      name = "DEMO ${type.label} Zone (simulated)",
+      name = "DEMO ${type.label} Zone (demo scenario)",
       type = type,
       severity = com.example.data.model.HazardSeverity.HIGH,
       center = center,
       radiusMeters = radiusMetersFor(type),
-      riskLevel = "SIMULATED — demonstration only",
+      riskLevel = "DEMO — demonstration only",
       trend = com.example.data.model.HazardTrend.STABLE,
       sourceStatus = "DEMO DATA — generated around your location for the ${type.label} filter, NOT real",
       lastUpdatedMillis = 0L,
@@ -279,7 +312,16 @@ object DemoNetworkAroundUser {
     maxDistanceKm: Double = 9.0,
     coastKmAnchor: Int? = null,
     demandLandward: Boolean = false,
-    idSalt: String = ""
+    idSalt: String = "",
+    /**
+     * Circle the placements must clear. Defaults to the anchor itself
+     * (historic ring-around-hazard behavior for regional pairings). The
+     * FOCUSED demo passes anchor = USER location and hazardCenter = the
+     * scenario circle: placements then walk outward from the USER away from
+     * the hazard - demo mode follows the same user-relative architecture as
+     * live mode (EVACUATION CORRECTION spec 9).
+     */
+    hazardCenter: GeoPoint? = null
   ): List<SafeZone> {
     val out = ArrayList<SafeZone>(count)
     var idx = 0
@@ -288,8 +330,9 @@ object DemoNetworkAroundUser {
       val bearing = (hazardBearingFromAnchor + 180.0 + ring * 60.0) % 360.0
       ring++
       var distance = DEMO_SHELTER_DISTANCE_KM + out.size * 1.4
+      val clearCenter = hazardCenter ?: anchor
       while (com.example.data.model.GeoMath.distanceMeters(
-          anchor, offset(anchor, distance, bearing)
+          clearCenter, offset(anchor, distance, bearing)
         ) <= hazardRadiusMeters + 300.0 && distance < maxDistanceKm
       ) {
         distance += 0.3
@@ -304,9 +347,9 @@ object DemoNetworkAroundUser {
       out += SafeZone(
         id = "demo-sz${idSalt}-${quant(anchor)}-$idx",
         name = DEMO_SHELTER_NAMES[(idx + namesOffset(anchor)) % DEMO_SHELTER_NAMES.size] +
-          " (simulated)",
+          " (demo)",
         lat = p.lat, lon = p.lon,
-        locationNote = "SIMULATED record — demo shelter about %.1f km from this hazard".format(
+        locationNote = "Demo record — shelter about %.1f km from this hazard".format(
           com.example.data.model.GeoMath.distanceMeters(anchor, p) / 1000.0
         ),
         capacityTotal = DEMO_SHELTER_CAPACITY + idx * 90,

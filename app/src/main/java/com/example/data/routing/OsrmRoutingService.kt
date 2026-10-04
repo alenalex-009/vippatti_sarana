@@ -176,6 +176,28 @@ object HazardRoutingPolicy {
     )
   }
 
+  /**
+   * How many separate runs of the path lie inside the hazard discs. One run
+   * = a clipped corridor; several = the route leaves and RE-ENTERS a hazard,
+   * which the user flagged as unacceptable for an evacuation route. Pure
+   * geometry over the real path + real hazard circles - no invented data.
+   */
+  fun hazardCrossingRuns(
+    path: List<GeoPoint>,
+    hazards: List<HazardZone>
+  ): Int {
+    var runs = 0
+    for (hazard in hazards) {
+      var inside = false
+      for (point in path) {
+        val inZone = GeoMath.distanceMeters(hazard.center, point) <= hazard.radiusMeters
+        if (inZone && !inside) runs++
+        inside = inZone
+      }
+    }
+    return runs
+  }
+
   data class HazardPenalty(
     val penaltyMeters: Double,
     val warnings: List<RouteHazardWarning>,

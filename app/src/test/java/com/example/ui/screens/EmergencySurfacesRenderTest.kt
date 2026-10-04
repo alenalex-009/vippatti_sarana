@@ -200,7 +200,7 @@ class EmergencySurfacesRenderTest {
       .onNodeWithTag("priority_row_demo-x", useUnmergedTree = true)
       .assertExists()
     composeTestRule
-      .onAllNodesWithText("SIMULATED demo record")
+      .onAllNodesWithText("Demo record")
       .onFirst()
       .assertExists()
   }

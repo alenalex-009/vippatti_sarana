@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -271,9 +272,12 @@ fun SituationReportDialog(
             fontSize = 12.sp, fontWeight = FontWeight.Bold,
             color = TacticalOnSurfaceVariant)
 
-          Row(
+          // USER FIX (report UI): side-by-side crushed the two long labels
+          // into ellipsis on small screens. Stack full-width 48dp rows -
+          // readable at any width, proper touch targets, no overlap.
+          Column(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp)
           ) {
             OutlinedButton(
               onClick = {
@@ -284,14 +288,13 @@ fun SituationReportDialog(
               shape = RoundedCornerShape(12.dp),
               colors = ButtonDefaults.outlinedButtonColors(contentColor = WarningAmber),
               modifier = Modifier
-                .weight(1f)
-                .height(44.dp)
+                .fillMaxWidth()
+                .heightIn(min = 48.dp)
                 .testTag("situation_photo_button")
             ) {
               Icon(Icons.Default.PhotoLibrary, contentDescription = null, tint = WarningAmber, modifier = Modifier.size(18.dp))
               Spacer(modifier = Modifier.width(6.dp))
-              Text(stringResource(R.string.report_attach_photo), fontSize = 12.sp, fontWeight = FontWeight.Bold,
-                maxLines = 2, overflow = TextOverflow.Ellipsis)
+              Text(stringResource(R.string.report_attach_photo), fontSize = 13.sp, fontWeight = FontWeight.Bold)
             }
             OutlinedButton(
               onClick = {
@@ -310,14 +313,13 @@ fun SituationReportDialog(
               shape = RoundedCornerShape(12.dp),
               colors = ButtonDefaults.outlinedButtonColors(contentColor = TacticalCyan),
               modifier = Modifier
-                .weight(1f)
-                .height(44.dp)
+                .fillMaxWidth()
+                .heightIn(min = 48.dp)
                 .testTag("situation_camera_button")
             ) {
               Icon(Icons.Default.PhotoCamera, contentDescription = null, tint = TacticalCyan, modifier = Modifier.size(18.dp))
               Spacer(modifier = Modifier.width(6.dp))
-              Text(stringResource(R.string.report_camera_photo), fontSize = 12.sp, fontWeight = FontWeight.Bold,
-                maxLines = 2, overflow = TextOverflow.Ellipsis)
+              Text(stringResource(R.string.report_camera_photo), fontSize = 13.sp, fontWeight = FontWeight.Bold)
             }
           }
         } else {

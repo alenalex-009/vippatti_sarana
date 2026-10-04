@@ -80,6 +80,9 @@ fun StatusBadge(
   modifier: Modifier = Modifier
 ) {
   val color = dataStatusColor(status)
+  // PHASE 23: normal UI never spells "SIMULATED" - demo data reads "DEMO".
+  // Internally DataStatus.SIMULATED is preserved untouched (model/tests).
+  val uiLabel = if (status == DataStatus.SIMULATED) "Demo" else status.label
   Box(
     modifier = modifier
       .clip(RoundedCornerShape(999.dp))
@@ -88,7 +91,7 @@ fun StatusBadge(
       .padding(horizontal = 10.dp, vertical = 4.dp)
   ) {
     Text(
-      text = status.label.uppercase(),
+      text = uiLabel.uppercase(),
       fontSize = 12.sp,
       fontWeight = FontWeight.Bold,
       color = color,
@@ -142,7 +145,7 @@ fun SimulatedWarningBar() {
   ) {
     Box(modifier = Modifier.size(8.dp).background(TacticalCyan, CircleShape))
     Text(
-      text = "SIMULATED — demonstration scenario, not a real observation.",
+      text = "DEMO — demonstration scenario, not a real observation.",
       fontSize = 12.sp,
       fontWeight = FontWeight.Bold,
       color = TacticalCyan

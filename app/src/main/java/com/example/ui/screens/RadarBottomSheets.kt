@@ -126,8 +126,10 @@ internal fun CollapsedSheetContent(uiState: VippattiUiState) {
         fontSize = 12.sp,
         fontWeight = FontWeight.Bold,
         color = TacticalOnSurface,
-        maxLines = 1,
-        overflow = TextOverflow.Ellipsis
+        // Destination name is critical context: wrap, never ellipsis-chop.
+        maxLines = 2,
+        softWrap = true,
+        overflow = TextOverflow.Visible
       )
     }
     if (uiState.isCalculatingRoute) {
@@ -265,9 +267,10 @@ internal fun ExpandedSheetContent(
         .testTag("open_incident_report_button")
     ) {
       Text(
-        text = "REPORT AN INCIDENT…",
+        text = "Report an incident",
         style = MaterialTheme.typography.labelMedium,
-        color = MaterialTheme.colorScheme.onSurface
+        color = MaterialTheme.colorScheme.onSurface,
+        maxLines = 2
       )
     }
   }

@@ -67,7 +67,10 @@ class UsgsEarthquakeProvider(
 
   companion object {
     const val BASE_URL = "https://earthquake.usgs.gov/fdsnws/event/1/query"
-    const val LOOKBACK_DAYS = 7
+    // PHASE 15 freshness: a magnitude-4+ event older than 3 days is context,
+    // not a current hazard for the local map. (Cache policy already drops
+    // beyond 7 days; the query window is now tighter on purpose.)
+    const val LOOKBACK_DAYS = 3
     const val MIN_MAGNITUDE = 4.0
 
     fun defaultHttpClient(): OkHttpClient =

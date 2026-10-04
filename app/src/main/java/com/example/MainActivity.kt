@@ -891,9 +891,12 @@ fun VippattiAppRoot(
           detail = ZoneDetailMapper.map(
             zone = hazard,
             event = sourceEvent,
-            feasibleSafeZones = uiState.rankedShelters.map { it.zone }
+            feasibleSafeZones = uiState.rankedShelters.map { it.zone },
+            // Evacuation origin = the user's actual position, always.
+            userLocation = uiState.userLocation
           ),
-          onDismiss = { viewModel.closeHazardDetail() }
+          onDismiss = { viewModel.closeHazardDetail() },
+          onOpenSafeZone = { zoneId -> viewModel.openSafeZoneDetailById(zoneId) }
         )
       }
 

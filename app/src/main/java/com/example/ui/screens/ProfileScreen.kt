@@ -1719,8 +1719,13 @@ internal fun ProfileHeaderCard(
         },
         fontSize = 12.sp,
         color = TacticalOnSurfaceVariant,
-        maxLines = 1,
-        overflow = TextOverflow.Ellipsis
+        // USER FIX (long-email "..." truncation): an email is identity data -
+        // it must never be chopped with an accidental ellipsis. Allow two
+        // wrapped lines and let long addresses break mid-token (no word is
+        // wider than the column at these sizes anyway).
+        maxLines = 2,
+        softWrap = true,
+        overflow = TextOverflow.Visible
       )
     }
 

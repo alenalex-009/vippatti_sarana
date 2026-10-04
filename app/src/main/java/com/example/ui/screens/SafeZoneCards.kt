@@ -81,16 +81,20 @@ internal fun SafeZoneCarousel(
   // raw network list, so another state's shelters can't appear at 0 m.
   val evalById = uiState.evaluatedShelters.associateBy { it.zone.id }
   val origin = uiState.userLocation
-  val carouselZones: List<SafeZone> = run {
-    // ONE source of truth: the same feasible-or-selected set the MAP pins
-    // render (P0 fix #2). A card here is always an actionable destination
-    // and the exact object routing goes to (799m vs 14.8km bug).
-    val source = uiState.visibleSafeZones
-    source.sortedBy {
+  // EVACUATION OPTIONS (correction spec 4/11): the order is the EVALUATOR'S
+  // ranking from the USER'S position - feasible first, then composite score
+  // (which already includes route hazard exposure), then straight-line
+  // distance. Raw "nearest point" ordering is deliberately NOT used: a close
+  // destination across the hazard must not outrank a clean exit.
+  val rankedCandidates: List<SafeZone> = uiState.visibleSafeZones.sortedWith(
+    compareByDescending<SafeZone> {
+      evalById[it.id]?.takeIf { e -> e.isFeasible }?.score ?: -1
+    }.thenBy {
       evalById[it.id]?.distanceMeters
         ?: com.example.data.model.GeoMath.distanceMeters(origin, it.point)
-    }.take(MAX_CAROUSEL_ZONES)
-  }
+    }
+  )
+  val carouselZones: List<SafeZone> = rankedCandidates.take(MAX_CAROUSEL_ZONES)
   val hiddenCount = uiState.visibleSafeZones.size -
     carouselZones.size
   val selectedIndex = carouselZones.indexOfFirst { it.id == selectedId }
@@ -111,7 +115,7 @@ internal fun SafeZoneCarousel(
       verticalAlignment = Alignment.CenterVertically
     ) {
       Text(
-        text = "SAFE ZONES — TAP TO ROUTE",
+        text = "EVACUATION OPTIONS — TAP TO ROUTE",
         fontSize = 10.sp,
         fontWeight = FontWeight.Black,
         color = TacticalOnSurfaceVariant,
@@ -133,16 +137,18 @@ internal fun SafeZoneCarousel(
     ) {
       Text(
         text = if (!uiState.isMockDataVisible) {
-          "SIMULATED HIDDEN — switch SIMULATED DEMO on for the India demo network"
+          "Safe zones — No verified safe destinations available for this area."
         } else if (nearest != null) {
-          "NEAREST SAFE: ${nearest.zone.name} • " +
+          // The RECOMMENDED destination is the evaluator's best option from
+          // the user position - not simply the closest marker.
+          "RECOMMENDED: ${nearest.zone.name} • " +
             "${OsrmRoutingService.formatDistance(nearest.distanceMeters)} away"
         } else if (carouselZones.isEmpty()) {
           // Honest empty state: nothing invented, nothing pins.
           if (uiState.isMockDataVisible)
-            "NO VERIFIED SAFE ZONE AVAILABLE — demo candidates may be shown"
+            "No safe destinations for the selected disaster near this location"
           else
-            "NO VERIFIED SAFE ZONE AVAILABLE — search a different area"
+            "Safe zones — No verified safe destinations available for this area."
         } else {
           "NO FEASIBLE SHELTER — all in danger / full"
         },
@@ -167,9 +173,18 @@ internal fun SafeZoneCarousel(
     ) {
       items(visibleZones, key = { it.id }) { zone ->
         val isSelected = zone.id == selectedId
+        // EVACUATION OPTIONS labels: the evaluator's top feasible pick is
+        // RECOMMENDED; other feasible candidates are ranked alternatives
+        // (multiple viable directions when the data supports them - spec 4).
+        val feasibleIds = rankedCandidates.filter {
+          evalById[it.id]?.isFeasible == true
+        }.map { it.id }
+        val zoneEval = evalById[zone.id]
+        val evacRank = if (zoneEval?.isFeasible == true) feasibleIds.indexOf(zone.id) else null
         SafeZoneCard(
           zone = zone,
-          // Full evaluation (feasible AND rejected) — rejected shelters show
+          evacRank = evacRank,
+          // Full evaluation (feasible AND rejected) \u2014 rejected shelters show
           // their real rejection reason instead of a blank generic card.
           evaluation = evalById[zone.id],
           activeRouteHere = uiState.activeRoute?.takeIf { route ->
@@ -209,6 +224,9 @@ private const val MAX_CAROUSEL_ZONES = 8
 @Composable
 private fun SafeZoneCard(
   zone: SafeZone,
+  /** 0 = evaluator's recommended destination; >0 = ranked alternative;
+   *  null = not part of the feasible evacuation option set (no badge). */
+  evacRank: Int? = null,
   evaluation: SafeZoneEvaluation?,
   isSelected: Boolean,
   isCalculatingRoute: Boolean,
@@ -279,20 +297,36 @@ private fun SafeZoneCard(
       text = zone.locationNote,
       fontSize = 11.sp,
       color = TacticalOnSurfaceVariant,
-      maxLines = 1,
-      overflow = TextOverflow.Ellipsis
+      maxLines = 2,
+      softWrap = true,
+      overflow = TextOverflow.Visible
     )
 
     // Feasibility badge: ranked score or the rejection reason.
     if (evaluation != null) {
       if (evaluation.isFeasible) {
+        if (evacRank != null) {
+          // Option hierarchy line: RECOMMENDED / ALTERNATIVE 2 / ...
+          Text(
+            text = if (evacRank == 0) "RECOMMENDED EVACUATION OPTION"
+              else "ALTERNATIVE OPTION ${evacRank + 1}",
+            fontSize = 10.sp,
+            fontWeight = FontWeight.Black,
+            color = if (evacRank == 0) NeonEmerald else TacticalCyan,
+            letterSpacing = 0.5.sp,
+            modifier = Modifier.testTag(
+              if (evacRank == 0) "evac_recommended_badge" else "evac_alternative_badge"
+            )
+          )
+        }
         Text(
           text = "MATCH ${evaluation.score}/100 • ${evaluation.capacityReport.statusLabel.uppercase()}",
           fontSize = 11.sp,
           fontWeight = FontWeight.Bold,
           color = if (isFull) EmergencyRedBright else NeonEmerald,
-          maxLines = 1,
-          overflow = TextOverflow.Ellipsis
+          maxLines = 2,
+          softWrap = true,
+          overflow = TextOverflow.Visible
         )
       } else {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {

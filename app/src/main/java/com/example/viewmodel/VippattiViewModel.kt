@@ -164,6 +164,7 @@ class VippattiViewModel(
     providers = listOf(
       UsgsEarthquakeProvider(),
       ImdCapProvider(),
+      com.example.data.disaster.providers.NdmaCapProvider(),
       FirmsFireProvider(mapKeyProvider = { BuildConfig.FIRMS_MAP_KEY })
     ),
     cache = disasterCache
@@ -708,13 +709,25 @@ class VippattiViewModel(
     // - the "hazard occurs where I stand, find the safe way out" demo works
     // for every type, not just the place-hashed primary.
     val filterType = state.hazardTypeFilter
-    val secondaryHazard = if (state.isMockDataVisible && focused && filterType != null)
-      DemoNetworkAroundUser.secondaryHazard(location, filterType) else null
+    // PHASE 10 plausibility gate: ask for THAT disaster near HERE only when
+    // the place can honestly carry that demo story (no inland cyclone). When
+    // implausible, the primary scenario for the place stands and the notice
+    // tells the user why the filter shows no extra hazard.
+    val filterCoast = coastKmAt(location)
+    val secondaryHazard = if (state.isMockDataVisible && focused && filterType != null &&
+      DemoNetworkAroundUser.plausibleAt(location, filterType, filterCoast)
+    ) DemoNetworkAroundUser.secondaryHazard(location, filterType) else null
     val secondaryShelters = secondaryHazard?.let { hz ->
+      // EVACUATION CORRECTION (spec 9): demo candidates are PLACED FROM THE
+      // USER, fanning away from the hazard circle - not fixed around the
+      // hazard centre. Same user-relative architecture as live mode; moving
+      // the demo focus moves the candidates.
       DemoNetworkAroundUser.sheltersAroundHazard(
-        anchor = hz.center,
+        anchor = location,
         hazardRadiusMeters = hz.radiusMeters,
-        hazardBearingFromAnchor = 0.0,
+        hazardBearingFromAnchor = com.example.data.model.GeoMath.bearingDegrees(
+          location, hz.center),
+        hazardCenter = hz.center,
         count = 3,
         maxDistanceKm = 9.0,
         coastKmAnchor = coastKmAt(location),
@@ -731,10 +744,9 @@ class VippattiViewModel(
     // REGIONAL OVERVIEW (unfocused): shelters are PAIRED to each demo hazard
     // (USER FIX: no loose green pins in the middle of the view - every shelter
     // belongs to a hazard circle and sits outside it).
-    val pairedRegional = if (state.isMockDataVisible && !focused)
-      (PilotRegionData.hazardZones + listOfNotNull(fallbackDemo?.first?.first))
-        .flatMap { DemoNetworkAroundUser.pairedSheltersFor(it) }
-    else emptyList()
+    // (regional hazard -> paired shelter mapping happens in
+    // [belongingShelters] below, so pins can only exist while their hazard
+    // is actually displayed - see the USER BUG FIX note there)
     val mockZones: List<com.example.data.model.HazardZone> = if (state.isMockDataVisible) {
       if (focused) listOfNotNull(demoAround?.first) + listOfNotNull(secondaryHazard)
       // REGIONAL OVERVIEW (spec 3A): the 14-zone simulated India disaster
@@ -749,12 +761,34 @@ class VippattiViewModel(
     // The shelter network candidates: demo zones (scoped as above)
     // PLUS any REAL operator-entered field registry records, which stay
     // in scope in every mode — they are field data, not demo data.
-    val demoZones = if (state.isMockDataVisible) {
-      if (focused) demoShelters + secondaryShelters
-      else pairedRegional + (fallbackDemo?.second ?: emptyList())
-    } else {
-      emptyList()
-    }
+    // USER BUG FIX (green rings / stale candidates): a demo shelter pin is
+    // emitted ONLY through the hazard it belongs to, and only while that
+    // hazard is displayable under the current disaster filter. Changing
+    // Flood -> Fire -> Earthquake swaps BOTH the circles and their shelters;
+    // no filter (overview) shows only the local scenario shelters near the
+    // focus, never a ring around distant regional hazards. The emission is
+    // derived state, so stale candidates from a previous selection cannot
+    // survive in ANY list (map, sheet, evaluator) - requirement H.
+    val displayHazards: List<com.example.data.model.HazardZone> =
+      if (filterType == null) hazards else hazards.filter { it.type == filterType }
+    val belongingShelters: Map<String, List<com.example.data.model.SafeZone>> =
+      if (!state.isMockDataVisible) emptyMap()
+      else buildMap {
+        if (focused) {
+          demoAround?.first?.let { hz -> put(hz.id, demoShelters) }
+          secondaryHazard?.let { hz -> put(hz.id, secondaryShelters) }
+        } else {
+          PilotRegionData.hazardZones.forEach { hz ->
+            // Distant regional hazards carry NO pins by default; their paired
+            // shelters appear only when the user selects that hazard's type.
+            put(hz.id, if (filterType == null) emptyList()
+              else DemoNetworkAroundUser.pairedSheltersFor(hz))
+          }
+          fallbackDemo?.first?.first?.let { hz -> put(hz.id, fallbackDemo?.second ?: emptyList()) }
+        }
+      }
+    val demoZones: List<com.example.data.model.SafeZone> =
+      displayHazards.flatMap { hz -> belongingShelters[hz.id] ?: emptyList() }
     val zonesInScope = (state.fieldShelters.filter { IndiaGeo.contains(it.point) } + demoZones)
       .distinctBy { it.id }
     // While FOCUSED, only shelters a person could realistically reach are
@@ -768,14 +802,18 @@ class VippattiViewModel(
       }
     } else zonesInScope
 
+    // Risk stays computed on the FULL hazard picture: filtering is a VIEW
+    // concern - a flood circle hidden by an "Earthquake" filter still makes
+    // a flood-exposed location unsafe. Candidate EMISSION (demo pins) and
+    // the sheet follow displayHazards; safety rejections follow hazards.
     val risk = RiskAssessmentEngine.assess(
       location = location,
       hazards = hazards,
       provenanceNote = when {
         state.isMockDataVisible ->
           "Location: ${if (state.isUserLocationFallback) "India centre (no GPS)" else "device GPS"} • " +
-            "Hazards: live provider feeds + citizen reports + labelled SIMULATED demo zones • " +
-            "Shelters: SIMULATED demo records (no shelter registry connected)"
+            "Hazards: live provider feeds + citizen reports + demo scenario zones • " +
+            "Shelters: demo records (no shelter registry connected)"
         state.isUserLocationFallback ->
           "Location: India centre (no GPS yet) • Hazards: live provider feeds + citizen reports only"
         else ->
@@ -1040,6 +1078,10 @@ class VippattiViewModel(
       return
     }
     placeSearchJob = viewModelScope.launch {
+      // Politeness + stability: Nominatim's public usage policy asks for at
+      // most ~1 request/second; debouncing also prevents overlapping queries
+      // while the user is still typing (rapid-typing requirement).
+      kotlinx.coroutines.delay(450)
       _uiState.update { it.copy(isSearchingPlace = true) }
       val result = try {
         placeSearcher.search(q)
@@ -1097,6 +1139,11 @@ class VippattiViewModel(
           routeStatus = RouteStatus.IDLE,
           routeStatusMessage = null,
           isNavigatingLive = false,
+          // USER FIX (stale hierarchy): administrative names belong to the
+          // OLD coordinates until the geocoder answers for the NEW point;
+          // clearing makes the UI say "Not available" mid-switch instead of
+          // flashing the previous place's State/District.
+          resolvedPlace = null,
           currentNavigationStepIndex = 0
         )
       }
@@ -1693,11 +1740,43 @@ class VippattiViewModel(
     }
 
     routingJob = viewModelScope.launch {
-      val live = liveRouteFetcher(origin, zone.point, mode, hazards, zone.name, zone.id, 1)
+      // PHASE 12: ask for up to 3 real road corridors and pick the one that
+      // best avoids the CURRENT hazard geometry (fewest boundary crossings,
+      // then penalty, then duration). Hazard avoidance outranks distance -
+      // an evacuation route that re-enters a flood disc is worse than a
+      // slightly longer clean one. No invented data: these are genuine OSRM
+      // road routes, scored against genuine hazard circles.
+      val corridors = liveRouteFetcher(origin, zone.point, mode, hazards, zone.name, zone.id, 3)
+      val validCorridors = corridors.filter {
+        it.destinationId.isBlank() || it.destinationId == zone.id
+      }
+      val live = validCorridors
+        .sortedWith(
+          compareBy(
+            { com.example.data.routing.HazardRoutingPolicy.hazardCrossingRuns(it.pathPoints, hazards) },
+            { -it.routeSafetyScore },
+            { it.durationSeconds }
+          )
+        )
         .firstOrNull()
 
       // Staleness guard: a newer selection/origin must never be overwritten.
       if (lastRouteOrigin != origin || _uiState.value.selectedSafeZone?.id != zone.id) return@launch
+
+      // DESTINATION INTEGRITY (P0 fix #2, re-asserted after the multi-corridor
+      // change): corridors DID arrive but targeted another shelter -> honest
+      // NO_ROUTE ("discarded"), kept distinct from "nothing received".
+      if (live == null && corridors.isNotEmpty()) {
+        _uiState.update {
+          it.copy(
+            activeRoute = null,
+            isCalculatingRoute = false,
+            routeStatus = RouteStatus.NO_ROUTE,
+            routeStatusMessage = "Routing response targeted a different shelter than selected - discarded. Nothing is drawn."
+          )
+        }
+        return@launch
+      }
 
       if (live == null) {
         _uiState.update {
@@ -2661,6 +2740,15 @@ class VippattiViewModel(
 
   fun closeHazardDetail() {
     _uiState.update { it.copy(hazardDetailZone = null) }
+  }
+
+  /** Opens the safe-zone sheet for the EXACT record with this id (nearest-
+   *  safe-zone card navigation). Unknown id => no-op, never a substitute. */
+  fun openSafeZoneDetailById(id: String) {
+    val zone = _uiState.value.safeZones.firstOrNull { it.id == id }
+      ?: _uiState.value.rankedShelters.map { it.zone }.firstOrNull { it.id == id }
+      ?: return
+    _uiState.update { it.copy(safeZoneDetail = zone, hazardDetailZone = null) }
   }
 
   /** Opens the safe-zone detail sheet from a map-zone tap. */

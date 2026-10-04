@@ -122,8 +122,13 @@ class RouteSafetyCardLayoutTest {
       )
     )
     composeTestRule.onNodeWithTag("osrm_validation_badge").assertExists()
+    // PHASE 4: the one-line disclaimer became a structured status block:
     composeTestRule.onNodeWithTag("route_closure_disclaimer").assertExists()
-    composeTestRule.onNodeWithText("Road closures and live traffic are not verified.").assertExists()
+    composeTestRule.onNodeWithText("ROUTE STATUS").assertExists()
+    composeTestRule.onNodeWithText("Road closure data", substring = true).assertExists()
+    composeTestRule.onNodeWithText("Live traffic", substring = true).assertExists()
+    composeTestRule.onNodeWithText("Verify locally before evacuation", substring = true)
+      .assertExists()
     composeTestRule.onAllNodesWithText("closure-verified", substring = true, ignoreCase = true).assertCountEquals(0)
     composeTestRule.onAllNodesWithText("live-traffic", substring = true, ignoreCase = true).assertCountEquals(0)
   }
@@ -163,9 +168,15 @@ class RouteSafetyCardLayoutTest {
     composeTestRule.onNodeWithText("Route to").assertExists()
     composeTestRule.onNodeWithText("Munnar Higher Ground Relief Camp").assertExists()
     composeTestRule.onNodeWithTag("osrm_validation_badge").assertExists()
-    composeTestRule.onNodeWithText("25/100").assertExists()
+    // PHASE 3: no invented numeric score in the normal UI; the verdict is
+    // the hazard-geometry-derived status + the dynamic crossing statement.
+    composeTestRule.onAllNodesWithText("25/100").assertCountEquals(0)
     composeTestRule.onNodeWithText("Route safety: Danger — Route Enters Hazard Zone").assertExists()
+    composeTestRule.onNodeWithTag("route_danger_advice").assertExists()
     composeTestRule.onNodeWithTag("route_details_toggle").assertExists()
+    // PHASE 6: the redundant "Find safest nearby" control is gone from the
+    // route stack (the carousel owns destination choice).
+    composeTestRule.onNodeWithTag("select_best_safe_zone_button").assertDoesNotExist()
 
     val collapsedHeightPx = composeTestRule.onNodeWithTag("route_intelligence_panel")
       .fetchSemanticsNode().size.height

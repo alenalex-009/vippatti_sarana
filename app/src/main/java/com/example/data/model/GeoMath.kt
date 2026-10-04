@@ -28,6 +28,40 @@ object GeoMath {
   fun isWithinRadius(point: GeoPoint, center: GeoPoint, radiusMeters: Double): Boolean =
     distanceMeters(point, center) <= radiusMeters
 
+  /** True when segment a-b ever comes within radiusMeters of circle center. */
+  fun segmentTouchesCircle(
+    center: GeoPoint,
+    radiusMeters: Double,
+    a: GeoPoint,
+    b: GeoPoint
+  ): Boolean = closestApproachMeters(center, a, b) <= radiusMeters
+
+  /**
+   * Fraction (0..1) of the STRAIGHT path origin->dest that lies INSIDE the
+   * hazard circle. 0 when the path never touches it. Sampled (fine at these
+   * scales); deterministic and pure - the evaluator uses it to measure how
+   * much hazard a user must cross to reach a candidate. This estimates the
+   * straight path; real road geometry gets the same check from the OSRM
+   * corridor at routing time (HazardRoutingPolicy).
+   */
+  fun insideCircleRatio(
+    origin: GeoPoint,
+    dest: GeoPoint,
+    center: GeoPoint,
+    radiusMeters: Double
+  ): Double {
+    if (!segmentTouchesCircle(center, radiusMeters, origin, dest)) return 0.0
+    val steps = 40
+    var inside = 0
+    for (i in 1 until steps) {
+      val t = i.toDouble() / steps
+      val p = GeoPoint(origin.lat + (dest.lat - origin.lat) * t,
+        origin.lon + (dest.lon - origin.lon) * t)
+      if (distanceMeters(p, center) <= radiusMeters) inside++
+    }
+    return inside.toDouble() / (steps - 1)
+  }
+
   /**
    * Point [distanceMeters] away from [origin] along [bearingDeg] (true north,
    * clockwise). Standard great-circle destination formula — the inverse of

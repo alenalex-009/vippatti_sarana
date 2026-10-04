@@ -136,11 +136,17 @@ fun PlacePickerCard(
         Text(it, fontSize = 11.sp, color = WarningAmber, modifier = Modifier.testTag("place_search_error"))
         Spacer(Modifier.height(6.dp))
       }
+      // ROOT-CAUSE FIX (search crash): keys must be UNIQUE. Nominatim can
+      // return several records with the same display_name (same-name towns),
+      // and a duplicate LazyColumn key is an instant crash. Composite key
+      // includes the coordinates + list position, which are always distinct.
       LazyColumn(
         modifier = Modifier.fillMaxWidth().heightIn(max = 320.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp)
       ) {
-        items(candidates, key = { it.displayName }) { candidate ->
+        items(candidates, key = { candidate ->
+          "${candidate.name}|${candidate.point.lat}|${candidate.point.lon}"
+        }) { candidate ->
           Row(
             modifier = Modifier
               .fillMaxWidth()
@@ -163,13 +169,20 @@ fun PlacePickerCard(
               Text(
                 candidate.name,
                 fontSize = 13.sp, fontWeight = FontWeight.Bold, color = TacticalOnSurface,
-                maxLines = 1, overflow = TextOverflow.Ellipsis
+                maxLines = 2
               )
-              Text(
-                candidate.displayName,
-                fontSize = 10.sp, color = TacticalOnSurfaceVariant,
-                maxLines = 1, overflow = TextOverflow.Ellipsis
-              )
+              // Administrative hierarchy as returned by the provider - only
+              // levels that actually exist for this place; never invented.
+              val admin = candidate.adminLine()
+              if (admin.isNotBlank()) {
+                Text(admin, fontSize = 10.sp, color = TacticalOnSurfaceVariant, maxLines = 2)
+              } else {
+                Text(
+                  candidate.displayName,
+                  fontSize = 10.sp, color = TacticalOnSurfaceVariant,
+                  maxLines = 2
+                )
+              }
             }
           }
         }

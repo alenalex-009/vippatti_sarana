@@ -47,15 +47,18 @@ import java.util.concurrent.TimeUnit
  * alerts (rainfall, cyclone warnings, etc.) with their real polygons — it
  * never fabricates track lines or forecast cones.
  */
-class ImdCapProvider(
-  private val httpClient: OkHttpClient = defaultHttpClient()
+open class ImdCapProvider(
+  private val httpClient: OkHttpClient = defaultHttpClient(),
+  /** Overridable so the NDMA/SACHET channel reuses this validated parser. */
+  protected open val rssUrl: String = RSS_URL,
+  private val feedName: String = "weather alert"
 ) : DisasterDataProvider {
 
   override val providerId: DisasterSource = DisasterSource.IMD_CAP
 
   override suspend fun fetchIndiaEvents(): ProviderResult = withContext(Dispatchers.IO) {
     try {
-      val rssBody = fetchText(RSS_URL) ?: return@withContext offlineFailure()
+      val rssBody = fetchText(rssUrl) ?: return@withContext offlineFailure()
       val links = CapRssParser.parseItemLinks(rssBody).take(MAX_ALERTS)
       // Fetch the up-to-8 CAP alert documents in parallel so the provider
       // waits for ONE slow link instead of the sum off all timeouts.
@@ -68,12 +71,12 @@ class ImdCapProvider(
     } catch (e: IOException) {
       offlineFailure()
     } catch (e: Exception) {
-      ProviderResult.Failure("Official weather alert feed error (${e.javaClass.simpleName}).")
+      ProviderResult.Failure("Official $feedName feed error (${e.javaClass.simpleName}).")
     }
   }
 
   private fun offlineFailure() = ProviderResult.Failure(
-    "No connection to the official weather alert feed — cached alerts stay available."
+    "No connection to the official $feedName feed — cached alerts stay available."
   )
 
   private fun fetchText(url: String): String? = try {
@@ -313,3 +316,18 @@ object CapAlertParser {
   )
 }
 
+/**
+ * NDMA / SACHET national alert channel (PHASE 14 research, 2026-10-03):
+ * the same WMO CAP S3 bucket publishes India's national disaster alerts
+ * under /in-ndma-en/ - verified live from this environment (RSS index
+ * reachable, 6 items at probe time). Reuses the validated CAP parser.
+ */
+class NdmaCapProvider(
+  httpClient: OkHttpClient = defaultHttpClient()
+) : ImdCapProvider(httpClient, RSS_NDMA_URL, "NDMA national alert") {
+  override val providerId: DisasterSource = DisasterSource.NDMA_CAP
+
+  companion object {
+    const val RSS_NDMA_URL = "https://cap-sources.s3.amazonaws.com/in-ndma-en/rss.xml"
+  }
+}

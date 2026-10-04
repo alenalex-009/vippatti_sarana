@@ -35,6 +35,8 @@ object NewsFilter {
     "landslip", "mudslide", "earthquake", "quake", "aftershock", "tsunami",
     "avalanche", "wildfire", "forest fire", "cloudburst", "blizzard",
     "storm surge", "dam breach", "embankment breach", "eruption", "volcano",
+    "severe weather", "extreme weather", "weather warning", "red alert",
+    "rainstorm", "high tide", "storm tide",
     "NDRF", "SDRF", "relief camp", "evacuation", "evacuat",
     "rescue operation", "search and rescue", "first responder",
     "death toll", "casualt", "swept away", "washed away", "tremor", "landslips"

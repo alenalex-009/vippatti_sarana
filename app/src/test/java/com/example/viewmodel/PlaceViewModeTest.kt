@@ -93,6 +93,7 @@ class PlaceViewModeTest {
     vm.openPlacePicker()
     assertTrue(vm.uiState.value.showPlacePicker)
     vm.setPlaceQuery("vizag")
+    mainDispatcherRule.dispatcher.scheduler.advanceTimeBy(600)
     val state = vm.uiState.value
     assertFalse(state.isSearchingPlace)
     assertEquals(1, state.placeCandidates.size)
@@ -104,6 +105,7 @@ class PlaceViewModeTest {
     val vm = viewModel()
     vm.openPlacePicker()
     vm.setPlaceQuery("vizag")
+    mainDispatcherRule.dispatcher.scheduler.advanceTimeBy(600)
     vm.viewChosenPlace(vm.uiState.value.placeCandidates.first())
     val state = vm.uiState.value
     assertTrue(state.isViewingChosenPlace)
@@ -157,6 +159,7 @@ class PlaceViewModeTest {
     val vm = viewModel(FakeSearcher(PlaceSearchResult.Failure("No place in India matched \"xyz\".")))
     vm.openPlacePicker()
     vm.setPlaceQuery("xyz")
+    mainDispatcherRule.dispatcher.scheduler.advanceTimeBy(600)
     val state = vm.uiState.value
     assertTrue(state.placeCandidates.isEmpty())
     assertTrue(state.placeSearchError!!.contains("No place in India"))

@@ -66,6 +66,7 @@ class RadarSheetVisibilityTest {
       }
     }
     composeTestRule.onNodeWithTag("open_incident_report_button", useUnmergedTree = true).assertExists()
-    composeTestRule.onNodeWithText("REPORT AN INCIDENT", substring = true).assertExists()
+    // PHASE 7 copy: sentence-case, fully readable, no literal ellipsis.
+    composeTestRule.onNodeWithText("Report an incident", substring = true).assertExists()
   }
 }

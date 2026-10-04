@@ -27,6 +27,15 @@ data class ResolvedPlace(
   val district: String? = null,
   val state: String? = null,
   val country: String? = null,
+  /**
+   * Finer administrative rings, kept NULL when the platform's reverse
+   * geocoder genuinely does not return them. The UI renders such levels as
+   * "Not available" - an absent ring is never guessed or carried over from
+   * another location (user rule: do not fabricate hierarchy).
+   */
+  val subDistrict: String? = null,
+  val villageTown: String? = null,
+  val ward: String? = null,
   /** Which real mechanism produced these names, e.g. "Android reverse geocoder". */
   val source: String = SOURCE_ANDROID_GEOCODER,
   val classification: DataClassification = DataClassification.OBSERVED
@@ -43,8 +52,24 @@ data class ResolvedPlace(
       country?.takeIf { it.isNotBlank() }
     ).joinToString(", ").ifBlank { "India-wide only" }
 
+  /**
+   * The hierarchy rows for the currently RESOLVED coordinates, in Indian
+   * planning order. Missing levels state "Not available" instead of being
+   * silently dropped, so a stale-but-pretty label can never masquerade as
+   * current data. Country is omitted (always India by app scope).
+   */
+  val adminRows: List<Pair<String, String>>
+    get() = listOf(
+      "State" to (state?.takeIf { it.isNotBlank() } ?: NOT_AVAILABLE),
+      "District" to (district?.takeIf { it.isNotBlank() } ?: NOT_AVAILABLE),
+      "Sub-district / Taluk" to (subDistrict?.takeIf { it.isNotBlank() } ?: NOT_AVAILABLE),
+      "Village / Town" to (villageTown?.takeIf { it.isNotBlank() } ?: NOT_AVAILABLE),
+      "Ward / Locality" to (ward?.takeIf { it.isNotBlank() } ?: NOT_AVAILABLE)
+    )
+
   companion object {
     const val SOURCE_ANDROID_GEOCODER = "Android reverse geocoder"
+    const val NOT_AVAILABLE = "Not available"
   }
 }
 
@@ -94,10 +119,22 @@ class AndroidGeocoderPlaceResolver(
       }
       address?.let { resolved ->
         ResolvedPlace(
-          // subAdminArea is the district ring in India; locality is the town.
+          // subAdminArea is the district ring in India; locality is the
+          // town/village; subLocality is the suburb/ward ring. Anything the
+          // platform does not return stays NULL -> "Not available".
           district = (resolved.subAdminArea ?: resolved.locality)?.takeIf { it.isNotBlank() },
           state = resolved.adminArea?.takeIf { it.isNotBlank() },
           country = resolved.countryName?.takeIf { it.isNotBlank() },
+          // Platform Address rings for India: adminArea=state,
+          // subAdminArea=district, locality=town/village, subLocality=
+          // locality/ward. Levels the platform does not return (e.g. mandal)
+          // stay null -> the UI renders "Not available" (never fabricated).
+          villageTown = resolved.locality?.takeIf { it.isNotBlank() },
+          ward = resolved.subLocality?.takeIf { it.isNotBlank() }
+            ?: resolved.featureName?.takeIf {
+              it.isNotBlank() && it != resolved.locality &&
+                it != resolved.subAdminArea && it != resolved.adminArea
+            },
           source = source
         )
       }

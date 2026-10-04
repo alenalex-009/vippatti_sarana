@@ -27,7 +27,6 @@ import androidx.compose.material.icons.filled.AltRoute
 import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
-import androidx.compose.material.icons.filled.NearMe
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -283,42 +282,55 @@ internal fun RouteIntelligencePanel(
         modifier = Modifier.fillMaxWidth().testTag("route_safety_block"),
         verticalArrangement = Arrangement.spacedBy(4.dp)
       ) {
-        Row(
-          modifier = Modifier.fillMaxWidth(),
-          horizontalArrangement = Arrangement.spacedBy(8.dp),
-          verticalAlignment = Alignment.CenterVertically
-        ) {
-          Text(
-            text = if (uiState.routeStatus == RouteStatus.FALLBACK_UNVERIFIED) {
-              "Route safety: not checked"
-            } else {
+        // Ordering matters: a corridor that WAS checked against hazard
+        // geometry (it carries computed warnings / a computed status) keeps
+        // its verdict even if the current hazard list moved on; "not
+        // assessed" applies only to corridors with nothing to report.
+        val noHazardsToCheck = uiState.hazardZones.isEmpty() &&
+          route.hazardWarnings.isEmpty() &&
+          route.routeSafetyStatus == RouteSafetyStatus.SAFE &&
+          uiState.routeStatus != RouteStatus.FALLBACK_UNVERIFIED
+        Text(
+          text = when {
+            // DATA INSUFFICIENT is a first-class state: a "safe" verdict
+            // requires hazard geometry to check the corridor AGAINST.
+            noHazardsToCheck -> "Route safety: not assessed (no hazard data on the map)"
+            uiState.routeStatus == RouteStatus.FALLBACK_UNVERIFIED ->
+              "Route safety: unverified estimate"
+            route.routeSafetyStatus == RouteSafetyStatus.SAFE &&
+              route.hazardWarnings.isNotEmpty() ->
               "Route safety: ${route.routeSafetyStatus.label}"
-            },
-            fontSize = 13.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = when (route.routeSafetyStatus) {
+            route.routeSafetyStatus == RouteSafetyStatus.SAFE ->
+              "Route safety: no hazard intersection detected"
+            else -> "Route safety: ${route.routeSafetyStatus.label}"
+          },
+          fontSize = 13.sp,
+          fontWeight = FontWeight.SemiBold,
+          color = when {
+            noHazardsToCheck || uiState.routeStatus == RouteStatus.FALLBACK_UNVERIFIED ->
+              TacticalOnSurfaceVariant
+            else -> when (route.routeSafetyStatus) {
               RouteSafetyStatus.SAFE -> NeonEmerald
               RouteSafetyStatus.CAUTION -> WarningAmber
               RouteSafetyStatus.DANGER -> EmergencyRedBright
-            },
-            lineHeight = 16.sp,
-            modifier = Modifier.weight(1f)
-          )
+            }
+          },
+          lineHeight = 16.sp,
+          modifier = Modifier.testTag("route_safety_state")
+        )
+        // PHASE 5: the danger statement is built from the ROUTE'S OWN
+        // warnings (real geometry vs real circles) - what it crosses, how
+        // much, and whether it re-enters. No generic static sentence.
+        val crossingWarnings = route.hazardWarnings.filter { it.isBlocking }
+        if (crossingWarnings.isNotEmpty()) {
+          val crossings = com.example.data.routing.HazardRoutingPolicy
+            .hazardCrossingRuns(route.pathPoints, uiState.hazardZones)
+          val names = crossingWarnings.joinToString(", ") { it.hazardName }
           Text(
-            text = "${route.routeSafetyScore}/100",
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Bold,
-            color = TacticalOnSurfaceVariant
-          )
-        }
-        // Plain-language action line for the worst state (the raw label "Danger
-        // — Route Enters Hazard Zone" left users guessing; the user asked for
-        // wording people understand).
-        if (route.routeSafetyStatus == RouteSafetyStatus.DANGER &&
-          uiState.routeStatus != RouteStatus.FALLBACK_UNVERIFIED
-        ) {
-          Text(
-            text = "This road passes through a danger area. Prefer another route if you can.",
+            text = if (crossings > 1)
+              "This corridor crosses $crossings hazard zones on its way: $names. Choose another route or wait for official guidance."
+            else
+              "This corridor enters a hazard area ($names). Prefer a route that avoids it.",
             fontSize = 11.sp,
             color = EmergencyRedBright,
             lineHeight = 15.sp,
@@ -326,28 +338,38 @@ internal fun RouteIntelligencePanel(
           )
         }
       }
-      LinearProgressIndicator(
-        progress = { route.routeSafetyScore / 100f },
-        modifier = Modifier.fillMaxWidth().height(4.dp).clip(RoundedCornerShape(3.dp)),
-        color = when (route.routeSafetyStatus) {
-          RouteSafetyStatus.SAFE -> NeonEmerald
-          RouteSafetyStatus.CAUTION -> WarningAmber
-          RouteSafetyStatus.DANGER -> EmergencyRed
-        },
-        trackColor = ObsidianContainerHigh
-      )
 
       // STAGE 5 — closure/traffic honesty: a READY road route is OSRM geometry
       // checked against known hazard geometry only. There is no road-closure
       // feed and no live-traffic feed, so the limitation is stated on the card
       // itself (the fallback estimate already carries its own disclaimer).
-      if (route.isLiveOsrm && uiState.routeStatus == RouteStatus.READY) {
-        Text(
-          text = "Road closures and live traffic are not verified.",
-          fontSize = 10.sp,
-          color = TacticalOnSurfaceVariant,
-          modifier = Modifier.testTag("route_closure_disclaimer")
-        )
+      if (uiState.routeStatus == RouteStatus.READY ||
+        uiState.routeStatus == RouteStatus.FALLBACK_UNVERIFIED
+      ) {
+        Column(
+          modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(10.dp))
+            .background(ObsidianContainer.copy(alpha = 0.7f))
+            .padding(horizontal = 12.dp, vertical = 8.dp)
+            .testTag("route_closure_disclaimer"),
+          verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+          Text(
+            text = "ROUTE STATUS", fontSize = 10.sp, fontWeight = FontWeight.Black,
+            color = TacticalOnSurfaceVariant, letterSpacing = 0.5.sp
+          )
+          RouteStatusRow("Road closure data", "Unavailable")
+          RouteStatusRow("Live traffic", "Unavailable")
+          RouteStatusRow(
+            "Route source",
+            if (route.isLiveOsrm) "OSRM verified roads" else "Offline estimate (not roads)"
+          )
+          Text(
+            text = "Road conditions may have changed. Verify locally before evacuation.",
+            fontSize = 11.sp, color = WarningAmber, lineHeight = 14.sp
+          )
+        }
       }
 
       // Hazard warnings — surfaced when the route meets a hazard zone.
@@ -509,20 +531,6 @@ internal fun RouteIntelligencePanel(
         }
       }
 
-      Button(
-        onClick = onSelectBestSafeZone,
-        colors = ButtonDefaults.buttonColors(
-          containerColor = NeonEmeraldContainer,
-          contentColor = OnNeonEmerald
-        ),
-        shape = RoundedCornerShape(8.dp),
-        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
-        modifier = Modifier.height(34.dp).testTag("select_best_safe_zone_button")
-      ) {
-        Icon(Icons.Default.NearMe, contentDescription = null, modifier = Modifier.size(14.dp))
-        Spacer(modifier = Modifier.width(4.dp))
-        Text("Safest nearby", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
-      }
     }
     } // end of showDetails (controls + alternatives)
 
@@ -580,7 +588,7 @@ internal fun RouteIntelligencePanel(
                 }
               }
               Text(
-                text = (if (isPrimary) "" else "USE: ") + "${alt.summary} • ${OsrmRoutingService.formatDistance(alt.distanceMeters)} • Safety ${alt.routeSafetyScore}",
+                text = (if (isPrimary) "" else "USE: ") + "${alt.summary} • ${OsrmRoutingService.formatDistance(alt.distanceMeters)} • ${alt.routeSafetyStatus.label}",
                 fontSize = 11.sp,
                 color = if (isPrimary) NeonEmerald else TacticalOnSurface,
                 fontWeight = if (isPrimary) FontWeight.Bold else FontWeight.Normal,
@@ -591,6 +599,22 @@ internal fun RouteIntelligencePanel(
         }
       }
     }
+  }
+}
+
+@Composable
+private fun RouteStatusRow(label: String, value: String) {
+  Row(
+    modifier = Modifier.fillMaxWidth(),
+    horizontalArrangement = Arrangement.SpaceBetween
+  ) {
+    Text(label, fontSize = 11.sp, color = TacticalOnSurfaceVariant)
+    Text(
+      value, fontSize = 11.sp, fontWeight = FontWeight.Bold,
+      color = if (value == "Unavailable") TacticalOnSurfaceVariant.copy(alpha = 0.8f)
+      else TacticalOnSurface,
+      maxLines = 2, modifier = Modifier.padding(start = 12.dp)
+    )
   }
 }
 

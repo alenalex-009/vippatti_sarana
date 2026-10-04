@@ -14,6 +14,29 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Navigation
+import androidx.compose.material.icons.filled.Insights
+import androidx.compose.material.icons.filled.Layers
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Science
+import androidx.compose.material.icons.filled.Woman
+import androidx.compose.material.icons.filled.Kitchen
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.foundation.clickable
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Navigation
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.HolidayVillage
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Insights
+import androidx.compose.material.icons.filled.Kitchen
+import androidx.compose.material.icons.filled.Layers
+import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.Science
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Woman
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
@@ -66,381 +89,407 @@ fun SafeZoneDetailDialog(
   capacityAssessment: com.example.data.capacity.CapacityAssessment? = null
 ) {
   val capacity = com.example.data.shelters.ShelterCapacityService.report(zone)
+  val simulated = zone.provenance.classification ==
+    com.example.data.model.DataClassification.SIMULATED
   Dialog(onDismissRequest = onDismiss) {
     Surface(
-      shape = RoundedCornerShape(20.dp),
+      shape = RoundedCornerShape(24.dp),
       color = ObsidianSurface,
       modifier = Modifier
         .fillMaxWidth()
-        .border(1.dp, TacticalOutlineVariant, RoundedCornerShape(20.dp))
+        .border(1.dp, TacticalOutlineVariant, RoundedCornerShape(24.dp))
     ) {
       Column(
         modifier = Modifier
           .padding(20.dp)
           .fillMaxWidth()
-          // Long safe-zone intelligence (capacity + resources + reasons)
-          // scrolls instead of clipping on short screens.
+          // Full details scroll instead of clipping on short screens.
           .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(14.dp)
       ) {
+        // ---- HEADER: chip icon / eyebrow / name / distance (real data only)
         Row(
           modifier = Modifier.fillMaxWidth(),
-          horizontalArrangement = Arrangement.SpaceBetween,
-          verticalAlignment = Alignment.CenterVertically
+          horizontalArrangement = Arrangement.spacedBy(12.dp),
+          verticalAlignment = Alignment.Top
         ) {
-          Column {
-            Text(
-              text = "Safe zone",
-              fontSize = 11.sp,
-              fontWeight = FontWeight.Medium,
-              color = NeonEmerald,
-              letterSpacing = 0.3.sp
-            )
+          DetailIconChip(Icons.Default.HolidayVillage, NeonEmerald,
+            contentDescription = "Safe zone")
+          Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+            Text("Safe zone", fontSize = 12.sp, fontWeight = FontWeight.Bold,
+              color = NeonEmerald, letterSpacing = 0.4.sp)
             Text(
               text = zone.name,
-              fontSize = 18.sp,
-              fontWeight = FontWeight.SemiBold,
+              fontSize = 21.sp,
+              fontWeight = FontWeight.Black,
               color = TacticalOnSurface,
-              lineHeight = 23.sp,
+              lineHeight = 25.sp,
               maxLines = 2,
-              overflow = TextOverflow.Ellipsis
+              softWrap = true,
+              overflow = TextOverflow.Visible
             )
-            Text(
-              text = zone.locationNote,
-              fontSize = 12.sp,
-              color = TacticalOnSurfaceVariant,
-              maxLines = 2,
-              overflow = TextOverflow.Ellipsis
-            )
-            // PRIMARY RESULT: what the reader came for, one glance.
-            Text(
-              "${zone.availableCapacity} spaces available" +
-                (if (zone.capacityTotal > 0) " of ${zone.capacityTotal}" else ""),
-              fontSize = 15.sp,
-              fontWeight = FontWeight.SemiBold,
-              color = if (zone.availableCapacity > 0) NeonEmerald else EmergencyRedBright
-            )
-            // SIMULATED state belongs at the top, not buried in provenance.
-            if (zone.provenance.classification ==
-                com.example.data.model.DataClassification.SIMULATED
-            ) {
+            val distanceText = evaluation?.let {
+              com.example.data.model.GeoMath.formatKm(it.distanceMeters) + " from your location"
+            }
+            Row(verticalAlignment = Alignment.CenterVertically,
+              horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+              Icon(Icons.Default.Place, contentDescription = null, tint = TacticalCyan,
+                modifier = Modifier.size(14.dp))
               Text(
-                text = "SIMULATED - not a verified shelter",
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Medium,
-                color = WarningAmber
+                text = distanceText ?: "Distance not computed",
+                fontSize = 13.sp,
+                color = if (distanceText != null) TacticalOnSurfaceVariant
+                  else TacticalOnSurfaceVariant.copy(alpha = 0.7f),
+                maxLines = 2
               )
             }
-            // Coordinates are tertiary: they live under Capacity details.
-            // Provenance: simulated shelter records are never labelled live or verified.
-            com.example.ui.components.StatusBadge(
-              status = if (zone.provenance.classification ==
-                com.example.data.model.DataClassification.SIMULATED
-              ) {
-                com.example.data.model.DataStatus.SIMULATED
-              } else {
-                com.example.data.model.DataStatus.NOT_VERIFIED
-              }
-            )
+            if (simulated) {
+              // ONE concise provenance indicator in the compact view (spec 20);
+              // the full classification lives in Data & methodology.
+              StatusPill(Icons.Default.Science, "Demo data", WarningAmber,
+                tag = "safe_zone_demo_pill")
+            }
           }
           IconButton(onClick = onDismiss) {
             Icon(Icons.Default.Close, contentDescription = "Close", tint = TacticalOnSurfaceVariant)
           }
         }
 
-        // --- Carrying capacity block ---
-        Column(
-          modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .background(ObsidianContainerHigh)
-            .border(1.dp, NeonEmerald.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
-            .padding(12.dp),
-          verticalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-          Text("CARRYING CAPACITY", fontSize = 12.sp, fontWeight = FontWeight.Black, color = NeonEmerald, letterSpacing = 0.6.sp)
-          Text("Total Capacity: ${capacity.totalCapacity}", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = TacticalOnSurface)
-          Text("Current Occupancy: ${capacity.currentOccupancy}", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = TacticalOnSurface)
-          Text(
-            "Available Capacity: ${capacity.availableCapacity}",
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Black,
-            color = if (capacity.availableCapacity > 0) NeonEmerald else EmergencyRedBright
-          )
-          Text(
-            "Status: ${capacity.statusLabel}",
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Bold,
-            color = when (capacity.status) {
-              com.example.data.model.CapacityStatus.AVAILABLE -> NeonEmerald
-              com.example.data.model.CapacityStatus.NEAR_CAPACITY -> WarningAmber
-              else -> EmergencyRedBright
-            }
-          )
-          LinearProgressIndicator(
-            progress = { capacity.occupancyPercent / 100f },
-            modifier = Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp)),
-            color = when (capacity.status) {
-              com.example.data.model.CapacityStatus.AVAILABLE -> NeonEmerald
-              com.example.data.model.CapacityStatus.NEAR_CAPACITY -> WarningAmber
-              else -> EmergencyRed
-            },
-            trackColor = ObsidianContainerHigh
-          )
-          Text("${capacity.occupancyPercent}% occupied", fontSize = 12.sp, color = TacticalOnSurfaceVariant)
-        }
-
-        // 'Why' one-liner from the assessment's own limiting resource.
-        capacityAssessment?.let { ca ->
-          val limiter = ca.limitingResource?.label ?: "Shelter space"
-          Text(
-            text = "Why: ${limiter.lowercase()} is currently the limiting resource.",
-            fontSize = 13.sp,
-            color = TacticalOnSurfaceVariant,
-            lineHeight = 17.sp,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.testTag("capacity_limiter_line")
-          )
-        }
-
-        // TERTIARY COLLAPSE (rule 22): feasibility maths, constraints,
-        // facilities, evaluation reasons and coordinates stay available
-        // for field staff/judges but no longer block the result.
-        var detailsExpanded by remember(zone.id) { mutableStateOf(false) }
-        TextButton(
-          onClick = { detailsExpanded = !detailsExpanded },
-          contentPadding = PaddingValues(horizontal = 4.dp, vertical = 4.dp),
-          modifier = Modifier
-            .heightIn(min = 44.dp)
-            .testTag("safe_zone_details_toggle")
-        ) {
-          Icon(
-            imageVector = if (detailsExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-            contentDescription = null,
-            tint = TacticalOnSurfaceVariant,
-            modifier = Modifier.size(16.dp)
-          )
-          Spacer(modifier = Modifier.width(4.dp))
-          Text(
-            text = if (detailsExpanded) "Hide capacity details" else "Capacity details",
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Medium,
-            color = TacticalOnSurfaceVariant
-          )
-        }
-
-        if (detailsExpanded) {
-          Text(
-            text = String.format(
-              java.util.Locale.US,
-              "%.4f N, %.4f E",
-              zone.lat,
-              zone.lon
-            ),
-            fontSize = 11.sp,
-            color = TacticalOnSurfaceVariant
-          )
-
-        // --- Relocation feasibility: demand vs effective carrying capacity ---
-        Column(
-          modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .background(ObsidianContainerHigh)
-            .border(
-              1.dp,
-              feasibilityColor(capacityAssessment).copy(alpha = 0.35f),
-              RoundedCornerShape(12.dp)
-            )
-            .padding(12.dp),
-          verticalArrangement = Arrangement.spacedBy(5.dp)
-        ) {
-          Text(
-            "RELOCATION FEASIBILITY",
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Black,
-            color = TacticalCyan,
-            letterSpacing = 0.6.sp
-          )
-          if (capacityAssessment == null) {
-            // Never imply feasibility that was not computed.
-            InfoLine("Feasibility", "Not assessed for this site")
-          } else {
-            Text(
-              text = capacityAssessment.status.label.uppercase(),
-              fontSize = 13.sp,
-              fontWeight = FontWeight.Black,
-              color = feasibilityColor(capacityAssessment),
-              modifier = Modifier.testTag("capacity_feasibility_status")
-            )
-            InfoLine(
-              "Population requirement",
-              (capacityAssessment.demand.people?.let { "$it people" } ?: "Not available") +
-                " — ${capacityAssessment.demand.roleLabel}"
-            )
-            InfoLine("Population scope", capacityAssessment.demand.scopeLabel)
-            InfoLine(
-              "Population data",
-              (capacityAssessment.demand.classification?.label ?: "Not provided") +
-                " • ${capacityAssessment.demand.source}" +
-                (capacityAssessment.demand.derivedFromRole?.let {
-                  " • derived from ${it.label.lowercase()}"
-                } ?: "")
-            )
-            InfoLine(
-              "Population reference",
-              capacityAssessment.demand.referenceMillis?.let { reference ->
-                java.text.SimpleDateFormat("dd MMM yyyy", java.util.Locale.getDefault())
-                  .format(java.util.Date(reference)) +
-                  " (" + com.example.data.news.NewsPresentation.relativeAge(
-                    reference,
-                    System.currentTimeMillis()
-                  ) + ")"
-              } ?: "Not stated by the source"
-            )
-            InfoLine(
-              "Effective capacity",
-              capacityAssessment.effectiveCapacity?.let { "$it people" } ?: "Not available"
-            )
-            InfoLine(
-              "Remaining capacity",
-              capacityAssessment.remainingCapacity?.let { "$it people" } ?: "None"
-            )
-            InfoLine(
-              "Shortfall",
-              capacityAssessment.shortfall?.let { "$it people" } ?: "None"
-            )
-            InfoLine(
-              "Limiting resource",
-              capacityAssessment.limitingResource?.label ?: "Not identified (no data)"
-            )
-            InfoLine(
-              "Confidence",
-              capacityAssessment.confidence.label +
-                (if (capacityAssessment.unavailableResources.isNotEmpty())
-                  " - not assessed: ${capacityAssessment.unavailableResources.joinToString(", ") { it.label.lowercase() }}"
-                else " - all quantified resources assessed")
-            )
-            capacityAssessment.regime?.let { regime ->
-              if (regime == com.example.data.capacity.CarryingCapacityEngine.Regime.CYCLONE_SHELTER) {
-                InfoLine(
-                  "Planning regime",
-                  "Cyclone-shelter figures (Govt of India guidance: 3 sq ft/person " +
-                    "floor + terrace counted) - applied only while a cyclone alert is in view"
-                )
-              }
-            }
-            InfoLine("Reason", capacityAssessment.explanation)
-            InfoLine("Data source", capacityAssessment.sourceLine)
-            InfoLine(
-              "Assessed at",
-              java.text.SimpleDateFormat("dd MMM yyyy, HH:mm", java.util.Locale.getDefault())
-                .format(java.util.Date(capacityAssessment.assessedAtMillis)) +
-                " (" + com.example.data.news.NewsPresentation.relativeAge(
-                  capacityAssessment.assessedAtMillis,
-                  System.currentTimeMillis()
-                ) + ")"
-            )
-            // Per-constraint breakdown: missing inputs are shown as such, never as 0.
-            Text("CONSTRAINTS", fontSize = 10.sp, fontWeight = FontWeight.Black, color = TacticalOnSurfaceVariant, letterSpacing = 0.5.sp)
-            capacityAssessment.resources.forEach { resource ->
-              Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top
-              ) {
-                Text(
-                  text = resource.resource.label,
-                  fontSize = 11.sp,
-                  color = TacticalOnSurface,
-                  modifier = Modifier.weight(1f)
-                )
-                Text(
-                  text = resource.peopleSupported?.let { "$it" } ?: resource.state.label,
-                  fontSize = 11.sp,
-                  fontWeight = FontWeight.Bold,
-                  color = when {
-                    resource.peopleSupported == null -> TacticalOnSurfaceVariant
-                    resource.recordedAbsence -> EmergencyRedBright
-                    else -> NeonEmerald
-                  }
-                )
-              }
-              Text(resource.basis, fontSize = 11.sp, color = TacticalOnSurfaceVariant)
-            }
-            val assumptions = capacityAssessment.assumptions + capacityAssessment.demand.notes
-            if (assumptions.isNotEmpty()) {
-              InfoLine("Assumptions & limitations", assumptions.distinct().joinToString(" "))
-            }
-            InfoLine(
-              "Data classification",
-              capacityAssessment.provenance.classification.label +
-                " • " + capacityAssessment.provenance.source
-            )
-          }
-        }
-
-        // --- Resources ---
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-          Text("FACILITY RESOURCES", fontSize = 12.sp, fontWeight = FontWeight.Black, color = TacticalCyan, letterSpacing = 0.6.sp)
-          ResourceRow("Water", zone.waterAvailable)
-          ResourceRow("Food", zone.foodAvailable)
-          ResourceRow("Electricity", zone.electricityAvailable)
-          ResourceRow("Sanitation", zone.sanitationAvailable)
-          ResourceRow("Medical support", zone.medicalSupport)
-          ResourceRow("Women & children suitability", zone.womenChildrenSuitability)
-          InfoLine("Accessibility", zone.accessibility)
-          InfoLine("Elevation", zone.elevationNote)
-          InfoLine("Operating status", zone.operatingStatus)
-        }
-
-        // --- Why this safe zone (evaluation reasons) ---
-        if (evaluation != null && evaluation.isFeasible) {
-          Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text("WHY THIS SAFE ZONE?", fontSize = 12.sp, fontWeight = FontWeight.Black, color = NeonEmerald, letterSpacing = 0.6.sp)
-            evaluation.reasons.forEach { reason ->
-              Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.Top) {
-                Icon(Icons.Default.Check, contentDescription = null, tint = NeonEmerald, modifier = Modifier.size(12.dp))
-                Text(reason.text, fontSize = 11.sp, color = TacticalOnSurface, lineHeight = 14.sp)
-              }
-            }
-            Text("Rank score: ${evaluation.score}", fontSize = 12.sp, color = TacticalOnSurfaceVariant)
-          }
-        } else if (evaluation != null) {
-          Text(
-            text = "NOT RECOMMENDED: ${evaluation.rejectionReason?.label ?: "Ineligible"}",
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Bold,
-            color = EmergencyRedBright
-          )
-        }
-
-        Text(
-          text = "Verification: ${zone.verificationStatus}",
-          fontSize = 11.sp,
-          color = TacticalCyan
+        // ---- CAPACITY GAUGE: the record's own spaces (never a fake number)
+        CapacityGauge(
+          available = capacity.availableCapacity,
+          total = capacity.totalCapacity
         )
-        } // end if (detailsExpanded)
 
+        // ---- QUICK STATUS: distance / operating / confidence (actuals only)
+        val open = zone.operatingStatus.equals("OPEN", ignoreCase = true)
+        val limiter = capacityAssessment?.limitingResource?.label
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+          SummaryCard(
+            label = "Distance",
+            value = evaluation?.let {
+              com.example.data.model.GeoMath.formatKm(it.distanceMeters)
+            } ?: "Data unavailable",
+            icon = Icons.Default.Navigation,
+            valueAccent = TacticalCyan,
+            modifier = Modifier.weight(1f),
+            tag = "safe_zone_stat_distance",
+            unavailable = evaluation == null
+          )
+          SummaryCard(
+            label = "Status",
+            value = when {
+              open -> "Open"
+              zone.operatingStatus.isBlank() -> "Not provided"
+              else -> zone.operatingStatus
+            },
+            icon = Icons.Default.CheckCircle,
+            valueAccent = if (open) NeonEmerald else EmergencyRedBright,
+            modifier = Modifier.weight(1f),
+            tag = "safe_zone_stat_status",
+            unavailable = zone.operatingStatus.isBlank()
+          )
+          SummaryCard(
+            label = "Confidence",
+            value = capacityAssessment?.confidence?.label ?: "Not assessed",
+            icon = Icons.Default.Insights,
+            valueAccent = WarningAmber,
+            modifier = Modifier.weight(1f),
+            tag = "safe_zone_stat_confidence",
+            unavailable = capacityAssessment == null
+          )
+        }
+
+        // ---- LIMITING FACTOR: tappable - opens the capacity methodology.
+        var detailsExpanded by remember(zone.id) { mutableStateOf(false) }
+        Row(
+          modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(ObsidianContainerHigh)
+            .border(1.dp, TacticalOutlineVariant.copy(alpha = 0.35f), RoundedCornerShape(12.dp))
+            .clickable { detailsExpanded = true }
+            .padding(horizontal = 14.dp, vertical = 12.dp)
+            .testTag("limiting_factor_row"),
+          verticalAlignment = Alignment.CenterVertically,
+          horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+          Icon(Icons.Default.Layers, contentDescription = null, tint = TacticalCyan,
+            modifier = Modifier.size(18.dp))
+          Column(modifier = Modifier.weight(1f)) {
+            Text("Limiting factor", fontSize = 11.sp, color = TacticalOnSurfaceVariant)
+            Text(
+              text = limiter ?: "Not assessed",
+              fontSize = 14.sp,
+              fontWeight = if (limiter != null) FontWeight.Bold else FontWeight.Normal,
+              color = if (limiter != null) TacticalOnSurface else TacticalOnSurfaceVariant,
+              maxLines = 2,
+              modifier = Modifier.then(
+                if (limiter != null) Modifier.testTag("capacity_limiter_line") else Modifier
+              )
+            )
+          }
+          Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null,
+            tint = TacticalOnSurfaceVariant, modifier = Modifier.size(18.dp))
+        }
+
+        // ---- PRIMARY CTA: exact selected record, existing routing intact.
         Button(
           onClick = {
             onSelectAndRoute()
             onDismiss()
           },
           colors = ButtonDefaults.buttonColors(containerColor = NeonEmerald),
-          shape = RoundedCornerShape(12.dp),
+          shape = RoundedCornerShape(999.dp),
           modifier = Modifier
             .fillMaxWidth()
-            .height(44.dp)
+            .height(48.dp)
             .testTag("safe_zone_route_button")
         ) {
-          Text("Route To This Safe Zone", fontWeight = FontWeight.Bold, color = OnNeonEmerald)
+          Icon(Icons.Default.Navigation, contentDescription = null,
+            tint = OnNeonEmerald, modifier = Modifier.size(18.dp))
+          Spacer(modifier = Modifier.width(8.dp))
+          Text("Route to this safe zone", fontWeight = FontWeight.Bold, color = OnNeonEmerald)
+        }
+
+        // ---- FULL DETAILS (progressive disclosure; nothing deleted) -------
+        TextButton(
+          onClick = { detailsExpanded = !detailsExpanded },
+          contentPadding = PaddingValues(horizontal = 4.dp, vertical = 6.dp),
+          modifier = Modifier.heightIn(min = 44.dp).testTag("safe_zone_details_toggle")
+        ) {
+          Icon(
+            imageVector = if (detailsExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+            contentDescription = null,
+            tint = TacticalOnSurfaceVariant,
+            modifier = Modifier.size(18.dp)
+          )
+          Spacer(modifier = Modifier.width(6.dp))
+          Text(
+            text = if (detailsExpanded) "Hide full details" else "Show full details",
+            fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = TacticalOnSurface
+          )
+        }
+
+        if (detailsExpanded) {
+          // KEY INFORMATION
+          Column {
+            SectionHeader("Key information", Icons.Default.Description)
+            Spacer(Modifier.height(4.dp))
+            DetailPanel {
+              DetailRow("Total capacity", "${capacity.totalCapacity} people")
+              RowDividerLine()
+              DetailRow("Available capacity", "${capacity.availableCapacity} people")
+              RowDividerLine()
+              DetailRow(
+                "Effective capacity",
+                capacityAssessment?.effectiveCapacity?.let { "$it people" }
+                  ?: "Not assessed",
+                unavailable = capacityAssessment?.effectiveCapacity == null,
+                tag = "capacity_effective_value"
+              )
+              capacityAssessment?.takeIf { it.unavailableResources.isNotEmpty() }?.let { ca ->
+                RowDividerLine()
+                DetailRow(
+                  "Not assessed",
+                  ca.unavailableResources.joinToString(", ") { it.label.lowercase() },
+                  unavailable = true,
+                  tag = "capacity_not_assessed_line"
+                )
+              }
+              RowDividerLine()
+              DetailRow("Distance",
+                evaluation?.let { com.example.data.model.GeoMath.formatKm(it.distanceMeters) }
+                  ?: "Data unavailable",
+                unavailable = evaluation == null)
+              RowDividerLine()
+              DetailRow("Status", if (open) "Open"
+                else if (zone.operatingStatus.isBlank()) "Not provided" else zone.operatingStatus)
+              RowDividerLine()
+              DetailRow("Limiting factor", limiter ?: "Not assessed",
+                unavailable = limiter == null)
+              RowDividerLine()
+              DetailRow("Capacity confidence",
+                capacityAssessment?.confidence?.label ?: "Not assessed",
+                unavailable = capacityAssessment == null)
+            }
+          }
+
+          // FACILITY RESOURCES - honest three-way wording, quantitative only
+          // when the record actually carries a figure.
+          Column {
+            SectionHeader("Facility resources", Icons.Default.Kitchen)
+            Spacer(Modifier.height(4.dp))
+            DetailPanel {
+              ResourceHonestyRow(
+                "Water supply", DetailIcons.water, zone.waterAvailable,
+                zone.waterLitresPerDay?.let {
+                  java.text.NumberFormat.getInstance(java.util.Locale.US)
+                    .format(it.toInt()) + " L/day"
+                }
+              )
+              RowDividerLine()
+              ResourceHonestyRow("Food supply", DetailIcons.food, zone.foodAvailable, null)
+              RowDividerLine()
+              ResourceHonestyRow("Electricity", DetailIcons.power, zone.electricityAvailable, null)
+              RowDividerLine()
+              ResourceHonestyRow(
+                "Sanitation", DetailIcons.sanitation, zone.sanitationAvailable,
+                zone.toiletCount?.let { "$it toilets" }
+              )
+              RowDividerLine()
+              ResourceHonestyRow("Medical support", DetailIcons.medical, zone.medicalSupport, null)
+              RowDividerLine()
+              ResourceHonestyRow("Women & children suitability", Icons.Default.Woman,
+                zone.womenChildrenSuitability, null)
+              RowDividerLine()
+              DetailRow("Usable land / floor area",
+                zone.landAreaSquareMeters?.let {
+                  java.text.NumberFormat.getInstance(java.util.Locale.US)
+                    .format(it.toInt()) + " m2"
+                } ?: "Not provided",
+                unavailable = zone.landAreaSquareMeters == null)
+            }
+          }
+
+          // RELOCATION FEASIBILITY (engine data, organised)
+          Column {
+            SectionHeader("Relocation feasibility", Icons.Default.Share)
+            Spacer(Modifier.height(4.dp))
+            DetailPanel(accent = feasibilityColor(capacityAssessment)) {
+              if (capacityAssessment == null) {
+                DetailRow("Feasibility", "Not assessed for this site", unavailable = true)
+              } else {
+                DetailRow(
+                  "Verdict",
+                  capacityAssessment.status.label,
+                  valueAccent = feasibilityColor(capacityAssessment),
+                  tag = "capacity_feasibility_status"
+                )
+                RowDividerLine()
+                DetailRow(
+                  "Population requirement",
+                  capacityAssessment.demand.people?.let { "$it people" } ?: "Not available",
+                  subNote = capacityAssessment.demand.roleLabel,
+                  unavailable = capacityAssessment.demand.people == null
+                )
+                RowDividerLine()
+                DetailRow("Population scope", capacityAssessment.demand.scopeLabel)
+                RowDividerLine()
+                DetailRow(
+                  "Population data",
+                  (capacityAssessment.demand.classification?.label ?: "Not provided") +
+                    " \u00b7 " + capacityAssessment.demand.source
+                )
+                RowDividerLine()
+                DetailRow("Accessibility",
+                  zone.accessibility.ifBlank { "Not provided" },
+                  unavailable = zone.accessibility.isBlank())
+                RowDividerLine()
+                DetailRow("Elevation",
+                  zone.elevationNote.ifBlank { "Not provided" },
+                  unavailable = zone.elevationNote.isBlank())
+                if (capacityAssessment.remainingCapacity != null ||
+                  capacityAssessment.shortfall != null
+                ) {
+                  RowDividerLine()
+                  DetailRow(
+                    "Fits demand?",
+                    if (capacityAssessment.shortfall == null)
+                      "Yes - ${capacityAssessment.remainingCapacity} spare"
+                    else "No - short by ${capacityAssessment.shortfall}"
+                  )
+                }
+              }
+            }
+          }
+
+          // WHY THIS SAFE ZONE (evaluation reasons, kept verbatim)
+          if (evaluation != null && evaluation.isFeasible) {
+            Column {
+              SectionHeader("Why this safe zone", Icons.Default.CheckCircle, NeonEmerald)
+              Spacer(Modifier.height(4.dp))
+              DetailPanel {
+                evaluation.reasons.forEachIndexed { index, reason ->
+                  if (index > 0) RowDividerLine()
+                  Row(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 7.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.Top
+                  ) {
+                    Icon(Icons.Default.Check, contentDescription = null, tint = NeonEmerald,
+                      modifier = Modifier.size(14.dp))
+                    Text(reason.text, fontSize = 13.sp, color = TacticalOnSurface,
+                      lineHeight = 17.sp, maxLines = 3)
+                  }
+                }
+              }
+            }
+          } else if (evaluation != null) {
+            Text(
+              text = "Not recommended: ${evaluation.rejectionReason?.label ?: "Ineligible"}",
+              fontSize = 13.sp,
+              fontWeight = FontWeight.Bold,
+              color = EmergencyRedBright
+            )
+          }
+
+          // AREA CENTRE
+          AreaCentreCard(
+            latText = String.format(java.util.Locale.US, "%.4f N", zone.lat),
+            lonText = String.format(java.util.Locale.US, "%.4f E", zone.lon)
+          )
+
+          // DATA & METHODOLOGY (all technical detail, compact)
+          Column {
+            SectionHeader("Data & methodology", Icons.Default.Info)
+            Spacer(Modifier.height(4.dp))
+            DetailPanel {
+              DetailRow("Data classification",
+                zone.provenance.classification.label + " \u00b7 " + zone.provenance.status)
+              RowDividerLine()
+              DetailRow("Verification", zone.verificationStatus)
+              RowDividerLine()
+              DetailRow("Source", zone.provenance.source)
+              capacityAssessment?.let { ca ->
+                RowDividerLine()
+                DetailRow("Capacity methodology",
+                  ca.limitingResource?.let { "${it.label} bottleneck \u2014 minimum over " +
+                    "assessed resources" } ?: "Minimum over assessed resources")
+                ca.regime?.let { regime ->
+                  if (regime == com.example.data.capacity.CarryingCapacityEngine.Regime.CYCLONE_SHELTER) {
+                    RowDividerLine()
+                    DetailRow(
+                      "Planning regime",
+                      "Cyclone-shelter figures (GoI guidance: 3 sq ft/person floor + " +
+                        "terrace) - applied only while a cyclone alert is in view"
+                    )
+                  }
+                }
+                RowDividerLine()
+                DetailRow(
+                  "Assessed at",
+                  java.text.SimpleDateFormat("dd MMM yyyy, HH:mm", java.util.Locale.getDefault())
+                    .format(java.util.Date(ca.assessedAtMillis)) +
+                    " (" + com.example.data.news.NewsPresentation.relativeAge(
+                      ca.assessedAtMillis, System.currentTimeMillis()) + ")"
+                )
+                val assumptions = ca.assumptions + ca.demand.notes
+                if (assumptions.isNotEmpty()) {
+                  RowDividerLine()
+                  DetailRow("Assumptions & limitations", assumptions.distinct().joinToString(" "))
+                }
+                RowDividerLine()
+                DetailRow("Reason", ca.explanation)
+              }
+            }
+          }
         }
       }
     }
   }
 }
+
 
 @Composable
 private fun feasibilityColor(
@@ -470,6 +519,22 @@ private fun ResourceRow(label: String, available: Boolean) {
   }
 }
 
+
+@Composable
+private fun CapacityRow(label: String, value: String) {
+  Row(
+    modifier = Modifier.fillMaxWidth(),
+    horizontalArrangement = Arrangement.SpaceBetween,
+    verticalAlignment = Alignment.Top
+  ) {
+    Text(label, fontSize = 12.sp, color = TacticalOnSurfaceVariant)
+    Text(
+      value, fontSize = 12.sp, fontWeight = FontWeight.Bold,
+      color = TacticalOnSurface, maxLines = 2,
+      modifier = Modifier.padding(start = 12.dp)
+    )
+  }
+}
 
 @Composable
 private fun InfoLine(label: String, value: String) {

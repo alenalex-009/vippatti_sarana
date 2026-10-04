@@ -29,8 +29,27 @@ data class PlaceCandidate(
   val displayName: String,
   val point: GeoPoint,
   /** "city" / "state" / "county" / "administrative" — OSM's own class. */
-  val kind: String
-)
+  val kind: String,
+  /**
+   * Administrative rings as RETURNED by the provider for THIS coordinate.
+   * A null level means the source did not provide it - never copied from a
+   * previous result, never guessed (user rule).
+   */
+  val state: String? = null,
+  val district: String? = null,
+  val subDistrict: String? = null,
+  val villageTown: String? = null,
+  val ward: String? = null,
+  val locality: String? = null
+) {
+  /** Compact hierarchy string from the levels the provider actually gave. */
+  fun adminLine(): String = listOfNotNull(
+    villageTown?.takeIf { it.isNotBlank() && it != name },
+    subDistrict?.takeIf { it.isNotBlank() },
+    district?.takeIf { it.isNotBlank() },
+    state?.takeIf { it.isNotBlank() }
+  ).distinct().joinToString(" \u00b7 ")
+}
 
 sealed class PlaceSearchResult {
   data class Found(val candidates: List<PlaceCandidate>) : PlaceSearchResult()
@@ -67,11 +86,28 @@ class NominatimPlaceSearcher(
         // India-scoped: silently skipping foreign hits would confuse; keep
         // only Indian results and say so when everything was filtered out.
         if (!display.endsWith("India")) continue
+        // addressdetails=1 adds the provider's own administrative breakdown.
+        // Missing rings stay null -> "Not available" downstream, never stale
+        // values from another result (deep-dive rule the user reported).
+        val addr = o.optJSONObject("address")
+        fun ring(key: String): String? =
+          addr?.optString(key)?.takeIf { it.isNotBlank() }
         candidates += PlaceCandidate(
           name = o.optString("name").ifBlank { q },
           displayName = display,
           point = GeoPoint(lat, lon),
-          kind = o.optString("type").ifBlank { o.optString("addresstype") }
+          kind = o.optString("type").ifBlank { o.optString("addresstype") },
+          // Ring mapping validated against LIVE Nominatim address output for
+          // Indian places (2026-10-03 probe): in India `state_district` is
+          // the DISTRICT, `county` the subdivision, `suburb` the locality /
+          // ward-level name. Levels the feed omits stay null -> "Not
+          // available", never inherited from another result.
+          state = ring("state"),
+          district = ring("state_district") ?: ring("district") ?: ring("county"),
+          subDistrict = ring("county")?.takeIf { it != ring("state_district") },
+          villageTown = ring("municipality") ?: ring("city") ?: ring("town") ?: ring("village"),
+          ward = ring("city_district") ?: ring("borough"),
+          locality = ring("suburb") ?: ring("neighbourhood") ?: ring("quarter") ?: ring("hamlet")
         )
         if (candidates.size == MAX_RESULTS) break
       }
@@ -90,7 +126,7 @@ class NominatimPlaceSearcher(
     fun buildUrl(query: String): String =
       "https://nominatim.openstreetmap.org/search?q=" +
         URLEncoder.encode(query, "UTF-8") +
-        "&format=jsonv2&limit=8&countrycodes=in&accept-language=en"
+        "&format=jsonv2&limit=8&countrycodes=in&accept-language=en&addressdetails=1"
 
     suspend fun httpFetch(url: String): String? = withContext(Dispatchers.IO) {
       try {
