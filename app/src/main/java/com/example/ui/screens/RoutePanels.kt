@@ -269,10 +269,21 @@ internal fun RouteIntelligencePanel(
         value = if (uiState.travelMode == com.example.data.routing.TravelMode.DRIVING) "VEHICLE" else "WALKING",
         accent = TacticalOnSurface
       )
+      val capReport = evaluation?.capacityReport
       RouteMetric(
         label = "CAPACITY",
-        value = evaluation?.let { "${it.capacityReport.availableCapacity} free" } ?: "--",
-        accent = if ((evaluation?.capacityReport?.availableCapacity ?: 0) > 0) NeonEmerald else EmergencyRedBright
+        // Never render an unstated capacity as "0 free" in red — that is a
+        // fabricated claim about a real facility. Say it is unavailable.
+        value = when {
+          capReport == null -> "--"
+          !capReport.hasKnownFigures -> "Unavailable"
+          else -> "${capReport.availableCapacity.value!!.toInt()} free"
+        },
+        accent = when {
+          capReport == null || !capReport.hasKnownFigures -> TacticalOnSurfaceVariant
+          capReport.availableCapacity.value!! > 0 -> NeonEmerald
+          else -> EmergencyRedBright
+        }
       )
     }
 

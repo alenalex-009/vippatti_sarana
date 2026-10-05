@@ -132,9 +132,17 @@ object SafeZoneEvaluator {
 
     // -------- PHASE 2: composite ranking score ------------------------------
     val safetyScore = (100 - exposures.size * 25).coerceAtLeast(0)
-    val capacityScore = if (zone.capacityTotal > 0) {
-      ((capacity.availableCapacity.toFloat() / zone.capacityTotal) * 100f).toInt().coerceIn(0, 100)
-    } else 0
+    // CAPACITY SCORE: only computed when the facility PUBLISHES a capacity.
+    // An unstated capacity scores neither high nor low — it is absent evidence,
+    // and inventing 0 remaining would reject a real facility as full.
+    val capacityScore = when {
+      !capacity.hasKnownFigures -> 0
+      zone.capacityTotal!! > 0 -> {
+        ((capacity.availableCapacity.value!!.toFloat() / zone.capacityTotal!!) * 100f)
+          .toInt().coerceIn(0, 100)
+      }
+      else -> 0
+    }
     // Walking-impact curve (user rule: relocate to NEARBY places):
     // <= 1 km = full score (comfortably on foot), linear to ZERO at 10 km.
     // The old flat /40 km scale made 2 km and 8 km almost indistinguishable.
@@ -211,10 +219,14 @@ object SafeZoneEvaluator {
     if (exposures.isEmpty()) {
       reasons += SelectionReason("Lower hazard exposure — outside all active hazard areas")
     }
-    if (capacity.availableCapacity > 0) {
+    if (capacity.availableCapacity.isKnown && capacity.availableCapacity.value!! > 0) {
       reasons += SelectionReason(
-        "${capacity.availableCapacity} people capacity remaining (${capacity.statusLabel})"
+        "${capacity.availableCapacity.value!!.toInt()} people capacity remaining (${capacity.statusLabel})"
       )
+    } else if (!capacity.hasKnownFigures) {
+      // Saying nothing here would read as "no constraint". State plainly that
+      // the registry published no figure, so the judge can weigh it.
+      reasons += SelectionReason("Capacity unavailable — this source publishes no capacity figure")
     }
     reasons += SelectionReason(
       "About ${GeoMath.formatKm(distance)} away (~${estimateTravelMinutes(distance, ctx.walkingSpeedMps)} min walk)"

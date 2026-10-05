@@ -1,5 +1,6 @@
 ﻿package com.example.data.model
 
+import com.example.data.india.MaybeNumber
 import com.example.data.routing.GeoPoint
 
 /**
@@ -77,8 +78,17 @@ data class SafeZone(
   val lon: Double,
   val locationNote: String,
   // --- Carrying capacity ---
-  val capacityTotal: Int,
-  val capacityCurrent: Int,
+  /**
+   * Maximum accommodation. `null` means the source does not STATE a capacity,
+   * which is a different fact from "capacity is zero" or "the shelter is full".
+   *
+   * Defaults to [DEFAULT_CAPACITY_TOTAL] so the many existing constructor calls
+   * (pilot data, demo networks, tests) keep their current meaning. Only an
+   * explicitly registry-sourced record passes null, which is the honest state
+   * for a facility whose capacity was never published.
+   */
+  val capacityTotal: Int? = DEFAULT_CAPACITY_TOTAL,
+  val capacityCurrent: Int? = DEFAULT_CAPACITY_CURRENT,
   // --- Resource availability flags ---
   val waterAvailable: Boolean,
   val foodAvailable: Boolean,
@@ -101,30 +111,66 @@ data class SafeZone(
   val provenance: DataProvenance
 ) {
   val point: GeoPoint get() = GeoPoint(lat, lon)
-  val availableCapacity: Int get() = (capacityTotal - capacityCurrent).coerceAtLeast(0)
 
-  /** Structured capacity status: Available / Near Capacity / Full / Overflow Required. */
+  /** True when the source published both a total and a current occupancy. */
+  val hasKnownCapacity: Boolean get() = capacityTotal != null && capacityCurrent != null
+
+  /**
+   * Remaining capacity, or UNKNOWN.
+   *
+   * Never collapses to 0: a shelter whose occupancy was not published has not
+   * been shown to be full, and reporting 0 would reject it during ranking as
+   * "Full — no remaining capacity", a factual claim about a real facility that
+   * we cannot support.
+   */
+  val availableCapacity: MaybeNumber
+    get() = if (hasKnownCapacity) {
+      MaybeNumber.of((capacityTotal!! - capacityCurrent!!).coerceAtLeast(0).toDouble())
+    } else {
+      MaybeNumber.UNKNOWN
+    }
+
+  /** Structured capacity status: Available / Near Capacity / Full / Unknown. */
   val capacityStatus: CapacityStatus
-    get() = when {
-      availableCapacity <= 0 -> CapacityStatus.FULL
-      availableCapacity < CAPACITY_NEAR_THRESHOLD * capacityTotal -> CapacityStatus.NEAR_CAPACITY
-      else -> CapacityStatus.AVAILABLE
+    get() {
+      val total = capacityTotal
+      val current = capacityCurrent
+      if (total == null || current == null) return CapacityStatus.UNKNOWN
+      val available = (total - current).coerceAtLeast(0)
+      return when {
+        available <= 0 -> CapacityStatus.FULL
+        available < CAPACITY_NEAR_THRESHOLD * total -> CapacityStatus.NEAR_CAPACITY
+        else -> CapacityStatus.AVAILABLE
+      }
     }
 
   companion object {
     const val CAPACITY_NEAR_THRESHOLD = 0.15
+
+    /**
+     * Default capacity used by every pre-existing constructor call (pilot and
+     * demo data). It is the status quo value, not a fact about any facility.
+     */
+    const val DEFAULT_CAPACITY_TOTAL = 200
+    const val DEFAULT_CAPACITY_CURRENT = 60
   }
 }
 
 /**
  * Carrying-capacity classification used by shelter intelligence and routing.
+ *
+ * [UNKNOWN] is a first-class state, not an error: it means the source published
+ * no capacity figure. Such a facility is still a valid evacuation destination —
+ * it is simply not ranked on capacity, and it is never rejected for being full.
  */
 enum class CapacityStatus(val label: String) {
   AVAILABLE("Available"),
   NEAR_CAPACITY("Near Capacity"),
   FULL("Full"),
-  OVERFLOW_REQUIRED("Overflow Required");
+  OVERFLOW_REQUIRED("Overflow Required"),
+  UNKNOWN("Capacity unknown");
 
-  /** A shelter is recommendable only while capacity remains. */
-  val acceptsNewOccupants: Boolean get() = this == AVAILABLE || this == NEAR_CAPACITY
+  /** A shelter is recommendable only while capacity remains or is unstated. */
+  val acceptsNewOccupants: Boolean
+    get() = this == AVAILABLE || this == NEAR_CAPACITY || this == UNKNOWN
 }

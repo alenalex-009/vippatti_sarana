@@ -43,28 +43,43 @@ class LiveDataGuardsTest {
     details = EventDetails.Quake(magnitude, 10.0, "Test place", null)
   )
 
-  @Test
-  fun `strong quake radius is capped so it cannot swallow neighbours`() {
-    // M7.5 unclamped would be 2^7.5 ≈ 181 km — a map-swallowing giant.
-    val radius = DisasterEventNormalizer.derivedQuakeRadiusMeters(quakeEvent(7.5))
-    assertTrue("radius=$radius", radius <= DisasterEventNormalizer.MAX_ZONE_RADIUS_METERS)
-  }
+  // RULE 14 (retired behaviour, kept as a regression test):
+    // These tests previously asserted that a magnitude-derived radius existed and
+    // was merely CAPPED — e.g. M7.5 -> 2^7.5 km, clamped to 25 km. Capping a
+    // synthesised radius still means SHOWING a danger area the source never
+    // published. USGS supplies an epicentre, magnitude and depth; it supplies no
+    // affected-area geometry. A point earthquake therefore produces NO zone, and
+    // the original intent ("no derived zone may swallow its neighbours") now
+    // holds trivially because none is derived at all.
+    @Test
+    fun `a point earthquake produces no hazard zone at all`() {
+      assertNull(
+        "an epicentre is not a danger area; no zone may be derived from magnitude",
+        DisasterEventNormalizer.toHazardZone(quakeEvent(7.5))
+      )
+      assertNull(DisasterEventNormalizer.toHazardZone(quakeEvent(4.0)))
+    }
 
-  @Test
-  fun `moderate quake keeps a meaningful small radius`() {
-    val radius = DisasterEventNormalizer.derivedQuakeRadiusMeters(quakeEvent(5.0))
-    assertTrue("radius=$radius", radius in 1_000.0..DisasterEventNormalizer.MAX_ZONE_RADIUS_METERS)
-  }
+    @Test
+    fun `a quake with no magnitude still produces no zone`() {
+      val noMag = quakeEvent(5.0).copy(details = EventDetails.Generic)
+      assertNull(DisasterEventNormalizer.toHazardZone(noMag))
+    }
 
-  @Test
-  fun `quake without magnitude falls back to the default point radius`() {
-    val noMag = quakeEvent(5.0).copy(details = EventDetails.Generic)
-    assertEquals(
-      DisasterEventNormalizer.DEFAULT_POINT_ZONE_RADIUS_METERS,
-      DisasterEventNormalizer.derivedQuakeRadiusMeters(noMag),
-      0.0
-    )
-  }
+    @Test
+    fun `no danger radius is reported when the source published none`() {
+      assertNull(DisasterEventNormalizer.sourceProvidedQuakeRadiusMeters(quakeEvent(7.5)))
+      assertNull(DisasterEventNormalizer.sourceProvidedQuakeRadiusMeters(quakeEvent(4.0)))
+    }
+
+    @Test
+    fun `the quake itself is still surfaced as an event with its real data`() {
+      // Dropping the ZONE must not drop the EARTHQUAKE.
+      val event = quakeEvent(6.2)
+      assertEquals(DisasterSource.USGS, event.source)
+      assertEquals(6.2, (event.details as EventDetails.Quake).magnitude, 0.0001)
+      assertTrue(event.geometry is EventGeometry.Point)
+    }
 
   @Test
   fun `every disaster type has a distinct opaque zone color`() {

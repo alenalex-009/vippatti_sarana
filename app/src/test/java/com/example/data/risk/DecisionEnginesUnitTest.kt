@@ -71,16 +71,17 @@ class DecisionEnginesUnitTest {
 
   @Test
   fun `full shelter report has zero availability`() {
-    val full = PilotRegionData.safeZones.first { it.capacityCurrent >= it.capacityTotal }
+    val full = PilotRegionData.safeZones.first { it.capacityCurrent!! >= it.capacityTotal!! }
     val report = ShelterCapacityService.report(full)
     assertEquals(CapacityStatus.FULL, report.status)
-    assertEquals(0, report.availableCapacity)
+    assertTrue(report.availableCapacity.isKnown)
+    assertEquals(0.0, report.availableCapacity.value!!, 0.0)
   }
 
   @Test
   fun `projected status escalates to overflow when surge exceeds capacity`() {
-    val shelter = PilotRegionData.safeZones.first { it.availableCapacity > 20 }
-    val projected = ShelterCapacityService.projectedStatus(shelter, incomingPeople = shelter.availableCapacity + 50)
+    val shelter = PilotRegionData.safeZones.first { it.availableCapacity.isKnown && it.availableCapacity.value!! > 20 }
+    val projected = ShelterCapacityService.projectedStatus(shelter, incomingPeople = shelter.availableCapacity.value!!.toInt() + 50)
     assertEquals(CapacityStatus.OVERFLOW_REQUIRED, projected)
   }
 

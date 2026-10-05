@@ -340,10 +340,13 @@ object ZoneDetailMapper {
         userLocation, candidate.point, zone.center, zone.radiusMeters)
       return ratio * GeoMath.distanceMeters(userLocation, candidate.point)
     }
-    val best = feasibleSafeZones
-      .sortedWith(compareBy(
-        { GeoMath.distanceMeters(userLocation, it.point) + exposureMeters(it) * 2.0 },
-        { -it.availableCapacity }))
+    // Tie-break on capacity ONLY among candidates that publish one. A candidate
+    // with no capacity figure is not treated as zero-capacity, which would push it
+    // behind every other option on the strength of absent data.
+        val best = feasibleSafeZones
+          .sortedWith(compareBy(
+            { GeoMath.distanceMeters(userLocation, it.point) + exposureMeters(it) * 2.0 },
+            { -(it.availableCapacity.value ?: -1.0) }))
       .firstOrNull() ?: return null
     return NearestViableSafeZone(
       name = best.name,

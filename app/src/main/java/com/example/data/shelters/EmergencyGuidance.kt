@@ -84,7 +84,10 @@ sealed class EmergencyGuidance {
         headline = "Head to the nearest safe zone: ${nearest.zone.name}",
         detail = buildString {
           append("About ${GeoMath.formatKm(nearest.distanceMeters)} away")
-          nearest.capacityReport.availableCapacity.let { if (it > 0) append(" • $it spaces open") }
+          nearest.capacityReport.availableCapacity.let {
+            if (it.isKnown && it.value!! > 0) append(" • ${it.value!!.toInt()} spaces open")
+            else if (!nearest.capacityReport.hasKnownFigures) append(" • capacity unavailable")
+          }
           // MULTIPLE NEAREST (user rule #5): name the next-best nearby
           // options too, so the card presents a SET of safe zones.
           val others = feasible.filter { it != nearest }.sortedBy { it.distanceMeters }

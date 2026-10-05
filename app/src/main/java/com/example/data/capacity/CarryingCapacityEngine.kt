@@ -107,22 +107,31 @@ object CarryingCapacityEngine {
       CapacityResource.SHELTER_SPACES -> {
         val capacity = zone.capacityTotal
         val occupied = zone.capacityCurrent
-        // A record with no usable capacity figure (non-positive total) has no
-        // value to report rather than a value of zero.
-        if (capacity <= 0) {
+        // A record that publishes no usable total capacity has no value to
+        // report rather than a value of zero. null total is NOT "zero spaces".
+        if (capacity == null || capacity <= 0 || occupied == null) {
           ResourceCapacity(
             resource = resource,
             peopleSupported = null,
             state = ResourceDataState.NOT_PROVIDED,
-            basis = "Record shows no usable total capacity ($capacity)",
+            basis = if (capacity == null || occupied == null) {
+              "Record publishes no capacity/occupancy figure"
+            } else {
+              "Record shows no usable total capacity ($capacity)"
+            },
             source = source
           )
         } else {
+          val free = zone.availableCapacity
           ResourceCapacity(
             resource = resource,
-            peopleSupported = zone.availableCapacity,
+            peopleSupported = if (free.isKnown) free.value!!.toInt() else null,
             state = state,
-            basis = "$capacity total - $occupied occupied = ${zone.availableCapacity} spaces",
+            basis = if (free.isKnown) {
+              "$capacity total - $occupied occupied = ${free.value!!.toInt()} spaces"
+            } else {
+              "$capacity total - occupancy unknown"
+            },
             source = source
           )
         }

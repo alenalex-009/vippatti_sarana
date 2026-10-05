@@ -36,11 +36,19 @@ enum class DisasterType(val label: String) {
 /** Authoritative (or user-report) origin of an event. */
 enum class DisasterSource(val label: String) {
   USGS("USGS Earthquake Hazards Program"),
-  NASA_FIRMS("NASA FIRMS"),
-  IMD_CAP("India Meteorological Department (official CAP alert)"),
-  NDMA_CAP("NDMA / SACHET national alerts (official CAP feed)"),
-  USER_REPORT("User Report")
-}
+    NASA_FIRMS("NASA FIRMS"),
+    IMD_CAP("India Meteorological Department (official CAP alert)"),
+    NDMA_CAP("NDMA / SACHET national alerts (official CAP feed)"),
+    /**
+     * Central Water Commission river gauges. Registered as UNAVAILABLE, not
+     * omitted: an empty river layer would read as "no flood risk", whereas an
+     * explicit unavailable source reads as "we do not know".
+     */
+    CWC_GAUGE("Central Water Commission river gauge (unavailable)"),
+    NDEM("NDEM / NRSC official layers (authorisation required)"),
+    INCOIS("INCOIS tsunami warnings (portal only)"),
+    USER_REPORT("User Report")
+  }
 
 /** Geographic representation kinds supported by the pipeline. */
 enum class GeometryType { POINT, MULTIPOINT, LINE, POLYGON, RASTER_LAYER, UNLOCATED }
@@ -259,14 +267,22 @@ object DisasterEventNormalizer {
     is EventGeometry.Unlocated -> null
   }
 
-  private fun pointZone(event: DisasterEvent, lat: Double, lon: Double): HazardZone {
-    val radius = when (event.disasterType) {
-      DisasterType.EARTHQUAKE -> derivedQuakeRadiusMeters(event)
-      DisasterType.WILDFIRE -> FIRE_ZONE_RADIUS_METERS
-      else -> DEFAULT_POINT_ZONE_RADIUS_METERS
+  private fun pointZone(event: DisasterEvent, lat: Double, lon: Double): HazardZone? {
+      val radius = when (event.disasterType) {
+        // RULE 14 (hard requirement): an earthquake epicentre is NOT a danger
+        // radius. The previous code computed 2^M km from magnitude and rendered
+        // it as a hazard circle, which manufactures a hazard boundary the
+        // source never published — the same failure mode as faking a FIRMS
+        // perimeter. USGS supplies no affected-area geometry, so a point quake
+        // produces NO zone. It stays visible as an earthquake EVENT with its
+        // magnitude/depth/place and no invented danger area.
+        DisasterType.EARTHQUAKE -> return null
+
+        DisasterType.WILDFIRE -> FIRE_ZONE_RADIUS_METERS
+        else -> DEFAULT_POINT_ZONE_RADIUS_METERS
+      }
+      return baseZone(event, GeoPoint(lat, lon), radius)
     }
-    return baseZone(event, GeoPoint(lat, lon), radius)
-  }
 
   private fun polygonZone(event: DisasterEvent, ring: List<GeoPoint>): HazardZone? {
     if (ring.size < 3) return null
@@ -320,18 +336,27 @@ object DisasterEventNormalizer {
   }
 
   /**
-   * Earthquake alert radius derived from magnitude: ~2^M km (felt-area
-   * approximation), CAPPED at [MAX_ZONE_RADIUS_METERS] so a strong quake
-   * never renders as a giant zone that swallows neighbouring zones
-   * (map rule: no zone inside another). Always labeled ESTIMATED in the
-   * UI — it is NOT an official shake/intensity map.
+   * Radius for a POINT earthquake, decided through [com.example.data.india.InferenceGuard].
+   *
+   * Returns null unless the SOURCE published a danger radius. USGS never does,
+   * so this is always null for real feeds — the constant below exists only so
+   * a future authoritative provider that publishes a radius can use it without
+   * reintroducing magnitude-derived geometry.
    */
-  fun derivedQuakeRadiusMeters(event: DisasterEvent): Double {
-    val mag = (event.details as? EventDetails.Quake)?.magnitude
-      ?: return DEFAULT_POINT_ZONE_RADIUS_METERS
-    val km = 2.0.pow(mag).coerceIn(3.0, MAX_ZONE_RADIUS_METERS / 1000.0)
-    return km * 1000.0
-  }
+  fun sourceProvidedQuakeRadiusMeters(event: DisasterEvent): Double? =
+    when (
+      val decision = com.example.data.india.InferenceGuard.dangerRadiusFromEpicentre(
+        sourceRadiusKm = com.example.data.india.MaybeNumber.UNKNOWN,
+        magnitude = (event.details as? EventDetails.Quake)?.let {
+          com.example.data.india.MaybeNumber.of(it.magnitude)
+        } ?: com.example.data.india.MaybeNumber.UNKNOWN
+      )
+    ) {
+      is com.example.data.india.InferenceResult.Allowed ->
+        decision.value.orNull()?.times(1000.0)
+      // Refused: the source published no radius. Do not synthesise one.
+      is com.example.data.india.InferenceResult.Refused -> null
+    }
 
   fun toHazardType(type: DisasterType): HazardType = when (type) {
     DisasterType.EARTHQUAKE -> HazardType.EARTHQUAKE

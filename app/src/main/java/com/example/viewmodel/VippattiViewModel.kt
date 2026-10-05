@@ -161,14 +161,23 @@ class VippattiViewModel(
    * (keyless). Tests inject a repository with fake providers.
    */
   private val disasterRepository: DisasterDataRepository = DisasterDataRepository(
-    providers = listOf(
-      UsgsEarthquakeProvider(),
-      ImdCapProvider(),
-      com.example.data.disaster.providers.NdmaCapProvider(),
-      FirmsFireProvider(mapKeyProvider = { BuildConfig.FIRMS_MAP_KEY })
+      providers = listOf(
+        UsgsEarthquakeProvider(),
+        ImdCapProvider(),
+        // NDMA SACHET — the real national alert site, three-step pipeline
+        // (RSS index -> CAP document -> published Polygon URL). Replaces the
+        // previous WMO-S3 mirror, which never carried SACHET geometry.
+        com.example.data.disaster.providers.SachetCapProvider(),
+        // Official sources that are genuinely inaccessible in this environment.
+        // Registered so the UI can say "unavailable" instead of silently
+        // omitting them or substituting a third party (rules 8, 12, 19).
+        com.example.data.disaster.providers.CwcGaugeUnavailableProvider(),
+        com.example.data.disaster.providers.NdemUnavailableProvider(),
+        com.example.data.disaster.providers.IncoisUnavailableProvider(),
+        FirmsFireProvider(mapKeyProvider = { BuildConfig.FIRMS_MAP_KEY })
+      ),
+      cache = disasterCache
     ),
-    cache = disasterCache
-  ),
   /** News pipeline override — tests inject a failing/fake service (no real network). */
   private val newsRepositoryOverride: NewsRepository? = null,
   /**
@@ -376,12 +385,16 @@ class VippattiViewModel(
     reloadFieldRegistry(silent = true)
     recomputeIntelligence(selectInitialShelter = false)
     disasterJob = viewModelScope.launch {
+      // Cache shows instantly (offline survival); the live provider refresh
+      // always follows so a stale cache can never mask new data. Previously
+      // the refresh was skipped whenever any usable cache existed, which is
+      // why only the single provider type that happened to be cached was
+      // ever visible.
       val cached = disasterRepository.loadCachedOnly()
       if (cached != null) {
         applyDisasterFeed(cached)
-      } else {
-        applyDisasterFeed(disasterRepository.refresh())
       }
+      applyDisasterFeed(disasterRepository.refresh())
     }
     // Cold start of the REAL GNews pipeline: a fresh cache (< 30 min) serves
     // instantly (offline survival + quota protection); otherwise it fetches.

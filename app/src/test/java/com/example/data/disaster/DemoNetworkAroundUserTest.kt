@@ -42,7 +42,7 @@ class DemoNetworkAroundUserTest {
     assertTrue("shelter outside hazard circle: $hazardToShelter > ${hazard.radiusMeters}",
       hazardToShelter > hazard.radiusMeters)
     assertEquals("OPEN", shelter.operatingStatus)
-    assertTrue(shelter.availableCapacity > 0)
+    assertTrue(shelter.availableCapacity.isKnown && shelter.availableCapacity.value!! > 0)
   }
 
   @Test
@@ -110,7 +110,9 @@ class DemoNetworkAroundUserTest {
       // At least the primary shelters are OPEN with capacity for routing.
     }
     assertTrue("the first shelter (opposite the hazard) must be OPEN with capacity",
-      shelters.first().operatingStatus == "OPEN" && shelters.first().availableCapacity > 0)
+      shelters.first().operatingStatus == "OPEN" &&
+        shelters.first().availableCapacity.isKnown &&
+        shelters.first().availableCapacity.value!! > 0)
   }
 
   @Test

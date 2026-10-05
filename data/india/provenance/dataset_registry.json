@@ -1,0 +1,125 @@
+{
+  "registryVersion": "1.0.0",
+  "lastUpdated": "2026-10-04T19:50:00+05:30",
+  "note": "Paths are relative to the repo root. data/india/ holds registry + derived/tiny assets only; the large source archives live under Vippatti_India_Data/ and are the canonical copies.",
+  "datasets": [
+    {
+      "id": "NWIC_STATES_2026",
+      "source": "NWIC",
+      "file": "Vippatti_India_Data/boundaries/state/state_nwic_geojson.zip",
+      "sizeBytes": 20809092,
+      "format": "GeoJSON (zipped)",
+      "geographicCoverage": "India — state boundaries",
+      "date": "2026-10-04",
+      "temporalStatus": "STATIC",
+      "checksumMd5": "2defdd09afc8292d2a0268e9095919fe",
+      "provenance": "National Wide Information Centre administrative boundaries",
+      "usageNote": "India-wide state-level admin hierarchy",
+      "accessibility": "AVAILABLE"
+    },
+    {
+      "id": "NWIC_DISTRICTS_2026",
+      "source": "NWIC",
+      "file": "Vippatti_India_Data/boundaries/district/district_nwic_geojson.zip",
+      "sizeBytes": 71238839,
+      "format": "GeoJSON (zipped)",
+      "geographicCoverage": "India — district boundaries",
+      "date": "2026-10-04",
+      "temporalStatus": "STATIC",
+      "checksumMd5": "a3d1d885c26197f277fc264585bb3463",
+      "provenance": "NRSC/Bhuvan download portal",
+      "usageNote": "India-wide district-level admin hierarchy",
+      "accessibility": "AVAILABLE"
+    },
+    {
+      "id": "NWIC_SUBDISTRICTS_2026",
+      "source": "NWIC",
+      "file": "Vippatti_India_Data/boundaries/subdistrict/subdistrict_nwic_geojson.zip",
+      "sizeBytes": 132424107,
+      "format": "GeoJSON (zipped)",
+      "geographicCoverage": "India — subdistrict/taluk boundaries",
+      "date": "2026-10-04",
+      "temporalStatus": "STATIC",
+      "checksumMd5": "77a001bc094e8ec8ea5b173711f10e73",
+      "provenance": "NRSC/Bhuvan download portal",
+      "usageNote": "India-wide subdistrict hierarchy",
+      "accessibility": "AVAILABLE"
+    },
+    {
+      "id": "NWIC_VILLAGES_AP_2026",
+      "source": "NWIC",
+      "file": "Vippatti_India_Data/boundaries/village/ANDHRA_PRADESH.zip",
+      "sizeBytes": 22690425,
+      "format": "GeoJSON (zipped)",
+      "geographicCoverage": "Andhra Pradesh — village boundaries (pilot state; NOT India-wide)",
+      "date": "2026-10-04",
+      "temporalStatus": "STATIC",
+      "checksumMd5": "e2357f61c02bb686f8e8a6b57ff3f6e1",
+      "provenance": "NRSC/Bhuvan download portal",
+      "usageNote": "Village level for AP only. Other states NOT yet downloaded — hierarchy must degrade honestly, not invent.",
+      "accessibility": "PARTIAL"
+    },
+    {
+      "id": "CENSUS_2011_STATE_DIST_SCHD_VILL",
+      "source": "Census of India",
+      "file": "Vippatti_India_Data/population/census_2011/2011-IndiaStateDistSbDistVill-0000.xlsx",
+      "url": "https://censusindia.gov.in/census.website/en/data",
+      "sizeBytes": 333801174,
+      "format": "XLSX",
+      "geographicCoverage": "India — state/district/subdistrict/village",
+      "date": "2011",
+      "temporalStatus": "HISTORICAL",
+      "checksumMd5": "52034cb4d70b502aa3522fe71f510872",
+      "provenance": "Census of India 2011",
+      "usageNote": "Population baseline ONLY — never current population; never current risk.",
+      "accessibility": "AVAILABLE"
+    }
+  ],
+  "unavailableOfficialSources": [
+    {
+      "id": "NDEM_NRSC",
+      "name": "NDEM / NRSC National Database for Emergency Management",
+      "url": "https://ndem.nrsc.gov.in/",
+      "accessibility": "BLOCKED_LOGIN_REQUIRED",
+      "reason": "Requires NRSC/ISRO authorized login for full GIS downloads. No open programmatic access.",
+      "fallbackUsed": "NONE — no third-party substitute was adopted in its place.",
+      "handlingRule": "Report as unavailable. Never scrape, never substitute silently."
+    },
+    {
+      "id": "BHUVAN_NRSC_THEMATIC",
+      "name": "NRSC Bhuvan thematic hazard layers (flood inundation, landslide susceptibility, multi-hazard)",
+      "url": "https://bhuvan.nrsc.gov.in/",
+      "accessibility": "MANUAL_ONLY",
+      "reason": "Per-layer manual selection/download; no documented open bulk API; terms per layer.",
+      "fallbackUsed": "NONE",
+      "handlingRule": "If acquired manually, must be registered here with layer, date, license before use."
+    },
+    {
+      "id": "IMD_LIVE_WARNING_POLYGONS",
+      "name": "IMD official warning polygons (district/taluk gridded)",
+      "url": "https://mausam.imd.gov.in/",
+      "accessibility": "RSS_CAP_AVAILABLE / POLYGONS_PARTIAL",
+      "reason": "CAP RSS gives alert text, severity, certainty and sometimes a polygon; gridded warning layers are portal-only.",
+      "fallbackUsed": "CAP RSS only — alerts retained WITH their CAP identifier and sender.",
+      "handlingRule": "Never synthesise a warning polygon that the CAP alert did not carry."
+    },
+    {
+      "id": "CWC_FLOOD_GAUGE_LIVE",
+      "name": "Central Water Commission — live river gauge data",
+      "url": "https://cwc.gov.in/en/hydrology",
+      "accessibility": "BLOCKED_NO_OPEN_API",
+      "reason": "No documented open programmatic feed for live gauge readings found during source audit.",
+      "fallbackUsed": "NONE",
+      "handlingRule": "River level / flood status must stay UNKNOWN rather than be estimated."
+    },
+    {
+      "id": "ROAD_CLOSURE_LIVE",
+      "name": "Live road closures / traffic conditions",
+      "url": null,
+      "accessibility": "UNAVAILABLE",
+      "reason": "No official pan-India open feed identified in source audit.",
+      "fallbackUsed": "NONE",
+      "handlingRule": "Route safety/traffic status must be reported as UNAVAILABLE, never assumed clear."
+    }
+  ]
+}

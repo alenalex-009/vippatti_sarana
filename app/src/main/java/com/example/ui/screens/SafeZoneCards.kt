@@ -236,10 +236,15 @@ private fun SafeZoneCard(
   modifier: Modifier = Modifier
 ) {
   val capacity = evaluation?.capacityReport
-  val occupancyRatio = if (zone.capacityTotal > 0) {
-    (zone.capacityCurrent.toFloat() / zone.capacityTotal).coerceIn(0f, 1f)
-  } else 1f
-  val isFull = capacity?.acceptsNewOccupants == false || zone.availableCapacity <= 0
+  val totalCap = zone.capacityTotal
+  val currentCap = zone.capacityCurrent
+  val occupancyRatio = if (totalCap != null && totalCap > 0 && currentCap != null) {
+    (currentCap.toFloat() / totalCap).coerceIn(0f, 1f)
+  } else 0f
+  // A shelter with NO published capacity is not "full". It carries no capacity
+  // evidence, so it is styled neutrally and never marked full/red.
+  val isFull = capacity?.acceptsNewOccupants == false ||
+    (zone.availableCapacity.isKnown && zone.availableCapacity.value == 0.0)
   // Live distance from the USER: the evaluation carries it when present;
   // otherwise straight-line from the current position (never 0 by default).
   val distanceKm = evaluation?.distanceMeters

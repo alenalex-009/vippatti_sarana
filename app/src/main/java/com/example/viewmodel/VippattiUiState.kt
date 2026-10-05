@@ -247,11 +247,7 @@ data class VippattiUiState(
   /** Latest sync time across providers (for "Last updated" display). */
   val disasterLastSyncMillis: Long? = null,
   /** Map layer toggles (user-controlled; zoom rules applied at render time). */
-  val enabledLayers: Set<DisasterLayer> = setOf(
-    DisasterLayer.OFFICIAL_ALERTS, DisasterLayer.EARTHQUAKES,
-    DisasterLayer.USER_REPORTS, DisasterLayer.SAFE_ZONES,
-    DisasterLayer.EVACUATION_ROUTE, DisasterLayer.MY_LOCATION
-  ),
+  val enabledLayers: Set<DisasterLayer> = DisasterLayer.entries.toSet(),
   /** Mock-data compat flag — mirrors the radar "SIMULATED DEMO" toggle. */
   val isMockMode: Boolean = true,
   /**

@@ -369,15 +369,24 @@ fun ResourceHonestyRow(
   }
 }
 
-/** Compact capacity gauge: "225 / 300" + % caption + progress bar. */
+/**
+ * Compact capacity gauge: "225 / 300" + % caption + progress bar.
+ *
+ * A registry row may publish NO capacity figure. That is shown as
+ * "Capacity unavailable" with an empty bar — never as "0 / 0" or "0 spaces
+ * free", both of which state a factual claim the source never made.
+ */
 @Composable
 fun CapacityGauge(
-  available: Int,
-  total: Int,
+  available: com.example.data.india.MaybeNumber,
+  total: com.example.data.india.MaybeNumber,
   modifier: Modifier = Modifier,
   accent: Color = NeonEmerald
 ) {
-  val fraction = if (total > 0) available.toFloat() / total.toFloat() else 0f
+  val known = available.isKnown && total.isKnown && total.value!! > 0.0
+  val fraction = if (known) {
+    (available.value!! / total.value!!).toFloat().coerceIn(0f, 1f)
+  } else 0f
   Column(
     modifier = modifier
       .fillMaxWidth()
@@ -393,20 +402,31 @@ fun CapacityGauge(
       Icon(Icons.Default.Groups, contentDescription = null, tint = TacticalOnSurface,
         modifier = Modifier.size(18.dp))
       Text(
-        text = if (total > 0) "$available / $total" else "$available",
-        fontSize = 20.sp, fontWeight = FontWeight.Black, color = TacticalOnSurface
+        text = if (known) {
+          "${available.value!!.toInt()} / ${total.value!!.toInt()}"
+        } else "Capacity unavailable",
+        fontSize = if (known) 20.sp else 15.sp,
+        fontWeight = FontWeight.Black,
+        color = if (known) TacticalOnSurface else TacticalOnSurfaceVariant
       )
       Spacer(Modifier.weight(1f))
-      Text(
-        text = if (total > 0) "${(fraction * 100).toInt()}% available" else "spaces free",
-        fontSize = 12.sp, color = TacticalOnSurfaceVariant
-      )
+      if (known) {
+        Text(
+          text = "${(fraction * 100).toInt()}% available",
+          fontSize = 12.sp, color = TacticalOnSurfaceVariant
+        )
+      } else {
+        Text(
+          text = "source publishes no figure",
+          fontSize = 12.sp, color = TacticalOnSurfaceVariant
+        )
+      }
     }
     LinearProgressIndicator(
-      progress = { fraction.coerceIn(0f, 1f) },
+      progress = { if (known) fraction else 0f },
       modifier = Modifier.fillMaxWidth().height(7.dp)
         .clip(RoundedCornerShape(999.dp)),
-      color = accent,
+      color = if (known) accent else ObsidianContainerLow,
       trackColor = ObsidianContainerLow
     )
   }

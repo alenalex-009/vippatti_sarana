@@ -580,8 +580,16 @@ private fun SheltersTab(
         Column(Modifier.weight(1f)) {
           Text(zone.name, fontSize = 14.sp, fontWeight = FontWeight.Medium, color = TacticalOnSurface,
             maxLines = 2, overflow = TextOverflow.Ellipsis)
-          Text(
-            "${zone.lat.fmt()}, ${zone.lon.fmt()} • free ${zone.capacityTotal - zone.capacityCurrent}/${zone.capacityTotal} • ${zone.operatingStatus}",
+          val latLonLine = "${zone.lat.fmt()}, ${zone.lon.fmt()}"
+                    val totalCap = zone.capacityTotal
+                    val currentCap = zone.capacityCurrent
+                    val capacityLine = if (totalCap != null && currentCap != null) {
+              "free ${(totalCap - currentCap).coerceAtLeast(0)}/$totalCap"
+            } else {
+              "capacity unknown"
+            }
+            Text(
+                      "$latLonLine • $capacityLine • ${zone.operatingStatus}",
             fontSize = 12.sp, color = TacticalOnSurfaceVariant, maxLines = 1,
             overflow = TextOverflow.Ellipsis
           )

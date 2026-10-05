@@ -1,0 +1,219 @@
+{
+  "registryVersion": "1.1.0",
+  "lastVerifiedLive": "2026-10-04T19:20:00+05:30",
+  "verificationMethod": "HTTP GET from the dev machine against each documented endpoint; status codes recorded below.",
+  "sources": [
+    {
+      "id": "NDMA_SACHET",
+      "name": "NDMA SACHET — National Disaster Alert Portal",
+      "url": "https://sachet.ndma.gov.in/",
+      "endpoints": [
+        {"name": "CapFeed", "url": "https://sachet.ndma.gov.in/CapFeed", "verified": "HTTP 200"},
+        {"name": "ScreenReader", "url": "https://sachet.ndma.gov.in/ScreenReader", "verified": "HTTP 200"},
+        {"name": "RSS India", "url": "https://sachet.ndma.gov.in/cap_public_website/rss/rss_india.xml", "verified": "HTTP 200"}
+      ],
+      "format": "CAP 1.2 XML (RSS + CapFeed)",
+      "apiKeyRequired": false,
+      "loginRequired": false,
+      "license": "Government of India, NDMA — public alert dissemination",
+      "dataClass": "OFFICIAL_ALERT",
+      "recommendedUse": "PRIMARY national disaster alert source",
+      "fetchRemotely": true,
+      "cacheStrategy": "ETag conditional GET; retain CAP identifier + sent/effective/expires/sender per alert",
+      "temporalClass": "LIVE"
+    },
+    {
+      "id": "IMD_CAP",
+      "name": "India Meteorological Department — CAP alerts",
+      "url": "https://mausam.imd.gov.in/",
+      "endpoints": [
+        {"name": "CAP RSS (S3)", "url": "https://cap-sources.s3.amazonaws.com/in-imd-en/rss.xml", "verified": "HTTP 200 — redirects; confirm payload"}
+      ],
+      "format": "CAP 1.2 XML via RSS",
+      "apiKeyRequired": false,
+      "loginRequired": false,
+      "license": "Government of India, IMD",
+      "dataClass": "OFFICIAL_ALERT",
+      "recommendedUse": "PRIMARY weather warnings (cyclone, heavy rainfall, thunderstorm)",
+      "fetchRemotely": true,
+      "cacheStrategy": "ETag conditional GET; 15 min freshness window",
+      "temporalClass": "LIVE",
+      "caveat": "Polygons present only when the CAP alert itself carries one. Never synthesise."
+    },
+    {
+      "id": "USGS_EARTHQUAKE",
+      "name": "USGS Earthquake Hazards Program",
+      "url": "https://earthquake.usgs.gov/earthquakes/feed/",
+      "endpoints": [
+        {"name": "FDSN query (geojson)", "url": "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson", "verified": "HTTP 200 — returned India-bbox events"},
+        {"name": "summary feeds", "url": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/", "verified": "documented"}
+      ],
+      "format": "GeoJSON / CSV / KML / QuakeML",
+      "apiKeyRequired": false,
+      "loginRequired": false,
+      "license": "USGS public domain",
+      "dataClass": "SUPPLEMENTARY_OBSERVATION",
+      "recommendedUse": "Earthquake point observations. NOT a hazard polygon. NOT an evacuation zone.",
+      "fetchRemotely": true,
+      "cacheStrategy": "3-day lookback; 7-day max cache age",
+      "temporalClass": "LIVE",
+      "caveat": "Epicentre is a point observation. Magnitude alone does not yield a danger radius."
+    },
+    {
+      "id": "NASA_FIRMS",
+      "name": "NASA FIRMS — active fire detections",
+      "url": "https://firms.modaps.eosdis.nasa.gov/",
+      "endpoints": [
+        {"name": "area/csv", "url": "https://firms.modaps.eosdis.nasa.gov/api/area/csv/{MAP_KEY}/{SAT}/{bbox}/{days}", "verified": "HTTP 200 — returned live VIIRS_SNPP_NRT rows for the India bbox"}
+      ],
+      "format": "CSV (also GeoJSON, WMS)",
+      "apiKeyRequired": true,
+      "loginRequired": true,
+      "license": "NASA FIRMS terms of use",
+      "dataClass": "SATELLITE_OBSERVATION",
+      "recommendedUse": "Point hotspot detections. NOT a fire perimeter. NOT a burn scar. NOT verified ground fire.",
+      "fetchRemotely": true,
+      "cacheStrategy": "per-fetch; 2-day window; discard 'low' confidence",
+      "temporalClass": "LIVE",
+      "caveat": "Each row is one satellite overpass pixel. Must be labelled 'satellite-detected hotspot'."
+    },
+    {
+      "id": "OPEN_METEO",
+      "name": "Open-Meteo",
+      "url": "https://open-meteo.com/",
+      "endpoints": [
+        {"name": "forecast", "url": "https://api.open-meteo.com/v1/forecast", "verified": "HTTP 200 — returned current + hourly for an India coordinate"}
+      ],
+      "format": "JSON",
+      "apiKeyRequired": false,
+      "loginRequired": false,
+      "license": "Open-Meteo terms",
+      "dataClass": "WEATHER_CONTEXT",
+      "recommendedUse": "Weather context only. NOT an official disaster warning and NOT a warning authority.",
+      "fetchRemotely": true,
+      "cacheStrategy": "10-min refresh guard; 2 km movement guard",
+      "temporalClass": "LIVE"
+    },
+    {
+      "id": "CENSUS_2011",
+      "name": "Census of India 2011",
+      "url": "https://censusindia.gov.in/census.website/en/data",
+      "format": "XLSX",
+      "apiKeyRequired": false,
+      "loginRequired": false,
+      "license": "Census of India — open access with attribution",
+      "dataClass": "HISTORICAL_BASELINE",
+      "recommendedUse": "Historical population baseline only.",
+      "fetchRemotely": false,
+      "temporalClass": "HISTORICAL",
+      "localPath": "Vippatti_India_Data/population/census_2011/2011-IndiaStateDistSbDistVill-0000.xlsx",
+      "checksumMd5": "52034cb4d70b502aa3522fe71f510872",
+      "caveat": "2011 data. Must never be presented as current population or current evacuation demand."
+    },
+    {
+      "id": "NWIC_BOUNDARIES",
+      "name": "National Wide Information Centre administrative boundaries",
+      "format": "GeoJSON (zipped)",
+      "apiKeyRequired": false,
+      "loginRequired": false,
+      "license": "UNVERIFIED — confirm redistribution terms before shipping in an APK",
+      "dataClass": "STATIC_GEOGRAPHY",
+      "recommendedUse": "India-wide admin hierarchy (state/district/subdistrict)",
+      "fetchRemotely": false,
+      "temporalClass": "STATIC",
+      "licenseStatus": "UNVERIFIED",
+      "caveat": "Redistribution terms not yet confirmed. Do not bundle into an APK until checked."
+    },
+    {
+      "id": "OPENSTREETMAP",
+      "name": "OpenStreetMap",
+      "url": "https://www.openstreetmap.org/",
+      "format": "PBF / GeoJSON / tiles",
+      "apiKeyRequired": false,
+      "loginRequired": false,
+      "license": "ODbL",
+      "dataClass": "SUPPLEMENTARY_GEOGRAPHY",
+      "recommendedUse": "Roads, buildings, POIs, routing network",
+      "fetchRemotely": true,
+      "temporalClass": "CACHED",
+      "caveat": "OSM has no India-wide authoritative 'evacuation shelter' tag coverage. School/hospital/community-hall POIs are NOT shelters."
+    },
+    {
+      "id": "EMDAT",
+      "name": "EM-DAT — Emergency Events Database",
+      "url": "https://www.emdat.be/",
+      "format": "CSV",
+      "apiKeyRequired": false,
+      "loginRequired": false,
+      "license": "CRED/UCLouvain — non-commercial",
+      "dataClass": "HISTORICAL_ARCHIVE",
+      "recommendedUse": "Historical disaster context only",
+      "fetchRemotely": false,
+      "temporalClass": "HISTORICAL",
+      "caveat": "Archive of past events. Must never render as a current hazard."
+    },
+    {
+      "id": "NDEM_NRSC",
+      "name": "NDEM / NRSC National Database for Emergency Management",
+      "url": "https://ndem.nrsc.gov.in/",
+      "accessibility": "BLOCKED_LOGIN_REQUIRED",
+      "apiKeyRequired": false,
+      "loginRequired": true,
+      "license": "NRSC/ISRO — authorized users only",
+      "dataClass": "REFERENCE_ONLY",
+      "fetchRemotely": false,
+      "temporalClass": "UNKNOWN",
+      "handlingRule": "Do not scrape. Report as unavailable. No silent third-party substitution."
+    },
+    {
+      "id": "BHUVAN_NRSC",
+      "name": "NRSC Bhuvan thematic dashboard",
+      "url": "https://bhuvan.nrsc.gov.in/",
+      "accessibility": "MANUAL_ONLY",
+      "apiKeyRequired": false,
+      "loginRequired": false,
+      "license": "NRSC/ISRO — terms per layer",
+      "dataClass": "REFERENCE_ONLY",
+      "fetchRemotely": false,
+      "temporalClass": "UNKNOWN",
+      "handlingRule": "Manual acquisition only; register layer + date + license before use."
+    },
+    {
+      "id": "CWC_HYDROLOGY",
+      "name": "Central Water Commission — hydrology / flood forecasting",
+      "url": "https://cwc.gov.in/en/hydrology",
+      "accessibility": "BLOCKED_NO_OPEN_API",
+      "apiKeyRequired": false,
+      "loginRequired": false,
+      "license": "Government of India, CWC",
+      "dataClass": "REFERENCE_ONLY",
+      "fetchRemotely": false,
+      "temporalClass": "UNKNOWN",
+      "handlingRule": "No open live gauge feed found. River level must stay UNKNOWN, never estimated."
+    },
+    {
+      "id": "SURVEY_OF_INDIA",
+      "name": "Survey of India — Online Maps",
+      "url": "https://onlinemaps.surveyofindia.gov.in/",
+      "accessibility": "TILES_ONLY",
+      "licenseStatus": "UNVERIFIED",
+      "dataClass": "REFERENCE_ONLY",
+      "fetchRemotely": false,
+      "temporalClass": "UNKNOWN",
+      "handlingRule": "Reference basemap only. No redistribution assumed."
+    },
+    {
+      "id": "INCOIS_TSUNAMI",
+      "name": "INCOIS — Indian Tsunami Early Warning Centre",
+      "url": "https://incois.gov.in/",
+      "accessibility": "PORTAL_MANUAL",
+      "apiKeyRequired": false,
+      "loginRequired": false,
+      "license": "Government of India, INCOIS",
+      "dataClass": "REFERENCE_ONLY",
+      "fetchRemotely": false,
+      "temporalClass": "UNKNOWN",
+      "handlingRule": "Bulletin portal; no open bulk feed found. Do not infer tsunami risk from this app."
+    }
+  ]
+}

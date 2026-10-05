@@ -58,3 +58,11 @@ ci_out.txt
 
 # key backups must never be tracked
 app/.env.bak*
+
+# Bulk source archives (555 MB). Canonical copies live on disk and are
+# registered with checksums in data/india/provenance/dataset_registry.json.
+# They must not be committed, and must not ship in the APK — NWIC
+# redistribution terms are still UNVERIFIED.
+Vippatti_India_Data/
+*.zip
+!app/src/test/resources/**/*.zip
