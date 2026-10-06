@@ -309,6 +309,10 @@ fun RadarMapScreen(
       // records with the dataset's own coordinates. Never a current hazard.
       historicalEvents = uiState.historicalMappableEvents,
       onHistoricalEventTapped = onOpenHistoricalEventDetail,
+      // FIRMS freshness chip: wired straight from the real provider state —
+      // LIVE / RECENT / SYNCING / UNAVAILABLE, never a fabricated claim.
+      firmsLabel = uiState.firmsIndicatorLabel,
+      firmsStatus = uiState.firmsIndicatorStatus,
       modifier = Modifier.fillMaxSize(),
       topOverlayPadding = topOverlayPadding + 8.dp,
       bottomOverlayPadding = animatedSheetHeight

@@ -1293,9 +1293,9 @@ class VippattiViewModel(
    * Single source of truth for simulated-data visibility.
    */
   fun toggleMockData() {
-    // DEMO IS PERMANENTLY ON — this is a no-op.
-    // The demo toggle chip has been removed from the UI;
-    // this remains only so existing tests that call it still compile.
+    // Delegates to setMockMode — the single source of truth — so both entry
+    // points stay behaviourally identical (flags + snackbar + recompute).
+    setMockMode(!_uiState.value.isMockDataVisible)
   }
 
   // ==================================================== USER INCIDENT REPORTS

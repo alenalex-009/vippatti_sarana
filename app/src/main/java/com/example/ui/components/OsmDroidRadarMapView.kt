@@ -204,6 +204,13 @@ fun OsmDroidRadarMapView(
   onExitPlaceView: () -> Unit = {},
   /** Called once after the place-view camera fly-to has been executed. */
   onCameraJumpConsumed: () -> Unit = {},
+  /**
+   * NASA FIRMS freshness chip (wired from the REAL provider state via
+   * VippattiUiState.firmsIndicatorLabel/Status). Blank label = no chip
+   * (callers without a FIRMS shard render nothing rather than a claim).
+   */
+  firmsLabel: String = "",
+  firmsStatus: com.example.data.model.DataStatus = com.example.data.model.DataStatus.UNAVAILABLE,
   modifier: Modifier = Modifier,
   // Overlay-aware spacing so the floating map controls / attribution banner
   // never sit underneath the screen's risk strip, HUD or bottom sheet on any
@@ -530,6 +537,37 @@ fun OsmDroidRadarMapView(
           // activeRoute becomes null.
           onClearRoute()
         }
+      }
+    }
+
+    // ---------------- FIRMS freshness chip: real provider state ------------
+    // Derived from providerStates via the UiState indicator — it says
+    // SYNCING/UNAVAILABLE honestly and never claims LIVE before a real fetch.
+    if (firmsLabel.isNotBlank()) {
+      val statusColor = when (firmsStatus) {
+        com.example.data.model.DataStatus.SUCCESS,
+        com.example.data.model.DataStatus.VERIFIED -> NeonEmerald
+        com.example.data.model.DataStatus.STALE -> WarningAmber
+        com.example.data.model.DataStatus.LOADING -> TacticalCyan
+        com.example.data.model.DataStatus.ERROR -> EmergencyRed
+        else -> TacticalOnSurfaceVariant
+      }
+      Box(
+        modifier = Modifier
+          .align(Alignment.TopStart)
+          .padding(top = topOverlayPadding + 12.dp, start = 10.dp)
+          .clip(RoundedCornerShape(999.dp))
+          .background(ObsidianContainer.copy(alpha = 0.95f))
+          .border(1.dp, statusColor.copy(alpha = 0.7f), RoundedCornerShape(999.dp))
+          .padding(horizontal = 10.dp, vertical = 6.dp)
+          .testTag("map_firms_freshness_chip")
+      ) {
+        Text(
+          text = firmsLabel,
+          fontSize = 10.sp,
+          fontWeight = FontWeight.Bold,
+          color = statusColor
+        )
       }
     }
 
