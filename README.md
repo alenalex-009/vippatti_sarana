@@ -1,10 +1,14 @@
 # Vippatti Sarana
 
-**Hazard-based red zones, safe-zone carrying capacity, and relocation prioritization for vulnerable habitations — an all-India disaster-management decision-support app (Jetpack Compose).**
+> **Intelligent Disaster Risk & Relocation Decision Support System**
 
-Built for **Smart India Hackathon 2026, problem statement SIH 26191** (Ministry of Home Affairs / NDRF — Disaster Management theme): *"Intelligent Identification of Hazard-Based Red Zones, Carrying Capacity Assessment, and Immediate Relocation Needs for Vulnerable Habitations."*
+[![Live Website](https://img.shields.io/badge/🌐%20Live%20Website-Visit%20Project-0ea5a4?style=for-the-badge)](https://vippatti-sarana-landing-page.vercel.app/)
 
-> ⚠️ **This is decision-support software, not an emergency service.** It never fabricates official alerts, certified shelters, or government decisions. Every data surface is labelled with its real provenance (LIVE / CACHED / STALE / HISTORICAL / SIMULATED / DERIVED / NOT CONFIGURED). See [Data & demo information](#-data--demo-information) and the [Disclaimer](#-disclaimer).
+An all-India disaster-management decision-support application designed to identify hazard-based red zones, evaluate safe-zone carrying capacity, and prioritize relocation needs for vulnerable habitations.
+
+Built for **Smart India Hackathon 2026 — SIH 26191** under the Ministry of Home Affairs / NDRF Disaster Management theme.
+
+> ⚠️ **This is decision-support software, not an emergency service.** It does not fabricate official alerts, certified shelters, or government decisions. Data is clearly labelled as LIVE, CACHED, STALE, HISTORICAL, SIMULATED, DERIVED, or NOT CONFIGURED.
 
 ---
 
