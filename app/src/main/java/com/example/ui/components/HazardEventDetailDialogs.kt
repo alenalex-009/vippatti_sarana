@@ -152,40 +152,48 @@ fun HazardZoneDetailDialog(
           }
         }
 
-        // ---- SUMMARY ROW: three compact cards, honest "Data unavailable"
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-          SummaryCard(
-            label = "Affected radius",
-            value = String.format(java.util.Locale.US, "%.1f km", zone.radiusMeters / 1000.0),
-            icon = Icons.Default.Radar,
-            modifier = Modifier.weight(1f),
-            tag = "hazard_stat_radius"
-          )
-          SummaryCard(
-            label = "Trend",
-            value = zone.trend.label,
-            icon = Icons.Default.TrendingFlat,
-            valueAccent = if (zone.trend == com.example.data.model.HazardTrend.WORSENING)
-              WarningAmber else TacticalCyan,
-            modifier = Modifier.weight(1f),
-            tag = "hazard_stat_trend"
-          )
-          val detected = detail.detectedAtMillis?.let { ms ->
-            com.example.data.news.NewsPresentation.relativeAge(ms, System.currentTimeMillis())
-          }
-          SummaryCard(
-            label = "Detected",
-            value = detected ?: "Data unavailable",
-            subValue = detail.detectedAtMillis?.let {
-              java.text.SimpleDateFormat("dd MMM yyyy, HH:mm", java.util.Locale.getDefault())
-                .format(java.util.Date(it))
-            },
-            icon = Icons.Default.Schedule,
-            modifier = Modifier.weight(1f),
-            tag = "hazard_stat_detected",
-            unavailable = detected == null
-          )
+        // ---- SUMMARY: width-adaptive cards (3 across on wide screens,
+        // 2+1 on normal phones, stacked on very narrow ones), honest
+        // "Data unavailable" for missing values.
+        val detected = detail.detectedAtMillis?.let { ms ->
+          com.example.data.news.NewsPresentation.relativeAge(ms, System.currentTimeMillis())
         }
+        AdaptiveStatCards(
+          first = { cardModifier ->
+            SummaryCard(
+              label = "Affected radius",
+              value = String.format(java.util.Locale.US, "%.1f km", zone.radiusMeters / 1000.0),
+              icon = Icons.Default.Radar,
+              modifier = cardModifier,
+              tag = "hazard_stat_radius"
+            )
+          },
+          second = { cardModifier ->
+            SummaryCard(
+              label = "Trend",
+              value = zone.trend.label,
+              icon = Icons.Default.TrendingFlat,
+              valueAccent = if (zone.trend == com.example.data.model.HazardTrend.WORSENING)
+                WarningAmber else TacticalCyan,
+              modifier = cardModifier,
+              tag = "hazard_stat_trend"
+            )
+          },
+          third = { cardModifier ->
+            SummaryCard(
+              label = "Detected",
+              value = detected ?: "Data unavailable",
+              subValue = detail.detectedAtMillis?.let {
+                java.text.SimpleDateFormat("dd MMM yyyy, HH:mm", java.util.Locale.getDefault())
+                  .format(java.util.Date(it))
+              },
+              icon = Icons.Default.Schedule,
+              modifier = cardModifier,
+              tag = "hazard_stat_detected",
+              unavailable = detected == null
+            )
+          }
+        )
 
         // ---- NEAREST SAFE ZONE: tappable, bound to the exact record id.
         // Only ever the zone the evaluator accepted for THIS hazard context.

@@ -25,6 +25,13 @@ class MainDispatcherRule : TestWatcher() {
 
   val dispatcher = UnconfinedTestDispatcher()
 
+  /** Test convenience: a stable clock for repository/ViewModel tests run under
+   * this rule. Keeps the same single-line `now` seed across the test module. */
+  companion object {
+    val now: Long
+      get() = 1_761_234_567_890L // stable; test bodies should pass their own clip if needed
+  }
+
   override fun starting(description: Description) {
     Dispatchers.setMain(dispatcher)
   }

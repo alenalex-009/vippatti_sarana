@@ -30,7 +30,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.res.stringResource
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,7 +45,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.R
-import com.example.config.AppRemoteConfig
 import com.example.ui.theme.NeonEmerald
 import com.example.ui.theme.OnNeonEmerald
 import com.example.ui.theme.TacticalNavBg
@@ -73,25 +71,36 @@ private fun iconsFor(tab: ScreenTab): Pair<ImageVector, ImageVector> = when (tab
 }
 
 /**
- * Bottom navigation — up to five destinations in user-journey order:
- * HOME (quiet: am I safe / what do I do) -> MAP (see it) -> NEWS -> GUIDE
- * -> PROFILE. Each tab tells the user where they are (selected pill + label)
- * and every interactive node carries its label as a screen-reader name.
+ * Primary bottom navigation — a FIXED five-tab structure in user-journey order:
+ * HOME (quiet: am I safe / what do I do) -> MAP (see it) -> NEWS -> GUIDE ->
+ * PROFILE. The tab LIST is a constant application structure. It is never built
+ * from Firebase, Remote Config, authentication, onboarding, SharedPreferences,
+ * feature flags, async state, or ViewModel state.
  *
- * [config] owns module visibility (`feature_radar_enabled` /
- * `feature_dispatches_enabled`): a killed module has no entry point here, and
- * `NavTabs.resolve` keeps the content switch from rendering it either. The
- * defaults are both true, which is also what a device with no Firebase
- * configured sees.
+ * Map (ScreenTab.RADAR_MAP) and News (ScreenTab.NEWS_DISPATCHES) are CORE pages.
+ * Remote Config may still control functionality or content INSIDE those screens,
+ * but it must never remove those two tabs from the primary bottom navigation.
+ *
+ * Every interactive node carries its label as a screen-reader name, and every
+ * tab is tagged with a stable instrumentation identifier so a UI regression test
+ * can assert that all five are rendered simultaneously.
  */
 @Composable
 fun VippattiBottomNavBar(
   currentTab: ScreenTab,
   onTabSelected: (ScreenTab) -> Unit,
-  modifier: Modifier = Modifier,
-  config: AppRemoteConfig = AppRemoteConfig()
+  modifier: Modifier = Modifier
 ) {
-  val items = NavTabs.visible(config).map { tab ->
+  // The primary bottom navigation is a constant. Not a filter, not a take(), not
+  // a config-dependent visible() list, not anything async.
+  val allTabs = listOf(
+    ScreenTab.HOME,
+    ScreenTab.RADAR_MAP,
+    ScreenTab.NEWS_DISPATCHES,
+    ScreenTab.INSTRUCTIONS,
+    ScreenTab.PROFILE
+  )
+  val items = allTabs.map { tab ->
     val (active, inactive) = iconsFor(tab)
     NavItemData(
       tab = tab,

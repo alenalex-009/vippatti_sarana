@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -136,17 +137,18 @@ fun PlacePickerCard(
         Text(it, fontSize = 11.sp, color = WarningAmber, modifier = Modifier.testTag("place_search_error"))
         Spacer(Modifier.height(6.dp))
       }
-      // ROOT-CAUSE FIX (search crash): keys must be UNIQUE. Nominatim can
-      // return several records with the same display_name (same-name towns),
-      // and a duplicate LazyColumn key is an instant crash. Composite key
-      // includes the coordinates + list position, which are always distinct.
+      // ROOT-CAUSE FIX (search crash): keys must be UNIQUE. The geocoder can
+      // return two records that are completely identical (same name AND same
+      // coordinates), so even the composite name+lat+lon key once crashed the
+      // list with "Key ... was already used". The list position prefixes the
+      // composite, making duplicate keys impossible by construction.
       LazyColumn(
         modifier = Modifier.fillMaxWidth().heightIn(max = 320.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp)
       ) {
-        items(candidates, key = { candidate ->
-          "${candidate.name}|${candidate.point.lat}|${candidate.point.lon}"
-        }) { candidate ->
+        itemsIndexed(candidates, key = { index, candidate ->
+          "$index|${candidate.name}|${candidate.point.lat}|${candidate.point.lon}"
+        }) { _, candidate ->
           Row(
             modifier = Modifier
               .fillMaxWidth()

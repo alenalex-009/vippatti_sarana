@@ -3,6 +3,11 @@ package com.example.data.disaster
 import com.example.data.disaster.providers.FirmsFireProvider
 import com.example.data.model.DataStatus
 import kotlinx.coroutines.runBlocking
+import okhttp3.Interceptor
+import okhttp3.OkHttpClient
+import okhttp3.Protocol
+import okhttp3.Response
+import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -43,6 +48,34 @@ class FirmsProviderStatusTest {
       ProviderFailureKind.UNCONFIGURED,
       (result as ProviderResult.Failure).kind
     )
+  }
+
+  @Test
+  fun `an invalid or expired MAP_KEY (HTTP 400) is AUTHENTICATION_FAILED, not a network error`() = runBlocking {
+    // FIRMS answers a malformed/expired/revoked key with 400 "Invalid MAP_KEY."
+    // (verified against the live API). Simulated here without a network:
+    // the provider must classify it as a credential failure so the UI tells
+    // the user to regenerate the key instead of blaming connectivity.
+    val fake400Client = OkHttpClient.Builder()
+      .addInterceptor(Interceptor { chain ->
+        Response.Builder()
+          .request(chain.request())
+          .protocol(Protocol.HTTP_1_1)
+          .code(400)
+          .message("Bad Request")
+          .body("Invalid MAP_KEY.\n".toResponseBody(null))
+          .build()
+      })
+      .build()
+    val result = FirmsFireProvider(
+      mapKeyProvider = { "stale-or-revoked-key" },
+      httpClient = fake400Client
+    ).fetchIndiaEvents()
+    assertTrue(result is ProviderResult.Failure)
+    val failure = result as ProviderResult.Failure
+    assertEquals(ProviderFailureKind.AUTHENTICATION_FAILED, failure.kind)
+    assertTrue(failure.reason.contains("HTTP 400"))
+    assertTrue(failure.reason.contains("expired", ignoreCase = true))
   }
 
   @Test

@@ -184,7 +184,6 @@ internal fun CompactWeatherRow(weather: WeatherMetrics, status: DataStatus) {
 internal fun DisasterStatusLayerRow(
   uiState: VippattiUiState,
   onToggleLayer: (DisasterLayer) -> Unit,
-  onToggleMockData: () -> Unit = {}
 ) {
   // PROGRESSIVE DISCLOSURE (user map-redesign rule): the strip shows only
   // two compact pills - Layers (with the active count) and data status.
@@ -260,27 +259,7 @@ internal fun DisasterStatusLayerRow(
         )
       }
       Spacer(Modifier.weight(1f))
-      // Demo switch stays visible (scenario control, not a data layer).
-      Box(
-        modifier = Modifier
-          .clip(RoundedCornerShape(999.dp))
-          .background(if (uiState.isMockDataVisible) WarningAmber else ObsidianContainerHigh)
-          .border(
-            1.5.dp,
-            if (uiState.isMockDataVisible) ObsidianContainerLowest else TacticalCyan,
-            RoundedCornerShape(999.dp)
-          )
-          .clickable { onToggleMockData() }
-          .padding(horizontal = 12.dp, vertical = 7.dp)
-          .testTag("mock_data_toggle_chip")
-      ) {
-        Text(
-          text = if (uiState.isMockDataVisible) "DEMO: ON" else "DEMO: OFF",
-          fontSize = 11.sp,
-          fontWeight = FontWeight.Black,
-          color = if (uiState.isMockDataVisible) ObsidianContainerLowest else TacticalOnSurface
-        )
-      }
+
     }
 
     // EXPANDED LAYERS: the real toggles, only while the pill is open.
@@ -354,9 +333,7 @@ internal fun DisasterStatusLayerRow(
 internal fun DisasterTypeLegend(
   types: List<com.example.data.model.HazardType>,
   selectedType: com.example.data.model.HazardType? = null,
-  onSelectType: (com.example.data.model.HazardType) -> Unit = {},
-  onToggleMockData: () -> Unit = {},
-  isMockVisible: Boolean = false
+  onSelectType: (com.example.data.model.HazardType) -> Unit = {}
 ) {
   // The row always renders: the fixed hazard FILTER chips plus the Demo
   // toggle stay reachable even when the current scenario is calm (the
@@ -430,44 +407,8 @@ internal fun DisasterTypeLegend(
         }
       }
     }
-    // Rule 5: the demo scenario switch lives on this chip row (compact,
-    // clearly separate from data layers).
-    item {
-      // User contrast fix: NO alpha wash. ON = solid amber, dark text.
-      // OFF = solid dark container, bright text, strong outline. Either
-      // state is legible against tiles at any zoom/brightness.
-      Box(
-        modifier = Modifier
-          .clip(RoundedCornerShape(999.dp))
-          .background(if (isMockVisible) WarningAmber else ObsidianContainerHigh)
-          .border(
-            1.5.dp,
-            if (isMockVisible) ObsidianContainerLowest else TacticalCyan,
-            RoundedCornerShape(999.dp)
-          )
-          .clickable { onToggleMockData() }
-          .padding(horizontal = 12.dp, vertical = 8.dp)
-          .testTag("mock_data_toggle_chip")
-      ) {
-        Row(
-          verticalAlignment = Alignment.CenterVertically,
-          horizontalArrangement = Arrangement.spacedBy(5.dp)
-        ) {
-          Box(
-            modifier = Modifier
-              .size(8.dp)
-              .clip(CircleShape)
-              .background(if (isMockVisible) ObsidianContainerLowest else TacticalCyan)
-          )
-          Text(
-            text = if (isMockVisible) "DEMO: ON" else "DEMO: OFF",
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Black,
-            color = if (isMockVisible) ObsidianContainerLowest else TacticalOnSurface
-          )
-        }
-      }
-    }
+
+
   }
 }
 

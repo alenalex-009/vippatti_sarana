@@ -17,7 +17,9 @@ enum class DisasterLayer(
 ) {
   OFFICIAL_ALERTS("Official Alerts", true, 3.5),
   EARTHQUAKES("Earthquakes", true, 3.5),
-  ACTIVE_FIRES("Active Fires", false, 5.0),
+  // FIRMS FIX: visible by default (was false — real hotspots were fetched but
+  // never drawn). Clustering keeps the national view readable.
+  ACTIVE_FIRES("Active Fires", true, 5.0),
   USER_REPORTS("User Reports", true, 8.0),
   SAFE_ZONES("Safe Zones", true, 8.0),
   EVACUATION_ROUTE("Evacuation Route", true, 0.0),

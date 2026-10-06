@@ -127,6 +127,16 @@ class DisasterDataRepository(
   }
 
   /**
+   * True when some provider has NO state in [states] — i.e. it has never
+   * produced a usable cached shard (e.g. NASA FIRMS on a device that cached
+   * only USGS/IMD shards). A cache-first cold start must not let such a
+   * source stay invisible forever: the caller uses this to trigger one
+   * background refresh for the uncovered providers.
+   */
+  fun hasMissingProvider(states: List<ProviderState>): Boolean =
+    providers.any { provider -> states.none { it.source == provider.providerId } }
+
+  /**
    * Cold start: serve usable cached shards instantly (offline survival); a
    * fresh (< 15 min) cache avoids network entirely (quota/battery friendly).
    * Returns null when nothing usable is cached — the ViewModel then fetches.
@@ -188,6 +198,18 @@ fun List<DisasterEvent>.dedupeBySourceEventId(): List<DisasterEvent> {
   }
   return out
 }
+
+/**
+ * Events eligible for hazard-ZONE conversion (risk engine + map circles).
+ *
+ * NASA FIRMS detections are satellite fire/hotspot OBSERVATIONS: the provider
+ * semantics describe a hotspot measurement, not an official fire hazard area,
+ * so they are never inflated into a circle here — they render as fire
+ * observation markers instead (deployDisasterEvents). Citizen reports and the
+ * other live providers keep their zone semantics. Pure + unit-testable.
+ */
+fun liveZoneEvents(events: List<DisasterEvent>, nowMillis: Long): List<DisasterEvent> =
+  events.filter { it.source != DisasterSource.NASA_FIRMS && it.isValid(nowMillis) }
 
 /** Hazard zones for the risk/evaluator/routing engines (live events only). */
 fun toHazardZones(events: List<DisasterEvent>): List<HazardZone> =

@@ -161,44 +161,51 @@ fun SafeZoneDetailDialog(
           total = capacity.totalCapacity
         )
 
-        // ---- QUICK STATUS: distance / operating / confidence (actuals only)
+        // ---- QUICK STATUS: distance / operating / confidence (actuals only),
+        // width-adaptive like the hazard sheet (3 across / 2+1 / stacked).
         val open = zone.operatingStatus.equals("OPEN", ignoreCase = true)
         val limiter = capacityAssessment?.limitingResource?.label
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-          SummaryCard(
-            label = "Distance",
-            value = evaluation?.let {
-              com.example.data.model.GeoMath.formatKm(it.distanceMeters)
-            } ?: "Data unavailable",
-            icon = Icons.Default.Navigation,
-            valueAccent = TacticalCyan,
-            modifier = Modifier.weight(1f),
-            tag = "safe_zone_stat_distance",
-            unavailable = evaluation == null
-          )
-          SummaryCard(
-            label = "Status",
-            value = when {
-              open -> "Open"
-              zone.operatingStatus.isBlank() -> "Not provided"
-              else -> zone.operatingStatus
-            },
-            icon = Icons.Default.CheckCircle,
-            valueAccent = if (open) NeonEmerald else EmergencyRedBright,
-            modifier = Modifier.weight(1f),
-            tag = "safe_zone_stat_status",
-            unavailable = zone.operatingStatus.isBlank()
-          )
-          SummaryCard(
-            label = "Confidence",
-            value = capacityAssessment?.confidence?.label ?: "Not assessed",
-            icon = Icons.Default.Insights,
-            valueAccent = WarningAmber,
-            modifier = Modifier.weight(1f),
-            tag = "safe_zone_stat_confidence",
-            unavailable = capacityAssessment == null
-          )
-        }
+        AdaptiveStatCards(
+          first = { cardModifier ->
+            SummaryCard(
+              label = "Distance",
+              value = evaluation?.let {
+                com.example.data.model.GeoMath.formatKm(it.distanceMeters)
+              } ?: "Data unavailable",
+              icon = Icons.Default.Navigation,
+              valueAccent = TacticalCyan,
+              modifier = cardModifier,
+              tag = "safe_zone_stat_distance",
+              unavailable = evaluation == null
+            )
+          },
+          second = { cardModifier ->
+            SummaryCard(
+              label = "Status",
+              value = when {
+                open -> "Open"
+                zone.operatingStatus.isBlank() -> "Not provided"
+                else -> zone.operatingStatus
+              },
+              icon = Icons.Default.CheckCircle,
+              valueAccent = if (open) NeonEmerald else EmergencyRedBright,
+              modifier = cardModifier,
+              tag = "safe_zone_stat_status",
+              unavailable = zone.operatingStatus.isBlank()
+            )
+          },
+          third = { cardModifier ->
+            SummaryCard(
+              label = "Confidence",
+              value = capacityAssessment?.confidence?.label ?: "Not assessed",
+              icon = Icons.Default.Insights,
+              valueAccent = WarningAmber,
+              modifier = cardModifier,
+              tag = "safe_zone_stat_confidence",
+              unavailable = capacityAssessment == null
+            )
+          }
+        )
 
         // ---- LIMITING FACTOR: tappable - opens the capacity methodology.
         var detailsExpanded by remember(zone.id) { mutableStateOf(false) }

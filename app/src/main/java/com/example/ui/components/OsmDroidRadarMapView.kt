@@ -41,6 +41,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -220,6 +221,12 @@ fun OsmDroidRadarMapView(
     )
   }
 
+  // LOCATION WARNING GATE (user rule): the warning card is NEVER shown just
+  // because the map opened without permission. It is armed exclusively by an
+  // explicit GPS-button tap while permission is unavailable, and survives
+  // map re-renders / zooms / pans / tab returns until the user closes it.
+  var showLocationUnavailableWarning by rememberSaveable { mutableStateOf(false) }
+
   // Tracks whether a permission request was ever launched: without this, a
   // first-ever press (shouldShowRationale == false) is indistinguishable from
   // a permanently-denied ("don't ask again") press.
@@ -231,6 +238,10 @@ fun OsmDroidRadarMapView(
     hasLocationPermission = (permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true) ||
       (permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true)
     locationPermissionAsked = true
+    // Permission granted: the warning's reason is gone, so disarm it too —
+    // a stale armed flag must never resurrect the card after the user later
+    // revokes the permission manually.
+    if (hasLocationPermission) showLocationUnavailableWarning = false
   }
 
   val mapState = remember {
@@ -378,58 +389,32 @@ fun OsmDroidRadarMapView(
       modifier = Modifier.fillMaxSize()
     )
 
-    // GPS permission (audit B9 + item 11): the app NEVER asks by itself when
-    // the map merely opens. The user chooses: an unasked state shows a calm
-    // opt-in banner (Turn on location); an explicit denial shows the
-    // rationale with a real retry - never a silent India-fallback.
-    if (!hasLocationPermission) {
-      Row(
+    // GPS permission + LOCATION WARNING CARD (user rule, 2026-10-06):
+    // the map must open CLEAN — no location warning on load, re-render,
+    // zoom, pan, filter change or tab return. The warning appears ONLY
+    // when the user explicitly taps the GPS locate button and location is
+    // unavailable, and only then. Dismissing it (X) hides it for the rest
+    // of this map visit (survives rotation via rememberSaveable); a fresh
+    // GPS-button tap re-checks permission and re-shows it only if still
+    // unavailable.
+    if (showLocationUnavailableWarning && !hasLocationPermission) {
+      LocationUnavailableWarningCard(
+        askedBefore = locationPermissionAsked,
+        onPermissionRequest = {
+          // Only THIS explicit tap may open the system dialog.
+          locationPermissionAsked = true
+          permissionLauncher.launch(
+            arrayOf(
+              Manifest.permission.ACCESS_FINE_LOCATION,
+              Manifest.permission.ACCESS_COARSE_LOCATION
+            )
+          )
+        },
+        onDismiss = { showLocationUnavailableWarning = false },
         modifier = Modifier
           .align(Alignment.TopCenter)
           .padding(top = topOverlayPadding + 8.dp, start = 10.dp, end = 72.dp)
-          .clip(RoundedCornerShape(10.dp))
-          .background(ObsidianContainer.copy(alpha = 0.96f))
-          .border(1.dp, EmergencyRed.copy(alpha = 0.7f), RoundedCornerShape(10.dp))
-          .padding(horizontal = 10.dp, vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-      ) {
-        Text(
-          text = if (locationPermissionAsked) {
-            "Location OFF — risk & routes use a generic India-centre view, not your position."
-          } else {
-            "Turn on location to see hazards near YOU"
-          },
-          fontSize = 11.sp,
-          fontWeight = FontWeight.Medium,
-          color = TacticalOnSurface,
-          modifier = Modifier.weight(1f, fill = false)
-        )
-        IconButton(
-          onClick = {
-            // Only THIS explicit tap may open the system dialog.
-            locationPermissionAsked = true
-            permissionLauncher.launch(
-              arrayOf(
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-              )
-            )
-          },
-          modifier = Modifier.size(36.dp).testTag(
-            if (locationPermissionAsked) "location_permission_retry_button"
-            else "location_permission_enable_button"
-          )
-        ) {
-          Icon(
-            Icons.Default.MyLocation,
-            contentDescription = if (locationPermissionAsked) "Retry location permission"
-            else "Turn on location",
-            tint = NeonEmerald,
-            modifier = Modifier.size(18.dp)
-          )
-        }
-      }
+      )
     }
 
     // GPS locate status (Issue 2): every locate state carries a message —
@@ -515,6 +500,13 @@ fun OsmDroidRadarMapView(
           !ActivityCompat.shouldShowRequestPermissionRationale(
             activity, Manifest.permission.ACCESS_COARSE_LOCATION
           )
+        // EXPLICIT GPS TAP: the only trigger allowed to surface the location
+        // warning. With permission granted the fix flows normally and NO
+        // warning is armed; without it the card appears right away (and a
+        // request dialog is offered through the card itself).
+        if (!hasLocationPermission) {
+          showLocationUnavailableWarning = true
+        }
         mapState.requestRecenter(
           context = context,
           hasPermission = hasLocationPermission,
@@ -577,6 +569,80 @@ fun OsmDroidRadarMapView(
         fontSize = 11.sp,
         fontWeight = FontWeight.Medium,
         color = TacticalOnSurfaceVariant
+      )
+    }
+  }
+}
+
+/**
+ * LOCATION UNAVAILABLE WARNING CARD (Map tab).
+ *
+ * Shown ONLY after the user explicitly taps the GPS locate button while
+ * location permission is unavailable - never merely because the map opened
+ * or re-rendered. The X close control is part of the card, sits in its
+ * top-right corner, and carries a 44dp touch target (Android minimum).
+ * Dismissing removes the card immediately; it re-arms only from the next
+ * explicit GPS-button tap while permission is still unavailable.
+ *
+ * The card keeps the previous opt-in affordance: tapping the location icon
+ * opens the system permission dialog (a fresh first-ever ask, or a retry
+ * after a denial) - the map never asks by itself.
+ */
+@Composable
+private fun LocationUnavailableWarningCard(
+  askedBefore: Boolean,
+  onPermissionRequest: () -> Unit,
+  onDismiss: () -> Unit,
+  modifier: Modifier = Modifier
+) {
+  Row(
+    modifier = modifier
+      .clip(RoundedCornerShape(10.dp))
+      .background(ObsidianContainer.copy(alpha = 0.96f))
+      .border(1.dp, EmergencyRed.copy(alpha = 0.7f), RoundedCornerShape(10.dp))
+      .testTag("location_unavailable_warning_card"),
+    verticalAlignment = Alignment.CenterVertically
+  ) {
+    Text(
+      text = if (askedBefore) {
+        "Location OFF — risk & routes use a generic India-centre view, not your position."
+      } else {
+        "Turn on location to see hazards near YOU"
+      },
+      fontSize = 11.sp,
+      fontWeight = FontWeight.Medium,
+      color = TacticalOnSurface,
+      modifier = Modifier
+        .weight(1f)
+        .padding(start = 10.dp, top = 6.dp, bottom = 6.dp)
+    )
+    IconButton(
+      onClick = onPermissionRequest,
+      modifier = Modifier.size(40.dp).testTag(
+        if (askedBefore) "location_permission_retry_button"
+        else "location_permission_enable_button"
+      )
+    ) {
+      Icon(
+        Icons.Default.MyLocation,
+        contentDescription = if (askedBefore) "Retry location permission"
+        else "Turn on location",
+        tint = NeonEmerald,
+        modifier = Modifier.size(18.dp)
+      )
+    }
+    // X CLOSE: top-right of the card, 44dp square for a comfortable touch
+    // target. Fires exactly once per tap; the parent flips the visibility
+    // flag off so the card cannot reappear on re-render or navigation.
+    IconButton(
+      onClick = onDismiss,
+      modifier = Modifier.size(44.dp).testTag("location_warning_dismiss")
+    ) {
+      Icon(
+        Icons.Default.Close,
+        contentDescription = "Close location warning",
+        tint = TacticalOnSurface,
+        modifier = Modifier.size(20.dp)
       )
     }
   }

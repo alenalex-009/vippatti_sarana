@@ -71,4 +71,78 @@ class LocationPermissionUxTest {
       source.contains("showPermissionRationale && !hasLocationPermission")
     )
   }
+
+  // ------------------------------------------------------------- location
+  // warning card (user rule 2026-10-06): the map must open CLEAN; the warning
+  // exists only after an explicit GPS-button tap while permission is off.
+
+  @Test
+  fun `the warning card is gated behind an explicit GPS-button tap`() {
+    // The card renders only when this flag is on; the flag must start false
+    // and be set to true ONLY inside the GPS button's click handler.
+    val declarations = source.lines().filter {
+      it.contains("var showLocationUnavailableWarning by rememberSaveable")
+    }
+    assertTrue(
+      "the warning visibility flag must be declared once via rememberSaveable, starting hidden",
+      declarations.size == 1 && declarations.first().contains("mutableStateOf(false)")
+    )
+    // Every assignment that turns it ON must sit inside the recenter button
+    // handler (between the button's test tag and the requestRecenter call).
+    val buttonIdx = source.indexOf("osmdroid_recenter_button\"")
+    val recenterIdx = source.indexOf("mapState.requestRecenter(", buttonIdx)
+    assertTrue("GPS button handler not found", buttonIdx >= 0 && recenterIdx > buttonIdx)
+    val handler = source.substring(buttonIdx, recenterIdx)
+    assertTrue(
+      "the GPS tap must arm the warning when permission is unavailable",
+      handler.contains("if (!hasLocationPermission) {") &&
+        handler.contains("showLocationUnavailableWarning = true")
+    )
+    // And nowhere else may arm it.
+    val armedOutsideHandler = Regex("showLocationUnavailableWarning\\s*=\\s*true")
+      .findAll(source).count()
+    assertTrue(
+      "the warning must be armed in exactly one place (the GPS tap)",
+      armedOutsideHandler == 1
+    )
+  }
+
+  @Test
+  fun `the warning card carries a real close control`() {
+    assertTrue(
+      "the card must exist",
+      source.contains("location_unavailable_warning_card")
+    )
+    assertTrue(
+      "the X close must have a stable test tag",
+      source.contains("location_warning_dismiss")
+    )
+    // 44dp minimum touch target for the dismiss button.
+    val dismissIdx = source.indexOf("location_warning_dismiss")
+    val blockStart = source.lastIndexOf("IconButton", dismissIdx)
+    val block = source.substring(blockStart, dismissIdx)
+    assertTrue(
+      "the dismiss IconButton must be at least 44dp",
+      Regex("size\\(4[4-9]\\.dp\\)|size\\(([5-9]\\d|1\\d\\d)\\.dp\\)").containsMatchIn(block)
+    )
+    assertTrue(
+      "dismissing must clear the visibility flag",
+      source.contains("onDismiss = { showLocationUnavailableWarning = false }")
+    )
+  }
+
+  @Test
+  fun `the warning card is not rendered unconditionally on map load`() {
+    // The old behaviour rendered the banner whenever !hasLocationPermission
+    // regardless of user action; the render gate must now include the flag.
+    val gateIdx = source.indexOf("if (showLocationUnavailableWarning && !hasLocationPermission)")
+    assertTrue(
+      "the render gate must require BOTH the user action and the missing permission",
+      gateIdx >= 0
+    )
+    assertFalse(
+      "no fallback path may render the card without the user-action gate",
+      source.contains("if (!hasLocationPermission) {\n      LocationUnavailableWarningCard")
+    )
+  }
 }

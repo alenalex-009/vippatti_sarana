@@ -207,7 +207,6 @@ fun RadarMapScreen(
   onOpenDisasterEventDetail: (DisasterEvent) -> Unit,
   /** Opens the HISTORICAL (EM-DAT) record sheet for a tapped archive marker. */
   onOpenHistoricalEventDetail: (com.example.data.historical.HistoricalDisasterEvent) -> Unit = {},
-  onToggleMockData: () -> Unit = {},
   /** Explicit opt-in for the unverified offline straight-line estimate. */
   onRequestFallbackRoute: () -> Unit = {},
   /** Retry the live Open-Meteo weather reading after a stale/failed attempt. */
@@ -414,9 +413,7 @@ fun RadarMapScreen(
       DisasterTypeLegend(
         types = uiState.hazardZones.map { it.type }.distinct(),
         selectedType = uiState.hazardTypeFilter,
-        onSelectType = onToggleHazardTypeFilter,
-        onToggleMockData = onToggleMockData,
-        isMockVisible = uiState.isMockDataVisible
+        onSelectType = onToggleHazardTypeFilter
       )
 
       // §21 missing-real-data honesty: filtering to a disaster type that no

@@ -73,16 +73,38 @@ class FirmsFireProvider(
             kind = ProviderFailureKind.AUTHENTICATION_FAILED
           )
         }
+        if (response.code == 400) {
+          // FIRMS answers a malformed or EXPIRED/REVOKED key with 400
+          // "Invalid MAP_KEY." — that is also an authentication failure, not
+          // a transient service problem. Surfacing the real cause means the
+          // user regenerates the key instead of blaming connectivity.
+          return@withContext ProviderResult.Failure(
+            reason = "NASA FIRMS rejected the MAP_KEY (HTTP 400 Invalid MAP_KEY) — " +
+              "the key is wrong or expired. Generate a new MAP_KEY and update FIRMS_MAP_KEY.",
+            kind = ProviderFailureKind.AUTHENTICATION_FAILED
+          )
+        }
         if (!response.isSuccessful || body.isNullOrBlank()) {
           return@withContext ProviderResult.Failure(
             "NASA FIRMS fire service unavailable (HTTP ${response.code})."
           )
         }
         val events = FirmsCsvParser.parse(body)
-        if (events.isEmpty() && body.trim().startsWith("<")) {
-          return@withContext ProviderResult.Failure(
-            "NASA FIRMS returned an error page instead of fire data."
-          )
+        if (events.isEmpty()) {
+          // Distinguish the three zero-event shapes honestly:
+          //  - header-only CSV  -> a genuine empty query result (Success, 0
+          //    observations — never fabricated);
+          //  - HTML/error page  -> the service refused instead of answering;
+          //  - any other text   -> malformed/unusable payload.
+          // Both non-CSV shapes are provider failures, not "no fires".
+          val firstLine = body.lineSequence().firstOrNull()?.trim().orEmpty().lowercase()
+          val looksLikeCsv = firstLine.contains("latitude") && firstLine.contains("longitude")
+          if (!looksLikeCsv) {
+            val shape = if (firstLine.startsWith("<")) "an error page" else "an unreadable (malformed) response"
+            return@withContext ProviderResult.Failure(
+              "NASA FIRMS returned $shape instead of fire data."
+            )
+          }
         }
         ProviderResult.Success(events, System.currentTimeMillis())
       }

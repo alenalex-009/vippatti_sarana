@@ -5,14 +5,19 @@ import com.example.config.AppRemoteConfig
 import com.example.viewmodel.ScreenTab
 
 /**
- * Which destinations exist, and what becomes of the one you are standing on when
- * remote config switches its module off.
+ * The five primary navigation destinations, in user-journey order: quiet safety
+ * check -> map -> news -> guide -> profile.
+ *
+ * These are the app's core screens. Bottom-navigation visibility is NOT gated by
+ * Remote Config, because a first-launch device with no Firebase answer (or a
+ * config that returns false) must still show all five tabs: Home | Map | News |
+ * Guide | Profile.
+ *
+ * Remote Config may still control functionality or content INSIDE Map and News,
+ * but it must never remove those tabs from the primary bottom navigation.
  *
  * Deliberately pure and Android-free apart from resource ids, because it has to
- * be readable by both the bar and the content switch. It used to live twice: an
- * `if (showRadar)` in the nav bar and an inline `when` in `MainActivity`. Two
- * copies of one rule is exactly how a killed module keeps a hidden tab that still
- * renders its screen.
+ * be readable by both the bar and the content switch.
  */
 object NavTabs {
 
@@ -26,26 +31,26 @@ object NavTabs {
   )
 
   /**
-   * HOME, GUIDE and PROFILE always exist: they carry the offline survival manual
-   * and the user's own saved data, so no server switch may strand them. RADAR_MAP
-   * and NEWS_DISPATCHES are the only remotely killable modules.
+   * All five primary tabs are always visible. There is no Remote-Config kill switch
+   * for core navigation. Home, Guide and Profile carry the offline survival manual
+   * and the user's own saved data; Map and News are core pages, not optional modules.
    */
   fun isVisible(tab: ScreenTab, config: AppRemoteConfig): Boolean = when (tab) {
-    ScreenTab.RADAR_MAP -> config.featureRadarEnabled
-    ScreenTab.NEWS_DISPATCHES -> config.featureDispatchesEnabled
-    ScreenTab.HOME, ScreenTab.INSTRUCTIONS, ScreenTab.PROFILE -> true
+    ScreenTab.HOME,
+    ScreenTab.RADAR_MAP,
+    ScreenTab.NEWS_DISPATCHES,
+    ScreenTab.INSTRUCTIONS,
+    ScreenTab.PROFILE -> true
   }
 
-  /** The tabs to draw, in order. */
-  fun visible(config: AppRemoteConfig): List<ScreenTab> = ordered.filter { isVisible(it, config) }
+  /** The tabs to draw, in order. Always all five. */
+  fun visible(config: AppRemoteConfig): List<ScreenTab> = ordered
 
   /**
-   * The tab to actually render. A module switched off mid-session while the user
-   * is standing inside it falls back to HOME rather than leaving them on a screen
-   * with no entry point.
+   * The tab to actually render. Every primary tab is always enabled, so resolve
+   * is the identity function: a tab never gets redirected away from itself.
    */
-  fun resolve(tab: ScreenTab, config: AppRemoteConfig): ScreenTab =
-    if (isVisible(tab, config)) tab else ScreenTab.HOME
+  fun resolve(tab: ScreenTab, config: AppRemoteConfig): ScreenTab = tab
 
   fun labelRes(tab: ScreenTab): Int = when (tab) {
     ScreenTab.HOME -> R.string.nav_home

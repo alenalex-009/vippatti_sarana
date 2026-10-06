@@ -37,7 +37,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.Alignment
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -421,6 +424,10 @@ fun VippattiAppRoot(
   val snackbarHostState = remember { SnackbarHostState() }
   val context = LocalContext.current
 
+  // Emergency-banner dismissal for this app session (see the banner block in
+  // the Crossfade content). Root scope: survives tab switches and rotation.
+  var emergencyBannerDismissed by rememberSaveable { mutableStateOf(false) }
+
   // Predictable back behaviour (UI principle: user control & freedom):
   // console -> close it; any tab -> HOME; HOME -> system back (exit prompt).
   androidx.activity.compose.BackHandler(
@@ -643,48 +650,54 @@ fun VippattiAppRoot(
     contentWindowInsets = WindowInsets(0, 0, 0, 0),
     snackbarHost = { SnackbarHost(snackbarHostState) },
     bottomBar = {
-      // Remote config owns module visibility; the bar and the content switch below
-      // read the same value, so a disabled module has no entry point *and*
-      // cannot be rendered even if something still holds its tab in state.
+      // The primary bottom navigation is a fixed five-tab structure. It is not
+      // built from Remote Config, feature flags, auth, onboarding, SharedPreferences,
+      // async state, or ViewModel state, so the first usable frame after a fresh
+      // install always renders all five tabs: Home | Map | News | Guide | Profile.
+      // Remote Config may still control content/functionality INSIDE Map and News, but
+      // it must never remove those tabs from the bar.
       VippattiBottomNavBar(
         currentTab = uiState.currentTab,
-        onTabSelected = { viewModel.setTab(it) },
-        config = remoteConfig
+        onTabSelected = { viewModel.setTab(it) }
       )
-    }
-  ) { innerPadding ->
-    Box(
-      modifier = Modifier
-        .fillMaxSize()
-        .background(ObsidianSurface)
-        .statusBarsPadding()
-        .padding(bottom = innerPadding.calculateBottomPadding())
-    ) {
-      Crossfade(
+    }    ) { innerPadding ->
+      Box(
+        modifier = Modifier
+          .fillMaxSize()
+          .background(ObsidianSurface)
+          .statusBarsPadding()
+          .padding(bottom = innerPadding.calculateBottomPadding())
+      ) {
+        Crossfade(
         targetState = uiState.currentTab,
         animationSpec = tween(durationMillis = 250),
         label = "tab_crossfade"
-      ) { tab ->
-        Column(modifier = Modifier.padding(remoteConfig.homePadding.dp)) {
-            if (remoteConfig.emergencyBannerEnabled && remoteConfig.emergencyBannerText.isNotBlank()) {
-                androidx.compose.material3.Text(
-                    text = remoteConfig.emergencyBannerText,
-                    color = androidx.compose.ui.graphics.Color.White,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(androidx.compose.ui.graphics.Color.Red)
-                        .padding(16.dp)
-                )
-            }
-            if (remoteConfig.appLogoUrl.isNotBlank() && tab == ScreenTab.PROFILE) {
-                // Example of placing remote logo on Profile tab (or it could be in a top bar)
-                coil.compose.AsyncImage(
-                    model = remoteConfig.appLogoUrl,
-                    contentDescription = "App Logo",
-                    modifier = Modifier.size(100.dp).align(androidx.compose.ui.Alignment.CenterHorizontally),
-                    error = androidx.compose.ui.res.painterResource(id = android.R.drawable.sym_def_app_icon)
-                )
-            }
+      ) { tab ->        Column(modifier = Modifier.padding(remoteConfig.homePadding.dp)) {
+            // REMOTE EMERGENCY BANNER (config-driven, e.g. an active-cyclone
+          // notice). It used to be a bare Text with NO way to close it - a
+          // permanent strip over every tab. It is now session-dismissable:
+          // the X hides it for the rest of this app session (the flag lives
+          // at root scope, so it survives tab switches and rotation); it
+          // returns on the next cold start so a NEW emergency is never
+          // silently suppressed.
+          if (remoteConfig.emergencyBannerEnabled &&
+            remoteConfig.emergencyBannerText.isNotBlank() &&
+            !emergencyBannerDismissed
+          ) {
+            EmergencyBannerNotice(
+              text = remoteConfig.emergencyBannerText,
+              onDismiss = { emergencyBannerDismissed = true }
+            )
+          }
+          if (remoteConfig.appLogoUrl.isNotBlank() && tab == ScreenTab.PROFILE) {
+            // Example of placing remote logo on Profile tab (or it could be in a top bar)
+            coil.compose.AsyncImage(
+              model = remoteConfig.appLogoUrl,
+              contentDescription = "App Logo",
+              modifier = Modifier.size(100.dp).align(androidx.compose.ui.Alignment.CenterHorizontally),
+              error = androidx.compose.ui.res.painterResource(id = android.R.drawable.sym_def_app_icon)
+            )
+          }
 
             // Global device-tool status with a real Stop, visible on EVERY tab, so a
             // running siren/torch (or an armed local SOS) is always dismissible.
@@ -696,102 +709,101 @@ fun VippattiAppRoot(
 
             // Screen Content
             Box(modifier = Modifier.weight(1f)) {
-                // A tab that remote config switched off mid-session falls back to
-                // HOME rather than showing content the user cannot navigate to.
-                // Same rule the bottom bar uses, from NavTabs, so the two cannot drift.
-                val effectiveTab = NavTabs.resolve(tab, remoteConfig)
-                when (effectiveTab) {
-          ScreenTab.HOME -> HomeScreen(
-            uiState = uiState,
-            onOpenRadar = { viewModel.setTab(ScreenTab.RADAR_MAP) },
-            onOpenNews = { viewModel.setTab(ScreenTab.NEWS_DISPATCHES) },
-            onOpenGuide = { viewModel.setTab(ScreenTab.INSTRUCTIONS) },
-            onOpenProfile = { viewModel.setTab(ScreenTab.PROFILE) },
-            onAssessTerrain = { viewModel.assessTerrainHere() },
-            onGuidanceGo = { viewModel.acceptEmergencyGuidance() },
-            onSearchTerrainHaven = { viewModel.searchTerrainHaven() },
-            onRouteToTerrainHaven = { viewModel.routeToTerrainHaven() },
-            onGuidanceDismiss = { viewModel.dismissEmergencyGuidance() },
-            onOpenPlacePicker = { viewModel.openPlacePicker() }
-          )
-          ScreenTab.NEWS_DISPATCHES -> DispatchesScreen(
-            uiState = uiState,
-            onSync = { viewModel.syncData() },
-            onToggleAudio = { viewModel.toggleAudioBulletin() },
-            onSelectCategory = { viewModel.setNewsCategory(it) },
-            onNavigateToEvacRoute = { viewModel.startEvacuationRoute() },
-            onNavigateTab = { viewModel.setTab(it) },
-            onToggleHistoricalLayer = { viewModel.toggleHistoricalLayer() },
-            onHistoricalFiltersChange = { viewModel.setHistoricalFilters(it) },
-            onClearHistoricalFilters = { viewModel.clearHistoricalFilters() },
-            onSelectHistoricalEvent = { viewModel.openHistoricalEventDetail(it) }
-          )
+              // A tab that remote config switched off mid-session falls back to
+              // HOME rather than showing content the user cannot navigate to.
+              // Same rule the bottom bar uses, from NavTabs, so the two cannot drift.
+              val effectiveTab = NavTabs.resolve(tab, remoteConfig)
+              when (effectiveTab) {
+                ScreenTab.HOME -> HomeScreen(
+                  uiState = uiState,
+                  onOpenRadar = { viewModel.setTab(ScreenTab.RADAR_MAP) },
+                  onOpenNews = { viewModel.setTab(ScreenTab.NEWS_DISPATCHES) },
+                  onOpenGuide = { viewModel.setTab(ScreenTab.INSTRUCTIONS) },
+                  onOpenProfile = { viewModel.setTab(ScreenTab.PROFILE) },
+                  onAssessTerrain = { viewModel.assessTerrainHere() },
+                  onGuidanceGo = { viewModel.acceptEmergencyGuidance() },
+                  onSearchTerrainHaven = { viewModel.searchTerrainHaven() },
+                  onRouteToTerrainHaven = { viewModel.routeToTerrainHaven() },
+                  onGuidanceDismiss = { viewModel.dismissEmergencyGuidance() },
+                  onOpenPlacePicker = { viewModel.openPlacePicker() }
+                )
+                ScreenTab.NEWS_DISPATCHES -> DispatchesScreen(
+                  uiState = uiState,
+                  onSync = { viewModel.syncData() },
+                  onToggleAudio = { viewModel.toggleAudioBulletin() },
+                  onSelectCategory = { viewModel.setNewsCategory(it) },
+                  onNavigateToEvacRoute = { viewModel.startEvacuationRoute() },
+                  onNavigateTab = { viewModel.setTab(it) },
+                  onToggleHistoricalLayer = { viewModel.toggleHistoricalLayer() },
+                  onHistoricalFiltersChange = { viewModel.setHistoricalFilters(it) },
+                  onClearHistoricalFilters = { viewModel.clearHistoricalFilters() },
+                  onSelectHistoricalEvent = { viewModel.openHistoricalEventDetail(it) }
+                )
 
-          ScreenTab.RADAR_MAP -> RadarMapScreen(
-            uiState = uiState,
-            onSelectBestSafeZone = { viewModel.selectBestSafeZone() },
-            onSelectSafeZone = { viewModel.selectSafeZone(it) },
-            onSetTravelMode = { viewModel.setTravelMode(it) },
-            onStartEvacuation = { viewModel.startEvacuationRoute() },
-            onStopEvacuation = { viewModel.stopLiveNavigation() },
-            onNextNavigationStep = { viewModel.nextNavigationStep() },
-            onLoadAlternativeRoutes = { viewModel.loadAlternativeRoutes() },
-            onOpenSensorBroadcast = { viewModel.triggerSosBroadcast() },
-            onClearRoute = { viewModel.clearActiveRoute() },
-            // REAL hardware GPS fixes replace the India-centre fallback location.
-            onRealGpsFix = { lat, lon -> viewModel.applyRealGpsFix(lat, lon) },
-            onOpenHazardDetail = { viewModel.openHazardDetail(it) },
-            onOpenSafeZoneDetail = { viewModel.openSafeZoneDetail(it) },
-            // REAL disaster-data integration: layers, incident reports, event details.
-            onToggleLayer = { viewModel.toggleLayer(it) },
-            onOpenIncidentReport = { viewModel.openIncidentReportDialog() },
-            onOpenDisasterEventDetail = { viewModel.openDisasterEventDetail(it) },
-            onOpenHistoricalEventDetail = { viewModel.openHistoricalEventDetail(it) },
-            onToggleMockData = { viewModel.toggleMockData() },
-            onRequestFallbackRoute = { viewModel.requestOfflineFallbackRoute() },
-            // PHASE 3: retry the live Open-Meteo reading without touching the rest.
-            onRetryWeather = { viewModel.refreshWeather(force = true) },
-            // EMERGENCY GUIDANCE: nearest safe zone + terrain haven actions.
-            onGuidanceGo = { viewModel.acceptEmergencyGuidance() },
-            onToggleHazardTypeFilter = { viewModel.toggleHazardTypeFilter(it) },
-            onGuidanceDismiss = { viewModel.dismissEmergencyGuidance() },
-            onSearchTerrainHaven = { viewModel.searchTerrainHaven() },
-            onRouteToTerrainHaven = { viewModel.routeToTerrainHaven() },
-            onAssessTerrain = { viewModel.assessTerrainHere() },
-            onDismissTerrainAssessment = { viewModel.dismissTerrainAssessment() },
-            onOpenPlacePicker = { viewModel.openPlacePicker() },
-            onExitPlaceView = { viewModel.exitPlaceView() },
-            onCameraJumpConsumed = { viewModel.consumeCameraJump() },
-            onSelectAlternativeRoute = { viewModel.selectAlternativeRoute(it) }
-          )
+                ScreenTab.RADAR_MAP -> RadarMapScreen(
+                  uiState = uiState,
+                  onSelectBestSafeZone = { viewModel.selectBestSafeZone() },
+                  onSelectSafeZone = { viewModel.selectSafeZone(it) },
+                  onSetTravelMode = { viewModel.setTravelMode(it) },
+                  onStartEvacuation = { viewModel.startEvacuationRoute() },
+                  onStopEvacuation = { viewModel.stopLiveNavigation() },
+                  onNextNavigationStep = { viewModel.nextNavigationStep() },
+                  onLoadAlternativeRoutes = { viewModel.loadAlternativeRoutes() },
+                  onOpenSensorBroadcast = { viewModel.triggerSosBroadcast() },
+                  onClearRoute = { viewModel.clearActiveRoute() },
+                  // REAL hardware GPS fixes replace the India-centre fallback location.
+                  onRealGpsFix = { lat, lon -> viewModel.applyRealGpsFix(lat, lon) },
+                  onOpenHazardDetail = { viewModel.openHazardDetail(it) },
+                  onOpenSafeZoneDetail = { viewModel.openSafeZoneDetail(it) },
+                  // REAL disaster-data integration: layers, incident reports, event details.
+                  onToggleLayer = { viewModel.toggleLayer(it) },
+                  onOpenIncidentReport = { viewModel.openIncidentReportDialog() },
+                  onOpenDisasterEventDetail = { viewModel.openDisasterEventDetail(it) },
+                  onOpenHistoricalEventDetail = { viewModel.openHistoricalEventDetail(it) },
+                  onRequestFallbackRoute = { viewModel.requestOfflineFallbackRoute() },
+                  // PHASE 3: retry the live Open-Meteo reading without touching the rest.
+                  onRetryWeather = { viewModel.refreshWeather(force = true) },
+                  // EMERGENCY GUIDANCE: nearest safe zone + terrain haven actions.
+                  onGuidanceGo = { viewModel.acceptEmergencyGuidance() },
+                  onToggleHazardTypeFilter = { viewModel.toggleHazardTypeFilter(it) },
+                  onGuidanceDismiss = { viewModel.dismissEmergencyGuidance() },
+                  onSearchTerrainHaven = { viewModel.searchTerrainHaven() },
+                  onRouteToTerrainHaven = { viewModel.routeToTerrainHaven() },
+                  onAssessTerrain = { viewModel.assessTerrainHere() },
+                  onDismissTerrainAssessment = { viewModel.dismissTerrainAssessment() },
+                  onOpenPlacePicker = { viewModel.openPlacePicker() },
+                  onExitPlaceView = { viewModel.exitPlaceView() },
+                  onCameraJumpConsumed = { viewModel.consumeCameraJump() },
+                  onSelectAlternativeRoute = { viewModel.selectAlternativeRoute(it) }
+                )
 
-          ScreenTab.INSTRUCTIONS -> InstructionsScreen(
-            uiState = uiState,
-            onToggleTheme = { viewModel.toggleTheme() },
-            onToggleOfflineAccess = { viewModel.toggleOfflineCache(it) },
-            
-            onOpenInteractiveBag = { viewModel.openInteractiveBagDialog() },
-            onToggleFlashlight = { viewModel.toggleFlashlight() },
-            onToggleSiren = { viewModel.toggleSiren() }
-          )
+                ScreenTab.INSTRUCTIONS -> InstructionsScreen(
+                  uiState = uiState,
+                  onToggleTheme = { viewModel.toggleTheme() },
+                  onToggleOfflineAccess = { viewModel.toggleOfflineCache(it) },
 
-          ScreenTab.PROFILE -> ProfileScreen(
-            uiState = uiState,
-            accountEmail = accountEmail,
-            onSignOut = onSignOut,
-            onToggleTheme = { viewModel.toggleTheme() },
-            onSetThemeMode = { viewModel.setThemeMode(it) },
-            onSetColorTheme = { viewModel.setColorTheme(it) },
-            onSetSafety = { viewModel.setUserSafety(it) },
-            onBroadcastSos = { viewModel.triggerSosBroadcast() },
-            onOpenAddContact = { viewModel.openAddContactDialog() },
-            onOpenEditProfile = { viewModel.openEditProfileDialog() },
-            onOpenSituationReport = { viewModel.openSituationReportDialog() },
-            onOpenAuthorityConsole = { viewModel.openAuthorityDashboard(liveTerrainScan = false) }
-          )
-        }
-       }
-      }
+                  onOpenInteractiveBag = { viewModel.openInteractiveBagDialog() },
+                  onToggleFlashlight = { viewModel.toggleFlashlight() },
+                  onToggleSiren = { viewModel.toggleSiren() }
+                )
+
+                ScreenTab.PROFILE -> ProfileScreen(
+                  uiState = uiState,
+                  accountEmail = accountEmail,
+                  onSignOut = onSignOut,
+                  onToggleTheme = { viewModel.toggleTheme() },
+                  onSetThemeMode = { viewModel.setThemeMode(it) },
+                  onSetColorTheme = { viewModel.setColorTheme(it) },
+                  onSetSafety = { viewModel.setUserSafety(it) },
+                  onBroadcastSos = { viewModel.triggerSosBroadcast() },
+                  onOpenAddContact = { viewModel.openAddContactDialog() },
+                  onOpenEditProfile = { viewModel.openEditProfileDialog() },
+                  onOpenSituationReport = { viewModel.openSituationReportDialog() },
+                  onOpenAuthorityConsole = { viewModel.openAuthorityDashboard(liveTerrainScan = false) }
+                )
+              }
+            }
+          }
       }
 
       // Modal Dialogs
@@ -918,6 +930,43 @@ fun VippattiAppRoot(
           }
         )
       }
+    }
+  }
+}
+
+/**
+ * REMOTE EMERGENCY BANNER (config-driven, e.g. an active-cyclone notice).
+ * Extracted from the root scaffold so the dismiss affordance is pinned by a
+ * render test: the notice always ships a working close control.
+ */
+@Composable
+internal fun EmergencyBannerNotice(
+  text: String,
+  onDismiss: () -> Unit,
+  modifier: Modifier = Modifier
+) {
+  Row(
+    modifier = modifier
+      .fillMaxWidth()
+      .background(androidx.compose.ui.graphics.Color.Red),
+    verticalAlignment = Alignment.CenterVertically
+  ) {
+    Text(
+      text = text,
+      color = androidx.compose.ui.graphics.Color.White,
+      modifier = Modifier
+        .weight(1f)
+        .padding(start = 16.dp, top = 12.dp, bottom = 12.dp)
+    )
+    TextButton(
+      onClick = onDismiss,
+      modifier = Modifier.testTag("emergency_banner_dismiss")
+    ) {
+      Icon(
+        imageVector = Icons.Filled.Close,
+        contentDescription = "Dismiss emergency banner",
+        tint = androidx.compose.ui.graphics.Color.White
+      )
     }
   }
 }

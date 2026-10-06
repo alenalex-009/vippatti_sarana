@@ -66,6 +66,12 @@ class UsgsEarthquakeProvider(
   }
 
   companion object {
+    /** Test hook: a plain provider that answers nothing (no HTTP). */
+    class NoopUsgsProvider : DisasterDataProvider {
+      override val providerId = DisasterSource.USGS
+      override suspend fun fetchIndiaEvents() = ProviderResult.Failure("noop (test)")
+    }
+
     const val BASE_URL = "https://earthquake.usgs.gov/fdsnws/event/1/query"
     // PHASE 15 freshness: a magnitude-4+ event older than 3 days is context,
     // not a current hazard for the local map. (Cache policy already drops

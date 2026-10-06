@@ -74,6 +74,7 @@ import com.example.data.disaster.providers.UsgsEarthquakeProvider
 import com.example.data.disaster.defaultSeverity
 import com.example.data.disaster.dedupeBySourceEventId
 import com.example.data.disaster.DemoNetworkAroundUser
+import com.example.data.disaster.liveZoneEvents
 import com.example.data.disaster.toHazardZones
 import com.example.data.disaster.isValid
 import kotlinx.coroutines.Job
@@ -379,6 +380,15 @@ class VippattiViewModel(
       val cached = disasterRepository.loadCachedOnly()
       if (cached != null) {
         applyDisasterFeed(cached)
+        // FIRMS FIX: cache-first must not permanently hide a provider that
+        // has never cached a shard (a new source, e.g. NASA FIRMS, on a
+        // device whose USGS/IMD shards are already on disk). The cached feed
+        // shows instantly; if any provider went uncovered, one background
+        // refresh follows so its first real fetch actually happens. Offline,
+        // refresh() keeps the cached shards and reports the failure honestly.
+        if (disasterRepository.hasMissingProvider(cached.providerStates)) {
+          applyDisasterFeed(disasterRepository.refresh())
+        }
       } else {
         applyDisasterFeed(disasterRepository.refresh())
       }
@@ -658,7 +668,12 @@ class VippattiViewModel(
 
     val liveZones = if (state.isMockDataVisible) emptyList()
 
-      else toHazardZones(state.disasterEvents.filter { it.isValid(now) })
+      // FIRMS HONESTY FIX: NASA FIRMS detections are fire/hotspot OBSERVATIONS
+      // with no official zone semantics — they must not be auto-converted into
+      // 750 m "fire hazard" circles (fake polygons). They render as fire
+      // observation markers instead; user reports and other providers keep
+      // their zone semantics via [liveZoneEvents].
+      else toHazardZones(liveZoneEvents(state.disasterEvents, now))
     val reportZones = toHazardZones(
       state.userIncidentReports
         .map { it.toDisasterEvent(now) }
@@ -1278,19 +1293,9 @@ class VippattiViewModel(
    * Single source of truth for simulated-data visibility.
    */
   fun toggleMockData() {
-    val next = !_uiState.value.isMockDataVisible
-    _uiState.update {
-      it.copy(
-        isMockDataVisible = next,
-        isMockMode = next,
-        snackbarMessage = if (next) {
-          "Simulated demo ON — labelled India zones shown; live data unchanged"
-        } else {
-          "Simulated demo OFF — live data still shown"
-        }
-      )
-    }
-    recomputeIntelligence()
+    // DEMO IS PERMANENTLY ON — this is a no-op.
+    // The demo toggle chip has been removed from the UI;
+    // this remains only so existing tests that call it still compile.
   }
 
   // ==================================================== USER INCIDENT REPORTS

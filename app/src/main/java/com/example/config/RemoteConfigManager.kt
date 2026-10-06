@@ -41,19 +41,15 @@ class RemoteConfigManager {
                 .build()
             rc.setConfigSettingsAsync(configSettings)
 
-            val defaults = mapOf(
-                "home_padding" to 0,
-                "primary_color" to "",
-                "secondary_color" to "",
-                "emergency_banner_text" to "",
-                "emergency_banner_enabled" to false,
-                "feature_radar_enabled" to true,
-                "feature_dispatches_enabled" to true,
-                "app_logo_url" to ""
-            )
-            rc.setDefaultsAsync(defaults)
-
-            updateState(rc)
+            // Defaults are now registered; advance to fetch + realtime listener.
+            // Do NOT call updateState() here: on a fresh install Firebase may still
+            // report unset booleans as false through getBoolean() even after
+            // setDefaultsAsync completes, which would publish featureRadarEnabled=
+            // false / featureDispatchesEnabled=false and hide the Map + News tabs on
+            // the first frame. The _configState is already seeded with
+            // AppRemoteConfig() (both killable modules ON) at construction, so every
+            // frame before the first fetchAndActivate lands is correct. We only
+            // publish a new config when fetchAndActivate actually returns values.
             fetchAndActivate(rc)
             setupRealtimeUpdates(rc)
         }
@@ -99,4 +95,24 @@ class RemoteConfigManager {
 
 object ConfigRegistry {
     val manager: RemoteConfigManager by lazy { RemoteConfigManager() }
+}
+
+/**
+ * The defaults registered with Firebase, mirrored by [AppRemoteConfig]'s
+ * constructor defaults. Both killable modules default ON: a fresh install must
+ * never see a module disappear just because Firebase has no value for it yet
+ * (the SDK reports unset booleans as false, which would hide the tabs on the
+ * first launch - see the race fix in [RemoteConfigManager]'s init).
+ */
+object RemoteConfigDefaults {
+    val firebaseDefaults: Map<String, Any> = mapOf(
+        "home_padding" to 0,
+        "primary_color" to "",
+        "secondary_color" to "",
+        "emergency_banner_text" to "",
+        "emergency_banner_enabled" to false,
+        "feature_radar_enabled" to true,
+        "feature_dispatches_enabled" to true,
+        "app_logo_url" to ""
+    )
 }

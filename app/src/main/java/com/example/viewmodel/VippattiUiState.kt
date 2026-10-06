@@ -249,6 +249,11 @@ data class VippattiUiState(
   /** Map layer toggles (user-controlled; zoom rules applied at render time). */
   val enabledLayers: Set<DisasterLayer> = setOf(
     DisasterLayer.OFFICIAL_ALERTS, DisasterLayer.EARTHQUAKES,
+    // FIRMS FIX: the Active Fires layer was OFF by default, so real NASA
+    // FIRMS hotspots were fetched but never drawn. The user asked for the
+    // live fire layer to be visible; zoom LOD + nearby-first rules still
+    // apply at render time, and the layer stays user-toggleable.
+    DisasterLayer.ACTIVE_FIRES,
     DisasterLayer.USER_REPORTS, DisasterLayer.SAFE_ZONES,
     DisasterLayer.EVACUATION_ROUTE, DisasterLayer.MY_LOCATION
   ),
@@ -602,6 +607,31 @@ data class VippattiUiState(
       if (unconfigured > 0) parts += "$unconfigured NOT CONFIGURED"
       if (parts.isEmpty()) parts += if (stale) "STALE" else "NO DATA"
       return parts.joinToString(" • ")
+    }
+
+  /**
+   * NASA FIRMS compact indicator status for the map chip row. Derived from
+   * the FIRMS shard's REAL state via the shared [dataStatus] mapping: LIVE
+   * only for a fresh fetch in this session, RECENT for a usable cached shard,
+   * UNAVAILABLE when the provider failed / was never configured / has not
+   * reported yet. Nothing is ever claimed before a sync result exists.
+   */
+  val firmsIndicatorStatus: DataStatus
+    get() = providerStates.firstOrNull { it.source == DisasterSource.NASA_FIRMS }
+      ?.dataStatus()
+      ?: if (isDisasterSyncing) DataStatus.LOADING else DataStatus.UNAVAILABLE
+
+  /**
+   * Compact map indicator text: "NASA FIRMS • LIVE / RECENT / UNAVAILABLE".
+   * An empty successful fetch is still LIVE (the service answered; zero
+   * observations is honest content, not a failure) — never fabricated data.
+   */
+  val firmsIndicatorLabel: String
+    get() = when (firmsIndicatorStatus) {
+      DataStatus.SUCCESS -> "NASA FIRMS \u2022 LIVE"
+      DataStatus.STALE -> "NASA FIRMS \u2022 RECENT"
+      DataStatus.LOADING -> "NASA FIRMS \u2022 SYNCING\u2026"
+      else -> "NASA FIRMS \u2022 UNAVAILABLE"
     }
 
   /** Human-readable tile-cache size (e.g. "48.3 MB") or null until measured. */

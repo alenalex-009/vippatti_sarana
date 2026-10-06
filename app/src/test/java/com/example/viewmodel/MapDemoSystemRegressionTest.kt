@@ -3,9 +3,19 @@ package com.example.viewmodel
 import com.example.data.disaster.DemoNetworkAroundUser
 import com.example.data.disaster.DisasterDataProvider
 import com.example.data.disaster.DisasterDataRepository
+import com.example.data.disaster.CachedProviderFeed
 import com.example.data.disaster.DisasterSource
+import com.example.data.disaster.DisasterType
+import com.example.data.disaster.EventDetails
+import com.example.data.disaster.EventGeometry
+import com.example.data.disaster.EventOrigin
 import com.example.data.disaster.MemoryDisasterCache
+import com.example.data.model.HazardSeverity
+import com.example.data.disaster.providers.FirmsFireProvider
+import com.example.data.disaster.providers.UsgsEarthquakeProvider
+import com.example.data.disaster.ProviderFailureKind
 import com.example.data.disaster.ProviderResult
+import com.example.viewmodel.MainDispatcherRule
 import com.example.data.location.PlaceCandidate
 import com.example.data.model.GeoMath
 import com.example.data.model.HazardType
@@ -22,6 +32,7 @@ import com.example.data.weather.WeatherFailureKind
 import com.example.data.weather.WeatherReading
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -42,7 +53,7 @@ class MapDemoSystemRegressionTest {
    * Drain in-flight IO resumes (the altitude batch hop inside
    * ensureAltitudesFor) BEFORE the rule resets Dispatchers.Main, so a
    * slow IO thread cannot resume onto an unset dispatcher during
-    * teardown under full-suite contention. A settle, not a weakened assert.
+   * teardown under full-suite contention. A settle, not a weakened assert.
    */
   private fun settle() {
     Thread.sleep(150)
@@ -56,6 +67,11 @@ class MapDemoSystemRegressionTest {
   private class OfflineProvider(override val providerId: DisasterSource) : DisasterDataProvider {
     override suspend fun fetchIndiaEvents(): ProviderResult =
       ProviderResult.Failure("No connection (test fake).")
+  }
+
+  private class FirmsFireProviderForTest : DisasterDataProvider {
+    override val providerId = DisasterSource.NASA_FIRMS
+    override suspend fun fetchIndiaEvents() = ProviderResult.Failure("No connection (test fake).")
   }
 
   private class OfflineNewsService : GNewsService {
@@ -113,6 +129,46 @@ class MapDemoSystemRegressionTest {
   )
 
   // ------------------------------------------------- PART 3A: REGIONAL DEMO
+
+  @Test
+  fun `cold start refreshes the provider that never cached a shard`() = runTest {
+    val cache = MemoryDisasterCache()
+    cache.write(
+      DisasterSource.USGS,
+      CachedProviderFeed(
+        events = listOf(
+          com.example.data.disaster.DisasterEvent(
+            id = "usgs-1", source = DisasterSource.USGS, sourceEventId = "usgs-1",
+            disasterType = DisasterType.EARTHQUAKE, title = "M 4.2",
+            description = "", geometry = EventGeometry.Point(12.0, 78.0),
+            severity = HazardSeverity.LOW,
+            observedAtMillis = 1_761_234_567_890L - 900_000L,
+            updatedAtMillis = 1_761_234_567_890L - 900_000L,
+            origin = EventOrigin.OBSERVED
+          )
+        ),
+        fetchedAtMillis = 1_761_234_567_890L - 30 * 60_000L,
+        statusMessage = null
+      )
+    )
+    val repository = DisasterDataRepository(
+      providers = listOf(FirmsFireProviderForTest(), UsgsEarthquakeProvider()),
+      cache = cache,
+      clock = { 1_761_234_567_890L }
+    )
+    val cached = repository.loadCachedOnly()
+    assertTrue("a provider without a cached shard must be missing",
+      repository.hasMissingProvider(cached!!.providerStates))
+    val feed = repository.refresh()
+    assertTrue(
+      "a cold-start refresh must give every registered provider a state",
+      feed.providerStates.any { it.source == DisasterSource.NASA_FIRMS })
+    assertFalse(
+      "a failed FIRMS provider must not synthesize fire observations",
+      feed.providerStates.any { state ->
+        state.source == DisasterSource.NASA_FIRMS && state.eventCount > 0
+      })
+  }
 
   @Test
   fun `regional demo (unfocused) shows multiple disaster TYPES across areas`() = runTest {

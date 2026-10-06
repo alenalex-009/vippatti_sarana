@@ -5,6 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -158,6 +159,64 @@ fun SummaryCard(
     }
     if (subValue != null) {
       Text(subValue, fontSize = 10.sp, color = TacticalOnSurfaceVariant, maxLines = 2)
+    }
+  }
+}
+
+/**
+ * WIDTH-ADAPTIVE SUMMARY CARD ROW (responsive detail-card fix).
+ *
+ * The rigid three-across row cramped "Affected radius | Trend | Detected" on
+ * small phones: labels wrapped, timestamps forced tall cards. This container
+ * measures the AVAILABLE WIDTH (never a device model) and arranges the three
+ * cards so each keeps a readable minimum width:
+ *
+ *   wide   (>= 3 cards + 2 gaps)  -> [ Card ] [ Card ] [ Card ]
+ *   normal (>= 2 cards + 1 gap)   -> [ Card ] [ Card ]  then full-width third
+ *   narrow (< 2 cards + 1 gap)    -> each card full width, stacked
+ *
+ * Each slot receives the Modifier it must apply (weight in a row, full width
+ * when stacked) so a short value can still stretch its card. Pure layout —
+ * no content knowledge, no font-size changes.
+ */
+@Composable
+fun AdaptiveStatCards(
+  modifier: Modifier = Modifier,
+  first: @Composable (Modifier) -> Unit,
+  second: @Composable (Modifier) -> Unit,
+  third: @Composable (Modifier) -> Unit
+) {
+  BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
+    val gap = 8.dp
+    // Minimum width one summary card needs to stay readable (a two-line
+    // label, a bold value and a wrapped timestamp sub-line). Chosen so a
+    // ~320dp phone stacks the cards, a ~360dp phone gets 2+1, and a tablet
+    // / wide window shows three across.
+    val minCardWidth = 144.dp
+    when {
+      maxWidth >= minCardWidth * 3 + gap * 2 -> {
+        Row(horizontalArrangement = Arrangement.spacedBy(gap)) {
+          first(Modifier.weight(1f))
+          second(Modifier.weight(1f))
+          third(Modifier.weight(1f))
+        }
+      }
+      maxWidth >= minCardWidth * 2 + gap -> {
+        Column(verticalArrangement = Arrangement.spacedBy(gap)) {
+          Row(horizontalArrangement = Arrangement.spacedBy(gap)) {
+            first(Modifier.weight(1f))
+            second(Modifier.weight(1f))
+          }
+          third(Modifier.fillMaxWidth())
+        }
+      }
+      else -> {
+        Column(verticalArrangement = Arrangement.spacedBy(gap)) {
+          first(Modifier.fillMaxWidth())
+          second(Modifier.fillMaxWidth())
+          third(Modifier.fillMaxWidth())
+        }
+      }
     }
   }
 }
